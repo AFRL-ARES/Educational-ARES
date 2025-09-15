@@ -1,0 +1,47 @@
+﻿@using UI.Backend.ViewModels.Devices.AresCamera
+@inherits ReactiveUI.Blazor.ReactiveComponentBase<AresCameraUnitControlViewModel>
+@inject TooltipService tooltipService
+@inject IJSRuntime JS
+
+<RadzenCard Style="align-items: center; gap: 0.5rem; row-gap: 1rem; width: fit-content;">
+  <RadzenRow JustifyContent="JustifyContent.Left">
+    <RadzenStack Orientation="Orientation.Vertical">
+      <RadzenRow>
+        <RadzenText TextStyle="TextStyle.H4"> @ViewModel!.DeviceName </RadzenText>
+      </RadzenRow>
+
+      <RadzenRow>
+        @if(ViewModel!.ImageData is not null)
+        {
+          <RadzenImage Path="@($"data:image/jpeg;base64,{Convert.ToBase64String(ViewModel!.ImageData)}")" AlternateText="Example Camera Image" Style="width: 500px" />
+        }
+
+        else
+        {
+          <RadzenText Text="Try taking a picture!"/>
+        }
+      </RadzenRow>
+
+      <RadzenRow>
+        <RadzenButton Click="@(args => ViewModel!.CaptureImage())" Icon="photo_camera" Size="ButtonSize.Large" MouseEnter="@(args => ShowCapturePhotoCommandTip(args) )" />
+        <RadzenButton Click="@(args => ExportImage(args))" Icon="download" Size="ButtonSize.Large" MouseEnter="@(args => ShowDownloadPhotoCommandTip(args))" />
+      </RadzenRow>
+    </RadzenStack>
+  </RadzenRow>
+</RadzenCard>
+
+@code {
+  void ShowCapturePhotoCommandTip(ElementReference elementReference, TooltipOptions? options = null) => tooltipService.Open(elementReference, "Capture Image", options);
+  void ShowDownloadPhotoCommandTip(ElementReference elementReference, TooltipOptions? options = null) => tooltipService.Open(elementReference, "Download Image", options);
+
+  private async void ExportImage(MouseEventArgs args)
+  {
+    if(ViewModel!.ImageData is null)
+      return;
+
+    var fileName = "AresImage.png";
+    Console.WriteLine("Button Pressed!");
+    await JS.InvokeVoidAsync("downloadByteArray", fileName, ViewModel!.ImageData);
+  }
+
+}

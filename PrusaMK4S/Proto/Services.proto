@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package MK4S.services;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/any.proto";
+import "MK4SConfig.proto";
+
+service MK4SPrinterRpc {
+	rpc Print(PrintRequest) returns (MK4SRequestResponse);
+	rpc Move(MoveRequest) returns (MK4SRequestResponse);
+  rpc UpdateTemps(MK4SRequest) returns (PrintTempsResponse);
+	rpc HomePrinter(MK4SRequest) returns (MK4SRequestResponse);
+	rpc StartStateUpdater(StartStateUpdaterRequest) returns (google.protobuf.Empty);
+	rpc StopStateUpdater(MK4SRequest) returns (google.protobuf.Empty);
+
+	rpc CalculateNumberOfPrints(CalculateNumberOfPrintsRequest) returns (NumberOfPrintsResponse);
+	rpc SetSmartPrintMode(SmartPrintModeRequest) returns (google.protobuf.Empty);
+
+	rpc AddMK4SPrinter(config.MK4SConfig) returns (google.protobuf.Empty);
+	rpc RemoveMK4SPrinter(MK4SRequest) returns (google.protobuf.Empty);
+	rpc GetAllMK4SPrinters(google.protobuf.Empty) returns (GetAllMK4SPrintersResponse);
+	rpc UpdateMK4SPrinter(config.MK4SConfig) returns (google.protobuf.Empty);
+}
+
+message MK4SRequest {
+	string printer_name = 1;
+}
+
+message MK4SRequestResponse {
+	bool success = 1;
+	google.protobuf.StringValue error_string = 2;
+}
+
+message PrinterStatusResponse {
+	bool is_connected = 1;
+}
+
+message CalculateNumberOfPrintsRequest {
+	string device_name = 1;
+	google.protobuf.Any device_command = 2;
+}
+
+message SmartPrintModeRequest {
+	string device_name = 1;
+	bool should_smart_print = 2;
+}
+
+message NumberOfPrintsResponse {
+	uint32 number_of_experiments = 1;
+}
+
+message PrintTempsResponse {
+  double nozzle_temp = 1;
+  double bed_temp = 2;
+	bool is_connected = 3;
+}
+
+message StartStateUpdaterRequest {
+	string device_name = 1;
+	google.protobuf.Duration interval = 2;
+}
+
+message PrintRequest {
+	string printer_name = 1;
+	bytes gcode = 2;
+}
+
+message MoveRequest {
+	string printer_name = 1;
+	string x_coordinate = 2;
+	string y_coordinate = 3;
+	string z_coordinate = 4;
+	string dwell_time = 5;
+}
+
+message PrinterDescription {
+	string id = 1;
+	string name = 2;
+}
+
+message GetAllMK4SPrintersResponse {
+	repeated PrinterDescription printers = 1;
+}
+

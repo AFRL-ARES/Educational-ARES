@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package MK4S.data_model;
+
+import "google/protobuf/wrappers.proto";
+
+message Data {
+	repeated string gcode = 1;
+}

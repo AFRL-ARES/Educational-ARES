@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package chiller.data_model;
-
-import "google/protobuf/wrappers.proto";
-
-message Data {
-	google.protobuf.DoubleValue manifold_temperature = 1;
-}

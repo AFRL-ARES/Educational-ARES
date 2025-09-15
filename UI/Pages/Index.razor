@@ -1,18 +1,7 @@
 ﻿@page "/"
 @using UI.Backend.ViewModels
-@using UI.Pages.Shared.Devices.CM3Camera
-@using UI.Pages.Shared.Devices.DataLogger
-@using UI.Pages.Shared.Devices.LaserChiller
-@using UI.Pages.Shared.Devices.Mfc
-@using UI.Pages.Shared.Devices.Remote
-@using UI.Pages.Shared.Devices.RestDevice
-@using UI.Pages.Shared.Devices.SerialRestDevice
-@using UI.Pages.Shared.Devices.SyringePump
-@using UI.Pages.Shared.Devices.TubeFurnace
-@using UI.Pages.Shared.Devices.StepperController
-@using UI.Pages.Shared.Devices.ValveController
-@using UI.Pages.Shared.Devices.Servo
-@using UI.Pages.Shared.Devices.VerdiV6Laser
+@using UI.Pages.Shared.Devices.CrealityCamera
+@using UI.Pages.Shared.Devices.PrusaPrinter
 @using UI.Pages.Shared.Misc
 @using UI.Pages.Shared.Sortable
 
@@ -40,20 +29,9 @@
 
 @code {
   public List<Type> MultiViews = new List<Type>() 
-  { 
-    typeof(RemoteDeviceDirectorView),
-    typeof(DataLoggerMultiView), 
-    typeof(MfcDirectorControl), 
-    typeof(SyringePumpWorkspaceControl),
-    typeof(TubeFurnaceMultiControl),
-    typeof(ServoMultiView),
-    typeof(StepperControllerMultiView),
-    typeof(ValveControllerMultiView),
-    typeof(CM3CameraMultiView),
-    typeof(VerdiLaserMultiView),
-    typeof(LaserChillerMultiView),
-    typeof(RestDeviceMultiView),
-    typeof(SerialRestDeviceMultiView)
+  {
+    typeof(PrusaMK4SMultiView),
+    typeof(AresCameraMultiView)
   };
 
   private void SortList((int oldIndex, int newIndex) indices)

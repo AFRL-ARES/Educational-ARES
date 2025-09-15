@@ -28,22 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AlicatMFC\AlicatMFC.csproj" />
     <ProjectReference Include="..\Ares.Core.Grpc\Ares.Core.Grpc.csproj" />
     <ProjectReference Include="..\AresMessaging\AresMessaging.csproj" />
+    <ProjectReference Include="..\CrealityCamera\AresCamera.csproj" />
     <ProjectReference Include="..\DemoDevice\DemoDevice.csproj" />
-    <ProjectReference Include="..\FlirCM3\FlirCM3.csproj" />
-    <ProjectReference Include="..\FlirCM3\FlirCM3.csproj" />
-    <ProjectReference Include="..\HerkulexDRS\HerkulexDRS.csproj" />
-    <ProjectReference Include="..\LaserChiller\LaserChiller.csproj" />
-    <ProjectReference Include="..\LindbergFurnace\LindbergFurnace.csproj" />
-    <ProjectReference Include="..\RestDevice\RestDevice.csproj" />
-    <ProjectReference Include="..\RestSerialDevice\RestSerialDevice.csproj" />
-    <ProjectReference Include="..\SyringePumpNE1000\SyringePumpNE1000.csproj" />
-    <ProjectReference Include="..\TC0304\TC0304.csproj" />
-    <ProjectReference Include="..\TicStepperController\TicStepperController.csproj" />
-    <ProjectReference Include="..\ValveController\ValveController.csproj" />
-    <ProjectReference Include="..\VerdiV6Laser\VerdiV6Laser.csproj" />
+    <ProjectReference Include="..\PrusaMK4S\PrusaMK4S.csproj" />
   </ItemGroup>
 
   <ItemGroup>

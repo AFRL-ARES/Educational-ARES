@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package VerdiV6.config;
-
-message VerdiConfig {
-	string name = 1;
-	string port_name = 2;
-	bool simulated = 3;
-}

@@ -1,0 +1,52 @@
+﻿@using UI.Backend.ViewModels.Devices.PrusaPrinter
+@inherits ReactiveUI.Blazor.ReactiveComponentBase<PrusaMK4SUnitControlViewModel>
+@inject TooltipService tooltipService
+
+<RadzenCard Style="align-items: center; gap: 0.5rem; row-gap: 1rem; width: fit-content;">
+  <RadzenRow JustifyContent="JustifyContent.Left">
+    <RadzenText TextStyle="TextStyle.H4"> @ViewModel!.DeviceName </RadzenText>
+  </RadzenRow>
+
+  <RadzenRow>
+    <RadzenStack Orientation="Orientation.Vertical">
+      <RadzenRow>
+        <RadzenText TextStyle="TextStyle.DisplayH6"> Controls </RadzenText>
+      </RadzenRow>
+      <RadzenRow>
+        <RadzenStack Orientation="Orientation.Horizontal">
+          <RadzenTextBox Placeholder="X,Y,Z,Dwell" @bind-Value="ViewModel!.MovementCommand"/>
+        </RadzenStack>
+      </RadzenRow>
+
+      <RadzenRow>
+        <RadzenButton Click="@(args => ViewModel!.MovePrinterHead())" Icon="play_circle" MouseEnter="@(args => ShowExecutePrinterCommandTip(args) )" Size="ButtonSize.Large" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Secondary"/>
+        <RadzenButton Click="@(args => ViewModel!.HomePrinter())" Icon="home" MouseEnter="@(args => ShowHomePrinterCommandTip(args))" Size="ButtonSize.Large" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Secondary" />
+      </RadzenRow>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Vertical">
+      <RadzenRow>
+        <RadzenText TextStyle="TextStyle.DisplayH6"> @(ViewModel!.Connected ? "Printer Connected" : "Printer Disconnected") </RadzenText>
+      </RadzenRow>
+
+      <RadzenRow>
+        <RadzenText Text="Nozzle Temperature: " TextStyle="TextStyle.H5"/>
+        <RadzenText Text="@NozzleTempDisplayString()" TextStyle="TextStyle.H5"/>
+      </RadzenRow>
+
+      <RadzenRow>
+        <RadzenText Text="Bed Temperature: " TextStyle="TextStyle.H5" />
+        <RadzenText Text="@BedTempDisplayString()" TextStyle="TextStyle.H5" />
+      </RadzenRow>
+    </RadzenStack>
+  </RadzenRow>
+</RadzenCard>
+
+@code {
+  void ShowExecutePrinterCommandTip(ElementReference elementReference, TooltipOptions? options = null) => tooltipService.Open(elementReference, "Move Printer", options);
+  void ShowCapturePhotoCommandTip(ElementReference elementReference, TooltipOptions? options = null) => tooltipService.Open(elementReference, "Capture Image", options);
+  void ShowHomePrinterCommandTip(ElementReference elementReference, TooltipOptions? options = null) => tooltipService.Open(elementReference, "Home Printer", options);
+
+  private string NozzleTempDisplayString() => $"{ViewModel!.NozzleTemperature}°C";
+  private string BedTempDisplayString() => $"{ViewModel!.BedTemperature}°C";
+}

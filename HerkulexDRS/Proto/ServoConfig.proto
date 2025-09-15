@@ -1,9 +1,0 @@
-﻿syntax = "proto3";
-
-package HerkulexDRS.config;
-
-message ServoConfig {
-  string name = 1;
-  string port_name = 2;
-  bool simulated = 3;
-}

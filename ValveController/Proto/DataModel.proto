@@ -1,8 +1,0 @@
-﻿syntax = "proto3";
-
-package ValveController.data_model;
-
-message Data {
-  bool RelayOneOn = 1;
-  bool RelayTwoOn = 2;
-}

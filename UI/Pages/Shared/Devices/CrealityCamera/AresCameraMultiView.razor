@@ -1,0 +1,23 @@
+﻿@using DynamicData.Binding;
+@using UI.Backend.ViewModels.Devices.AresCamera
+@inherits ReactiveUI.Blazor.ReactiveInjectableComponentBase<AresCameraMultiViewModel>
+
+
+@foreach (var device in ViewModel!.ConnectedUsbDeviceUnitControlVms)
+{
+  <div class="d-flex flex-wrap">
+    <DashboardWidget>
+      <AresCameraControlWidgetView ViewModel="@device" />
+    </DashboardWidget>
+  </div>
+}
+
+@code {
+  protected override Task OnInitializedAsync()
+  {
+    ViewModel!.ConnectedUsbDeviceUnitControlVms.ObserveCollectionChanges().Subscribe(_ => InvokeAsync(StateHasChanged));
+    ViewModel.Start(TimeSpan.FromSeconds(5));
+    return base.OnInitializedAsync();
+  }
+
+}
