@@ -65,7 +65,7 @@ public class Startup
     {
       services.AddDbContextFactory<AresDbContext>(builder =>
       {
-        builder.UseSqlite(Configuration!.GetConnectionString("CoreDatabase"));
+        builder.UseSqlite(sqlConnectionString);
         builder.EnableSensitiveDataLogging();
       });
 
@@ -77,10 +77,8 @@ public class Startup
       throw new InvalidOperationException("FIX MEEEEE");
     }
 
-
-
-      services.AddTransient<IDbContextFactory<CoreDatabaseContext>>(provider
-        => new CovariantCoreDbContextFactory<CoreDatabaseContext, AresDbContext>(provider.GetRequiredService<IDbContextFactory<AresDbContext>>()));
+    services.AddTransient<IDbContextFactory<CoreDatabaseContext>>(provider
+      => new CovariantCoreDbContextFactory<CoreDatabaseContext, AresDbContext>(provider.GetRequiredService<IDbContextFactory<AresDbContext>>()));
 
     var identityBuilder = services.AddIdentityCore<AresUser>(o =>
       o.Password = new PasswordOptions
@@ -209,6 +207,16 @@ public class Startup
     app.UseAuthentication();
     app.UseAuthorization();
 
+    //User data path has to exist for database creation
+    _ = starter.EnsureDataPathsExist();
+
+    var contextFactory = app.ApplicationServices.GetService<IDbContextFactory<AresDbContext>>();
+    var context = contextFactory!.CreateDbContext();
+    context.Database.Migrate();
+
+    var idContextFactory = app.ApplicationServices.GetService<IDbContextFactory<AresIdentityContext>>();
+    var idContext = idContextFactory!.CreateDbContext();
+    idContext.Database.Migrate();
 
     app.UseEndpoints(endpoints =>
     {

@@ -41,4 +41,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DeviceStateExport\ExportDataProviders\Devices\" />
+    <Folder Include="Services\DeviceStateLogging\" />
+  </ItemGroup>
+
 </Project>

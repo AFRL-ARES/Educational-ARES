@@ -1,0 +1,78 @@
+﻿@page "/settings/device/camera"
+@layout DeviceSettingsLayout
+@using Ares.Services
+@using Google.Protobuf.WellKnownTypes
+@using UI.Backend.ViewModels.Settings.Device.AresCamera
+@inherits ReactiveUI.Blazor.ReactiveInjectableComponentBase<AresCameraSettingsListViewModel>
+
+@inject DialogService DialogService
+
+@if (ViewModel!.SettingsViewModels is null)
+{
+	<LoadingSpinner	/>
+}
+
+else 
+{
+	<div class="d-flex flex-column">
+		@foreach(var vm in ViewModel!.SettingsViewModels)
+		{
+			<div class="m-2">
+				<AresCameraSettingsView ViewModel="vm" />
+			</div>
+		}
+
+		<button class="m-2 align-self-end btn btn-outline-light" disabled="@SavingInProgress" @onclick="AddConfigClick">
+			@if(SavingInProgress)
+			{
+				<LoadingSpinner SpinnerSize="SpinnerSize.Small" />
+			}
+
+      else
+      {
+        <RadzenIcon Icon="add" />
+      }
+		</button>
+	</div>
+}
+
+@code {
+	private async Task AddConfigClick()
+  {
+    var viewModel = ViewModel!.GetNewConfigEditViewModel();
+    var result = await DialogService.OpenAsync("New Ares Camera", ds =>
+      @<AresCameraConfigEditView ViewModel="@viewModel" OnValidSubmit="() => ds.Close(true)" />);
+
+    if (result is true)
+    {
+      SavingInProgress = true;
+      StateHasChanged();
+      try
+      {
+        await ViewModel!.AddNewConfig(viewModel.Save());
+        var notification = new AresNotification();
+        notification.Message = $"ARES successfully added the camera {viewModel.Name}.";
+        notification.Title = $"Successfully Added Camera {viewModel.Name}!";
+        notification.NotificationSeverity = Severity.Success;
+        notification.Timestamp = DateTime.UtcNow.ToTimestamp();
+        ViewModel!.PushNotification(notification);
+      }
+      catch (Grpc.Core.RpcException e)
+      {
+        var notification = new AresNotification();
+        notification.Message = $"ARES failed to add the camera {viewModel.Name} {e.Message}.";
+        notification.Title = $"Failed to Add Camera {viewModel.Name}!";
+        notification.NotificationSeverity = Severity.Error;
+        notification.Timestamp = DateTime.UtcNow.ToTimestamp();
+        ViewModel!.PushNotification(notification);
+      }
+      finally
+      {
+        SavingInProgress = false;
+        StateHasChanged();
+      }
+    }
+  }
+
+  private bool SavingInProgress { get; set; }
+}

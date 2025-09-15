@@ -1,6 +1,5 @@
 ﻿using AresService.Services.Authentication;
 using AresService.Services.Devices;
-using AresService.Services.DeviceStateLogging;
 using AresService.Services.OperationalState;
 using AresService.Services.UserManagement;
 using EducationalAresService.Services.Devices;

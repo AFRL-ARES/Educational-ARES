@@ -1,8 +1,8 @@
 public struct AppSettings
 {
-    public AppSettings()
-    {
-    }
+  public AppSettings()
+  {
+  }
 
-    public string DatabaseProvider { get; set; } = string.Empty;
+  public string DatabaseProvider { get; set; } = string.Empty;
 }

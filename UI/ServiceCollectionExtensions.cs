@@ -1,12 +1,5 @@
 ﻿using Ares.Messages;
 using Ares.Messages.DeviceState;
-using Ares.Messages.DeviceStates.Chiller;
-using Ares.Messages.DeviceStates.Mfc;
-using Ares.Messages.DeviceStates.RestSerialDevice;
-using Ares.Messages.DeviceStates.SyringePump;
-using Ares.Messages.DeviceStates.Tc0304;
-using Ares.Messages.DeviceStates.TicStepperController;
-using Ares.Messages.DeviceStates.TubeFurnace;
 using Ares.Services;
 using Ares.Services.Device;
 using AresCamera.Services;
@@ -89,14 +82,7 @@ internal static class ServiceCollectionExtensions
     services.AddScoped(_ => clientManager.GetClient<AresCameraRpc.AresCameraRpcClient>());
 
     //Device State Logging Clients
-    services.AddScoped(_ => clientManager.GetClient<MfcStateLogging.MfcStateLoggingClient>());
-    services.AddScoped(_ => clientManager.GetClient<Tc0304StateLogging.Tc0304StateLoggingClient>());
-    services.AddScoped(_ => clientManager.GetClient<SyringePumpStateLogging.SyringePumpStateLoggingClient>());
-    services.AddScoped(_ => clientManager.GetClient<TicStepperControllerStateLogging.TicStepperControllerStateLoggingClient>());
-    services.AddScoped(_ => clientManager.GetClient<TubeFurnaceStateLogging.TubeFurnaceStateLoggingClient>());
-    services.AddScoped(_ => clientManager.GetClient<ChillerStateLogging.ChillerStateLoggingClient>());
     services.AddScoped(_ => clientManager.GetClient<StateExportService.StateExportServiceClient>());
-    services.AddScoped(_ => clientManager.GetClient<RestSerialDeviceStateLogging.RestSerialDeviceStateLoggingClient>());
   }
 
   private static void BindViewModels(this IServiceCollection services)

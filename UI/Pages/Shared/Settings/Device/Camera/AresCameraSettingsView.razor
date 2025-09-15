@@ -1,0 +1,43 @@
+﻿@using Ares.Services
+@using Google.Protobuf.WellKnownTypes
+@inherits ReactiveUI.Blazor.ReactiveComponentBase<UI.Backend.ViewModels.Settings.Device.AresCamera.AresCameraSettingsViewModel>
+@inject DialogService DialogService
+
+<DeviceSettingsContainer DeviceStatusGetter="ViewModel!.GetDeviceStatus" EditCallback="EditCallback" RemoveCallback="RemoveCallback" ActivateCallback="ViewModel.Activate" Name="@ViewModel!.AresCameraConfig.DeviceName">
+  <div>
+    <span>@ViewModel!.AresCameraConfig.DeviceName</span>
+  </div>
+
+  <RadzenDropDown @bind-Value="@ViewModel!.SelectedSource" Change="@(args => ViewModel!.SwitchSource(args))" Data=@ViewModel!.AvailableSources Style="width: 100%; max-width: 400px;" />
+
+</DeviceSettingsContainer>
+
+@code {
+  private async Task EditCallback()
+  {
+    var viewModel = ViewModel!.EditViewModel;
+    var result = await DialogService.OpenAsync("Edit Ares Camera", ds =>
+      @<AresCameraConfigEditView ViewModel="@viewModel" OnValidSubmit="() => ds.Close(true)"/>);
+
+    await ViewModel!.Save();
+    var notification = new AresNotification();
+    notification.Message = $"ARES successfully update the camera {viewModel.Name}.";
+    notification.Title = $"Successfully Updated Camera {viewModel.Name}!";
+    notification.NotificationSeverity = Severity.Success;
+    notification.Timestamp = DateTime.UtcNow.ToTimestamp();
+    ViewModel!.PushNotification(notification);
+  }
+
+  private async Task RemoveCallback()
+  {
+    var result = await DialogService.Confirm($"Delete {ViewModel!.AresCameraConfig.DeviceName}?");
+    if (result is true)
+      await ViewModel!.Remove();
+  }
+
+  protected override async Task OnInitializedAsync()
+  {
+    await ViewModel!.Init();
+    StateHasChanged();
+  }
+ }
