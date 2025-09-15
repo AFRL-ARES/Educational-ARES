@@ -3,7 +3,7 @@
 @inherits ReactiveUI.Blazor.ReactiveComponentBase<UI.Backend.ViewModels.Settings.Device.AresCamera.AresCameraSettingsViewModel>
 @inject DialogService DialogService
 
-<DeviceSettingsContainer DeviceStatusGetter="ViewModel!.GetDeviceStatus" EditCallback="EditCallback" RemoveCallback="RemoveCallback" ActivateCallback="ViewModel.Activate" Name="@ViewModel!.AresCameraConfig.DeviceName">
+<DeviceSettingsContainer EditCallback="EditCallback" RemoveCallback="RemoveCallback" ActivateCallback="@ViewModel!.Activate" Name="@ViewModel!.AresCameraConfig.DeviceName">
   <div>
     <span>@ViewModel!.AresCameraConfig.DeviceName</span>
   </div>

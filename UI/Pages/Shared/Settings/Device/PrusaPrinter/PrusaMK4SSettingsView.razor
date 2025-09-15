@@ -3,7 +3,7 @@
 @inherits ReactiveUI.Blazor.ReactiveComponentBase<UI.Backend.ViewModels.Settings.Device.PrusaMK4S.PrusaMK4SSettingsViewModel>
 @inject DialogService DialogService
 
-<DeviceSettingsContainer DeviceStatusGetter="ViewModel!.GetDeviceStatus" EditCallback="EditCallback" RemoveCallback="RemoveCallback" ActivateCallback="ViewModel.Activate" Name="@ViewModel!.MK4SConfig.DeviceName">
+<DeviceSettingsContainer EditCallback="EditCallback" RemoveCallback="RemoveCallback" ActivateCallback="ViewModel!.Activate" Name="@ViewModel!.MK4SConfig.DeviceName">
   <div>
     @if (ViewModel!.MK4SConfig.Simulated)
     {

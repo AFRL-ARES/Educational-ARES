@@ -54,7 +54,7 @@ public class AresCameraSettingsViewModel : ReactiveObject
     if(status.OperationalState is not OperationalState.Active)
       throw new InvalidOperationException();
 
-    var response = await _client.UpdateAvailableSourcesAsync(new CameraRequest() { CameraName = AresCameraConfig.DeviceName });
+    var response = await _client.UpdateAvailableSourcesAsync(new CameraRequest() { CameraId = AresCameraConfig.DeviceId });
     AvailableSources = response.AvailableSources.ToList();
   }
 
@@ -72,7 +72,7 @@ public class AresCameraSettingsViewModel : ReactiveObject
 
   public async Task Remove()
   {
-    await _client.RemoveCameraAsync(new CameraRequest() { CameraName = AresCameraConfig.DeviceName });
+    await _client.RemoveCameraAsync(new CameraRequest() { CameraId = AresCameraConfig.DeviceId });
     await OnRemoveCallback();
   }
 
@@ -97,7 +97,7 @@ public class AresCameraSettingsViewModel : ReactiveObject
   public AresCameraConfigEditViewModel EditViewModel { get; }
 
   [Reactive]
-  public List<string> AvailableSources { get; set; } = new List<string>() { "Weenie", "Hut", "Juniors" };
+  public List<string> AvailableSources { get; set; } = new List<string>();
 
   [Reactive]
   public string? SelectedSource { get; set; }

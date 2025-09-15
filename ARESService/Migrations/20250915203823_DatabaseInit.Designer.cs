@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AresService.Migrations
 {
     [DbContext(typeof(AresDbContext))]
-    [Migration("20250915195804_DatabaseInit")]
+    [Migration("20250915203823_DatabaseInit")]
     partial class DatabaseInit
     {
         /// <inheritdoc />

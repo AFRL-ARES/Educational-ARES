@@ -42,7 +42,7 @@ public class AresCameraService : AresCameraRpc.AresCameraRpcBase
 
   public override async Task<ImageResponse> CaptureImage(CameraRequest request, ServerCallContext context)
   {
-    var camera = GetCamera(request.CameraName);
+    var camera = GetCamera(request.CameraId);
     var image = await camera.CaptureImage();
 
     return new ImageResponse() { ImageData = ByteString.CopyFrom(image) };
@@ -57,7 +57,7 @@ public class AresCameraService : AresCameraRpc.AresCameraRpcBase
 
   public override async Task<AvailableSourcesResponse> UpdateAvailableSources(CameraRequest request, ServerCallContext context)
   {
-    var camera = GetCamera(request.CameraName);
+    var camera = GetCamera(request.CameraId);
     var devices = await camera.GetAvailableDevices();
 
     var response = new AvailableSourcesResponse();
@@ -67,16 +67,15 @@ public class AresCameraService : AresCameraRpc.AresCameraRpcBase
 
   public override async Task<Empty> AddCamera(AresCameraConfig request, ServerCallContext context)
   {
-    await _deviceManager.Load(request.DeviceId, request);
-    var camera = GetCamera(request.DeviceName);
-    await _configManager.Add(request.DeviceId, request.DeviceName, request);
+    var device = await _deviceManager.Create(request);
+    await _configManager.Add(device.UniqueId, device.Name, request);
     return new Empty();
   }
 
   public override async Task<Empty> RemoveCamera(CameraRequest request, ServerCallContext context)
   {
-    await _deviceManager.Remove(request.CameraName);
-    await _configManager.Remove(request.CameraName);
+    await _deviceManager.Remove(request.CameraId);
+    await _configManager.Remove(request.CameraId);
     return new Empty();
   }
 
@@ -94,7 +93,7 @@ public class AresCameraService : AresCameraRpc.AresCameraRpcBase
   public override async Task<Empty> UpdateCamera(AresCameraConfig request, ServerCallContext context)
   {
     await _deviceManager.Update(request.DeviceId, request);
-    await _configManager.Update(request.DeviceName, request);
+    await _configManager.Update(request.DeviceId, request);
     return new Empty();
   }
 }

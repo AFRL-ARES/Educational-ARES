@@ -17,7 +17,7 @@ public class AresCameraUnitControlViewModel : UsbDeviceUnitViewModel
 
   public async Task CaptureImage()
   {
-    var response = await _client.CaptureImageAsync(new CameraRequest() { CameraName = DeviceName });
+    var response = await _client.CaptureImageAsync(new CameraRequest() { CameraId = DeviceId });
 
     if(response.ImageData.IsEmpty)
     {

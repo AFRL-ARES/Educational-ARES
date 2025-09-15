@@ -25,6 +25,7 @@ public class AresCameraDeviceManager : IDeviceManager<AresCameraConfig, IAresCam
 
   public async Task<IAresCamera> Load(string id, AresCameraConfig config)
   {
+    config.DeviceId = id;
     IAresCamera camera = new AresCamera.AresCamera(config.DeviceName, config.SourceName) { UniqueId = id };
     await camera.Activate();
     var interepreter = new AresCameraInterpreter(camera);
