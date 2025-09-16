@@ -1,6 +1,5 @@
 ﻿using Ares.Core;
 using Ares.Core.Grpc;
-using AresService.Services.Authentication;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -135,9 +134,6 @@ public class Startup
     services.AddAuthorization(o => o.AddPolicy("AresPolicy", builder => builder.RequireRole(Enum.GetNames<AresUserType>())));
 
     services.AddAres(Configuration);
-
-    services.AddTransient<UserInitializer>();
-    services.AddTransient<JwtTokenGenerator>();
   }
 
   private void PopulateAresConfig()
@@ -191,7 +187,6 @@ public class Startup
     IWebHostEnvironment env,
     IHostApplicationLifetime applicationLifetime,
     AresStarter starter,
-    UserInitializer userInitializer,
     RoleManager<IdentityRole> roleManager)
   {
     PopulateAresConfig();
@@ -234,7 +229,6 @@ public class Startup
     applicationLifetime.ApplicationStopping.Register(OnStopping);
 
     roleManager.InitializeAsync().Wait();
-    userInitializer.Init().GetAwaiter().GetResult();// must be synchronous, otherwise db context gets disposed ¯\_(ツ)_/¯
     SetupExceptionHandling();
     _ = starter.Start();
   }

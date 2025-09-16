@@ -17,75 +17,54 @@
     <RadzenNotification/>
     <RadzenContextMenu/>
     <RadzenTooltip/>
-
     <main>
-        <AuthorizeView>
-            <Authorized>
-                <div class="main-layout-grid vh-100">
-                    <div class="p-0 ares-sidebar">
-                        <button @onclick="SidebarExpandClick" type="button" class="bg-dark btn hamburger-button">
-                            <RadzenIcon Icon="menu"></RadzenIcon>
-                        </button>
-                        <AresNavMenu ExpandedMainNav="@SidebarExpanded">
-                            <MainNavContent>
-                                <AresNavItem Text="Dashboard" Icon="dvr" Path="/"/>
-                                <AresNavItem Text="Project" Icon="space_dashboard" Path="project"/>
-                                <AresNavItem Match="NavLinkMatch.Prefix" Expandable="true" Icon="science" Text="Automation" Path="automation">
-                                    <AresNavItem Icon="brush" Text="Campaign Designer" Path="automation/campaignlist"/>
-                                    <AresNavItem Icon="stairs" Text="Custom Step Builder" Path="automation/customstepbuilder"/>
-                                    <AresNavItem Icon="directions_run" Text="Execution" Path="automation/execution"/>
-                                    <AresNavItem Icon="history" Text="Execution History" Path="automation/executionhistory"/>
-                                </AresNavItem>
-                                <AresNavItem Icon="assessment" Text="Data Viewer" Path="dataviewer"/>
-                                <AresNavItem Icon="assessment" Text="Device States" Path="device_states"/>
-                                <AresNavItem Icon="detector" Text="Safety" Path="/safety"/>
-                            </MainNavContent>
+      <div class="main-layout-grid vh-100">
+        <div class="p-0 ares-sidebar">
+            <button @onclick="SidebarExpandClick" type="button" class="bg-dark btn hamburger-button">
+                <RadzenIcon Icon="menu"></RadzenIcon>
+            </button>
+            <AresNavMenu ExpandedMainNav="@SidebarExpanded">
+              <MainNavContent>
+                  <AresNavItem Text="Dashboard" Icon="dvr" Path="/"/>
+                  <AresNavItem Text="Project" Icon="space_dashboard" Path="project"/>
+                  <AresNavItem Match="NavLinkMatch.Prefix" Expandable="true" Icon="science" Text="Automation" Path="automation">
+                    <AresNavItem Icon="brush" Text="Campaign Designer" Path="automation/campaignlist"/>
+                    <AresNavItem Icon="stairs" Text="Custom Step Builder" Path="automation/customstepbuilder"/>
+                    <AresNavItem Icon="directions_run" Text="Execution" Path="automation/execution"/>
+                    <AresNavItem Icon="history" Text="Execution History" Path="automation/executionhistory"/>
+                  </AresNavItem>
+                  <AresNavItem Icon="assessment" Text="Data Viewer" Path="dataviewer"/>
+                  <AresNavItem Icon="assessment" Text="Device States" Path="device_states"/>
+                  <AresNavItem Icon="detector" Text="Safety" Path="/safety"/>
+              </MainNavContent>
 
-                            <FooterContent>
-                                <AresNavFooterItem Path="notifications" Icon="notifications"/>
-                                <AresNavFooterItem Path="settings/device" Icon="settings"/>
-                                <AresNavFooterItem Path="profile" Icon="person"/>
-                            </FooterContent>
+              <FooterContent>
+                  <AresNavFooterItem Path="notifications" Icon="notifications"/>
+                  <AresNavFooterItem Path="settings/device" Icon="settings"/>
+                  <AresNavFooterItem Path="profile" Icon="person"/>
+              </FooterContent>
                             
 
-                            <CollapsedNavContent>
-                                <div class="first-nav-item">
-                                    <AresNavItem Icon="dvr" Path="#"/>
-                                </div>
-                                <AresNavItem Icon="space_dashboard" Path="project"/>
-                                <AresNavItem Icon="science">
-                                    <AresNavItem Icon="brush" Path="automation/campaignlist"/>
-                                    <AresNavItem Icon="stairs" Path="automation/customstepbuilder"/>
-                                    <AresNavItem Icon="directions_run" Path="automation/execution"/>
-                                    <AresNavItem Icon="history" Path="automation/executionhistory"/>
-                                </AresNavItem>
-                                <AresNavItem Icon="assessment" Path="dataviewer"/>
-                            </CollapsedNavContent>
-                        </AresNavMenu>
+              <CollapsedNavContent>
+                  <div class="first-nav-item">
+                      <AresNavItem Icon="dvr" Path="#"/>
+                  </div>
+                  <AresNavItem Icon="space_dashboard" Path="project"/>
+                  <AresNavItem Icon="science">
+                      <AresNavItem Icon="brush" Path="automation/campaignlist"/>
+                      <AresNavItem Icon="stairs" Path="automation/customstepbuilder"/>
+                      <AresNavItem Icon="directions_run" Path="automation/execution"/>
+                      <AresNavItem Icon="history" Path="automation/executionhistory"/>
+                  </AresNavItem>
+                  <AresNavItem Icon="assessment" Path="dataviewer"/>
+              </CollapsedNavContent>
+            </AresNavMenu>
 
-                    </div>
-                    <div class="ares-content m-2">
-                        @Body
-                    </div>
-                    <div class="ares-footer">
-                      <AresFooter>
-                      <div class="d-flex flex-row justify-content-between align-items-center">
-                        <div>
-                          <span>Logged in as @context.User.Identity?.Name</span>
-                          <a href="Identity/Account/Logout" class="mx-2">Logout</a>
-                        </div>
-                        <RadzenButton Click="@ShowEmergencyStopDialog" Text="Emergency Stop" Icon="report" ButtonStyle="ButtonStyle.Danger" />
-                      </div>
-                      </AresFooter>
-                    </div>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <article class="content px-4">
-                    <meta http-equiv="refresh" content="0.01; URL=Identity/Account/Login"/>
-                </article>
-            </NotAuthorized>
-        </AuthorizeView>
+        </div>
+        <div class="ares-content m-2">
+            @Body
+        </div>
+      </div>
     </main>
 </div>
 

@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using MK4S.Services;
 using Radzen;
 using UI.Areas.Identity;
-using UI.Authentication;
 using UI.Backend.Devices;
 using UI.Backend.Helpers;
 using UI.Backend.Notifications;
@@ -40,7 +39,6 @@ internal static class ServiceCollectionExtensions
   {
     services.AddScoped<ServerHealthService>();
     services.AddScoped<ServerHealthNotificationService>();
-    services.AddScoped<AresAuthenticationState>();
     services.AddScoped<DialogService>();
     services.AddSingleton<NotificationService>();
     services.AddScoped<TooltipService>();

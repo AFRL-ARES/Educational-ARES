@@ -2,14 +2,12 @@
 using Grpc.Net.Client;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
-using UI.Authentication;
 using UI.Settings;
 
 namespace UI.Services.Grpc;
 
 internal class ClientManager : IClientManager
 {
-  private readonly AresAuthenticationState _authenticationState;
   private readonly CertificateSettings _certificateOptions;
   private readonly ILogger<ClientManager> _logger;
   private readonly RemoteServiceSettings _remoteServiceSettings;
@@ -17,11 +15,9 @@ internal class ClientManager : IClientManager
 
   public ClientManager(IOptions<RemoteServiceSettings> remoteOptions,
     IOptions<CertificateSettings> certificateOptions,
-    AresAuthenticationState authenticationState,
     ILogger<ClientManager> logger)
   {
     _certificateOptions = certificateOptions.Value;
-    _authenticationState = authenticationState;
     _logger = logger;
     _remoteServiceSettings = remoteOptions.Value;
     CreateChannel().GetAwaiter().GetResult();
