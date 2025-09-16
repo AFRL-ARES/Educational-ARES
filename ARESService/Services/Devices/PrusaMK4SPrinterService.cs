@@ -26,12 +26,12 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
     _configManager = configManager;
   }
 
-  private IPrusaMK4S? GetPrinter(string name)
+  private IPrusaMK4S? GetPrinter(string id)
   {
     var printer = _deviceCommandInterpreterRepo
       .Select(interpreter => interpreter.Device)
       .OfType<IPrusaMK4S>()
-      .FirstOrDefault();
+      .FirstOrDefault(p => p.UniqueId == id);
 
     return printer;
   }
@@ -41,7 +41,7 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
     var response = new NumberOfPrintsResponse();
     response.NumberOfExperiments = 0;
     var unpacked = request.DeviceCommand.TryUnpack<BytesValue>(out var bytes);
-    var printer = GetPrinter(request.DeviceName);
+    var printer = GetPrinter(request.Id);
 
     if(!unpacked || printer is null)
       return response;
@@ -52,7 +52,7 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
 
   public override Task<Empty> SetSmartPrintMode(SmartPrintModeRequest request, ServerCallContext context)
   {
-    var printer = GetPrinter(request.DeviceName);
+    var printer = GetPrinter(request.Id);
     if(printer is not null)
       printer.SetSmartPrintMode(request.ShouldSmartPrint);
 
@@ -61,7 +61,7 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
 
   public override Task<Empty> StartStateUpdater(StartStateUpdaterRequest request, ServerCallContext context)
   {
-    var printer = GetPrinter(request.DeviceName);
+    var printer = GetPrinter(request.Id);
     if(printer is not null)
       printer.StartStateUpdater(request.Interval?.ToTimeSpan() ?? TimeSpan.FromMilliseconds(250));
 
@@ -70,7 +70,7 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
 
   public override Task<Empty> StopStateUpdater(MK4SRequest request, ServerCallContext context)
   {
-    var printer = GetPrinter(request.PrinterName);
+    var printer = GetPrinter(request.Id);
 
     if(printer is not null)
       printer.StartStateUpdater();
@@ -80,7 +80,7 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
 
   public override async Task<PrintTempsResponse> UpdateTemps(MK4SRequest request, ServerCallContext context)
   {
-    var printer = GetPrinter(request.PrinterName);
+    var printer = GetPrinter(request.Id);
 
     if(printer is not null)
       return await printer.GetAndUpdateState();
@@ -90,12 +90,12 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
 
   public override async Task<MK4SRequestResponse> Print(PrintRequest request, ServerCallContext context)
   {
-    var printer = GetPrinter(request.PrinterName);
+    var printer = GetPrinter(request.Id);
     var response = new MK4SRequestResponse();
     if(printer is null)
     {
       response.Success = false;
-      response.ErrorString = $"ARES could not find a printer named {request.PrinterName}!";
+      response.ErrorString = $"ARES could not find a printer with the ID {request.Id}!";
       return response;
     }
 
@@ -107,17 +107,17 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
 
   public override async Task<MK4SRequestResponse> HomePrinter(MK4SRequest request, ServerCallContext context)
   {
-    var printer = GetPrinter(request.PrinterName);
+    var printer = GetPrinter(request.Id);
     if(printer is not null)
       return await printer.HomePrinter();
 
-    return new MK4SRequestResponse() { ErrorString = $"ARES could not find a printer named {request.PrinterName}!" };
+    return new MK4SRequestResponse() { ErrorString = $"ARES could not find a printer named {request.Id}!" };
 
   }
 
   public override async Task<MK4SRequestResponse> Move(MoveRequest request, ServerCallContext context)
   {
-    var printer = GetPrinter(request.PrinterName);
+    var printer = GetPrinter(request.Id);
     var dwell = "-1";
 
     if(!string.IsNullOrEmpty(request.DwellTime))
@@ -126,46 +126,48 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
     if(printer is not null)
       return await printer.MovePrinter(request.XCoordinate, request.YCoordinate, request.ZCoordinate, dwell);
 
-    return new MK4SRequestResponse() { ErrorString = $"ARES could not find a printer named {request.PrinterName}" };
+    return new MK4SRequestResponse() { ErrorString = $"ARES could not find a printer with the ID {request.Id}" };
   }
 
   public override async Task<Empty> AddMK4SPrinter(MK4SConfig request, ServerCallContext context)
   {
-    await _deviceManager.Load(request.DeviceId, request);
-    var printer = GetPrinter(request.DeviceName);
 
+    var printer = await _deviceManager.Create(request);
+    await _configManager.Add(printer.UniqueId, printer.Name, request);
     if(printer is not null)
       printer.PopulateCredentials(request);
-    await _configManager.Add(request.DeviceId, request.DeviceName, request);
+
     return new Empty();
   }
 
   public override async Task<Empty> RemoveMK4SPrinter(MK4SRequest request, ServerCallContext context)
   {
-    await _deviceManager.Remove(request.PrinterName);
-    await _configManager.Remove(request.PrinterName);
+    await _deviceManager.Remove(request.Id);
+    await _configManager.Remove(request.Id);
     return new Empty();
   }
 
   public override Task<GetAllMK4SPrintersResponse> GetAllMK4SPrinters(Empty request, ServerCallContext context)
   {
-    var printers = _deviceCommandInterpreterRepo
+    var printerDescriptions = _deviceCommandInterpreterRepo
       .Select(deviceInterpreter => deviceInterpreter.Device)
-      .OfType<IPrusaMK4S>();
+      .OfType<IPrusaMK4S>()
+      .Select(printer => new PrinterDescription { Id = printer.UniqueId, Name = printer.Name });
 
     var response = new GetAllMK4SPrintersResponse();
-    response.Printers.AddRange(printers.Select(p => new PrinterDescription { Id = p.UniqueId, Name = p.Name }));
+    response.Printers.AddRange(printerDescriptions);
     return Task.FromResult(response);
   }
 
-  public override Task<Empty> UpdateMK4SPrinter(MK4SConfig request, ServerCallContext context)
+  public override Task<Empty> UpdateMK4SPrinter(UpdatePrinterRequest request, ServerCallContext context)
   {
-    var printer = GetPrinter(request.DeviceName);
-    if(printer is not null)
-      printer.PopulateCredentials(request);
+    var printer = GetPrinter(request.Id);
 
-    _deviceManager.Update(request.DeviceId, request);
-    _configManager.Update(request.DeviceName, request);
+    if(printer is not null)
+      printer.PopulateCredentials(request.NewConfig);
+
+    _deviceManager.Update(request.Id, request.NewConfig);
+    _configManager.Update(request.Id, request.NewConfig);
     return Task.FromResult(new Empty());
   }
 }

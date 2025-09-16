@@ -44,14 +44,18 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
   {
     var parsed = int.TryParse(dwell, out var dwellTime);
 
-    if(parsed)
+    XPosition = x;
+    YPosition = y; 
+    ZPosition = z;
+
+    if(!parsed || dwellTime == -1)
     {
-      await Task.Delay(TimeSpan.FromSeconds(dwellTime));
+      await Task.Delay(TimeSpan.FromSeconds(5));
       return new MK4SRequestResponse() { Success = true };
     }
     else
     {
-      await Task.Delay(TimeSpan.FromSeconds(5));
+      await Task.Delay(TimeSpan.FromSeconds(dwellTime + 5));
       return new MK4SRequestResponse() { Success = true };
     }
   }
@@ -61,12 +65,6 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     Username = config.Username;
     Password = config.Password;
     Address = new Uri(config.Address);
-  }
-
-  public async Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp)
-  {
-    await Task.Delay(TimeSpan.FromSeconds(10));
-    return new MK4SRequestResponse() { Success = true };
   }
 
   public Task<PrintTempsResponse> GetAndUpdateState()
@@ -89,7 +87,7 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     BedTemperature = Math.Round(BedTemperature, 1);
     NozzleTemperature = Math.Round(NozzleTemperature, 1);
 
-    return Task.FromResult(new PrintTempsResponse() { BedTemp = BedTemperature, NozzleTemp = NozzleTemperature });
+    return Task.FromResult(new PrintTempsResponse() { BedTemp = BedTemperature, NozzleTemp = NozzleTemperature, IsConnected = true });
   }
 
   public HttpResponseMessage? GetState()
@@ -131,17 +129,19 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
 
   public Task<uint> SmartCalculateNumberOfPrints(byte[] gcode)
   {
-    throw new NotImplementedException();
+    return Task.FromResult((uint)10);
   }
 
   public Task SetSmartPrintMode(bool smartPrintMode)
   {
-    throw new NotImplementedException();
+    SmartPrintMode = smartPrintMode;
+    return Task.CompletedTask;
   }
 
-  public Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp, double extrusionMod, double speedMod, int retractionLength, double accelerationMod)
+  public async Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp, double extrusionMod, double speedMod, int retractionLength, double accelerationMod)
   {
-    throw new NotImplementedException();
+    await Task.Delay(TimeSpan.FromSeconds(10));
+    return new MK4SRequestResponse() { Success = true };
   }
 
   public override Task EnterSafeMode(CancellationToken ct)
@@ -153,6 +153,10 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
   public double NozzleTemperature { get; set; } = 120;
   public string Username { get; set; } = string.Empty;
   public string Password { get; set; } = string.Empty;
+  public string XPosition { get; set; } = "0";
+  public string YPosition { get; set; } = "0";
+  public string ZPosition { get; set; } = "0";
+  public bool SmartPrintMode { get; set; }
   public Uri? Address { get; set; }
   public IObservable<HttpResponseMessage?> StateStream { get; set; }
 }

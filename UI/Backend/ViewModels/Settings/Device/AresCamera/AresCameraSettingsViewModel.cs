@@ -39,7 +39,7 @@ public class AresCameraSettingsViewModel : ReactiveObject
   {
     try
     {
-      return _devicesClient.GetDeviceStatusAsync(new DeviceStatusRequest { DeviceId = AresCameraConfig.DeviceId }).ResponseAsync;
+      return _devicesClient.GetDeviceStatusAsync(new DeviceStatusRequest { DeviceId = _deviceConfig.UniqueId }).ResponseAsync;
     }
 
     catch(RpcException)
@@ -54,25 +54,25 @@ public class AresCameraSettingsViewModel : ReactiveObject
     if(status.OperationalState is not OperationalState.Active)
       throw new InvalidOperationException();
 
-    var response = await _client.UpdateAvailableSourcesAsync(new CameraRequest() { CameraId = AresCameraConfig.DeviceId });
+    var response = await _client.UpdateAvailableSourcesAsync(new CameraRequest() { CameraId = _deviceConfig.UniqueId });
     AvailableSources = response.AvailableSources.ToList();
   }
 
   public async Task Save()
   {
     var aresCameraConfig = EditViewModel.Save();
-    await _client.UpdateCameraAsync(aresCameraConfig);
+    await _client.UpdateCameraAsync(new UpdateCameraRequest { CameraId = _deviceConfig.UniqueId, NewConfig = aresCameraConfig });
   }
 
   public Task Activate()
     => _devicesClient.ActivateAsync(new DeviceActivateRequest
     {
-      DeviceId = AresCameraConfig.DeviceId
+      DeviceId = _deviceConfig.UniqueId
     }).ResponseAsync;
 
   public async Task Remove()
   {
-    await _client.RemoveCameraAsync(new CameraRequest() { CameraId = AresCameraConfig.DeviceId });
+    await _client.RemoveCameraAsync(new CameraRequest() { CameraId = _deviceConfig.UniqueId });
     await OnRemoveCallback();
   }
 
@@ -83,17 +83,15 @@ public class AresCameraSettingsViewModel : ReactiveObject
 
     AresCameraConfig.SourceName = source;
     await _client.UpdateCameraSourceAsync(AresCameraConfig);
-    await _client.UpdateCameraAsync(AresCameraConfig);
+    await _client.UpdateCameraAsync(new UpdateCameraRequest { CameraId = _deviceConfig.UniqueId, NewConfig = AresCameraConfig });
     await OnUpdateCallback();
   }
 
   public void PushNotification(AresNotification notification) => _notificationService.PushNotification(notification);
+
   public AresCameraConfig AresCameraConfig { get; }
-
   public Func<Task> OnRemoveCallback { get; }
-
   public Func<Task> OnUpdateCallback { get; }
-
   public AresCameraConfigEditViewModel EditViewModel { get; }
 
   [Reactive]

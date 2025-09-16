@@ -43,7 +43,7 @@ namespace UI.Backend.ViewModels.Devices.PrusaPrinter
 
         await _client.MoveAsync(new MoveRequest()
         {
-          PrinterName = DeviceName,
+          Id = DeviceId,
           XCoordinate = splitLocation[0].Trim(),
           YCoordinate = splitLocation[1].Trim(),
           ZCoordinate = splitLocation[2].Trim(),
@@ -55,7 +55,7 @@ namespace UI.Backend.ViewModels.Devices.PrusaPrinter
       {
         await _client.MoveAsync(new MoveRequest()
         {
-          PrinterName = DeviceName,
+          Id = DeviceId,
           XCoordinate = splitLocation[0].Trim(),
           YCoordinate = splitLocation[1].Trim(),
           ZCoordinate = splitLocation[2].Trim(),
@@ -66,12 +66,12 @@ namespace UI.Backend.ViewModels.Devices.PrusaPrinter
 
     public async Task HomePrinter()
     {
-      await _client.HomePrinterAsync(new MK4SRequest() { PrinterName = DeviceName });
+      await _client.HomePrinterAsync(new MK4SRequest() { Id = DeviceId});
     }
 
     public async Task UpdateTemperatures()
     {
-      var response = await _client.UpdateTempsAsync(new MK4SRequest() { PrinterName = DeviceName });
+      var response = await _client.UpdateTempsAsync(new MK4SRequest() { Id = DeviceId });
       BedTemperature = response.BedTemp;
       NozzleTemperature = response.NozzleTemp;
       Connected = response.IsConnected;

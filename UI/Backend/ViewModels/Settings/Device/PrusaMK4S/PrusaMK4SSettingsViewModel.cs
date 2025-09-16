@@ -34,7 +34,7 @@ public class PrusaMK4SSettingsViewModel : ReactiveObject
   {
     try
     {
-      return _devicesClient.GetDeviceStatusAsync(new DeviceStatusRequest { DeviceId = MK4SConfig.DeviceId }).ResponseAsync;
+      return _devicesClient.GetDeviceStatusAsync(new DeviceStatusRequest { DeviceId = _deviceConfig.UniqueId }).ResponseAsync;
     }
 
     catch(RpcException)
@@ -45,18 +45,18 @@ public class PrusaMK4SSettingsViewModel : ReactiveObject
   public async Task Save()
   {
     var printerConfig = EditViewModel.Save();
-    await _printerClient.UpdateMK4SPrinterAsync(printerConfig);
+    await _printerClient.UpdateMK4SPrinterAsync(new UpdatePrinterRequest { Id = _deviceConfig.UniqueId, NewConfig = printerConfig });
   }
 
   public Task Activate()
     => _devicesClient.ActivateAsync(new DeviceActivateRequest
     {
-      DeviceId = MK4SConfig.DeviceId
+      DeviceId = _deviceConfig.UniqueId
     }).ResponseAsync;
 
   public async Task Remove()
   {
-    await _printerClient.RemoveMK4SPrinterAsync(new MK4SRequest { PrinterName = MK4SConfig.DeviceName });
+    await _printerClient.RemoveMK4SPrinterAsync(new MK4SRequest { Id = _deviceConfig.UniqueId });
     await OnRemoveCallback();
   }
 

@@ -90,10 +90,10 @@ public class AresCameraService : AresCameraRpc.AresCameraRpcBase
     return Task.FromResult(response);
   }
 
-  public override async Task<Empty> UpdateCamera(AresCameraConfig request, ServerCallContext context)
+  public override async Task<Empty> UpdateCamera(UpdateCameraRequest request, ServerCallContext context)
   {
-    await _deviceManager.Update(request.DeviceId, request);
-    await _configManager.Update(request.DeviceId, request);
+    await _deviceManager.Update(request.CameraId, request.NewConfig);
+    await _configManager.Update(request.CameraId, request.NewConfig);
     return new Empty();
   }
 }

@@ -24,7 +24,7 @@ public class PrusaMK4SPrinterDeviceManager : IDeviceManager<MK4SConfig, IPrusaMK
     return Load(Guid.NewGuid().ToString(), config);
   }
 
-  public Task<IPrusaMK4S> Load(string id, MK4SConfig config)
+  public async Task<IPrusaMK4S> Load(string id, MK4SConfig config)
   {
     IPrusaMK4S printer;
 
@@ -34,13 +34,16 @@ public class PrusaMK4SPrinterDeviceManager : IDeviceManager<MK4SConfig, IPrusaMK
     else
       printer = new PrusaMK4s(config.DeviceName) { UniqueId = id };
 
-    return Task.FromResult(printer);
+    await printer.Activate();
+    var interpreter = new PrusaMK4SInterpreter(printer);
+    _deviceCommandInterpreterRepo.Add(interpreter);
+    return printer;
   }
 
   public async Task<IPrusaMK4S[]> Load(IEnumerable<LoadableConfig<MK4SConfig>> loadableConfigs)
   {
-    var cameras = await Task.WhenAll(loadableConfigs.Select(cfg => Load(cfg.Id, cfg.DeviceConfig)));
-    return cameras;
+    var printers = await Task.WhenAll(loadableConfigs.Select(cfg => Load(cfg.Id, cfg.DeviceConfig)));
+    return printers;
   }
 
   public async Task Remove(string managerId)

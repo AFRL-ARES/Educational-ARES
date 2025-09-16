@@ -3,10 +3,9 @@ syntax = "proto3";
 package MK4S.config;
 
 message MK4SConfig {
-	string device_id = 1;
-	string device_name = 2;
-	string username = 3;
-	string password = 4;
-	string address = 5;
-	bool simulated = 6;
+	string device_name = 1;
+	string username = 2;
+	string password = 3;
+	string address = 4;
+	bool simulated = 5;
 }

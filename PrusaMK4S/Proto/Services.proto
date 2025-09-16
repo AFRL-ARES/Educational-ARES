@@ -22,11 +22,11 @@ service MK4SPrinterRpc {
 	rpc AddMK4SPrinter(config.MK4SConfig) returns (google.protobuf.Empty);
 	rpc RemoveMK4SPrinter(MK4SRequest) returns (google.protobuf.Empty);
 	rpc GetAllMK4SPrinters(google.protobuf.Empty) returns (GetAllMK4SPrintersResponse);
-	rpc UpdateMK4SPrinter(config.MK4SConfig) returns (google.protobuf.Empty);
+	rpc UpdateMK4SPrinter(UpdatePrinterRequest) returns (google.protobuf.Empty);
 }
 
 message MK4SRequest {
-	string printer_name = 1;
+	string id = 1;
 }
 
 message MK4SRequestResponse {
@@ -39,12 +39,12 @@ message PrinterStatusResponse {
 }
 
 message CalculateNumberOfPrintsRequest {
-	string device_name = 1;
+	string id = 1;
 	google.protobuf.Any device_command = 2;
 }
 
 message SmartPrintModeRequest {
-	string device_name = 1;
+	string id = 1;
 	bool should_smart_print = 2;
 }
 
@@ -59,17 +59,17 @@ message PrintTempsResponse {
 }
 
 message StartStateUpdaterRequest {
-	string device_name = 1;
+	string id = 1;
 	google.protobuf.Duration interval = 2;
 }
 
 message PrintRequest {
-	string printer_name = 1;
+	string id = 1;
 	bytes gcode = 2;
 }
 
 message MoveRequest {
-	string printer_name = 1;
+	string id = 1;
 	string x_coordinate = 2;
 	string y_coordinate = 3;
 	string z_coordinate = 4;
@@ -83,5 +83,10 @@ message PrinterDescription {
 
 message GetAllMK4SPrintersResponse {
 	repeated PrinterDescription printers = 1;
+}
+
+message UpdatePrinterRequest {
+	string id = 1;
+	config.MK4SConfig new_config = 2;
 }
 

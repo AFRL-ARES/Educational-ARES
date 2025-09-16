@@ -13,7 +13,7 @@ service AresCameraRpc {
 	rpc AddCamera(config.AresCameraConfig) returns (google.protobuf.Empty);
 	rpc RemoveCamera(CameraRequest) returns (google.protobuf.Empty);
 	rpc GetAllCameras(google.protobuf.Empty) returns (GetAllCamerasResponse);
-	rpc UpdateCamera(config.AresCameraConfig) returns (google.protobuf.Empty);
+	rpc UpdateCamera(UpdateCameraRequest) returns (google.protobuf.Empty);
 }
 
 message CameraRequest {
@@ -40,4 +40,9 @@ message CameraDescription {
 
 message GetAllCamerasResponse {
 	repeated CameraDescription cameras = 1;
+}
+
+message UpdateCameraRequest {
+	string camera_id = 1;
+	config.AresCameraConfig new_config = 2;
 }
