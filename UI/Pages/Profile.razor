@@ -4,22 +4,7 @@
 
 <PageTitle>Project</PageTitle>
 
-
-<RadzenButton Text="Placeholder for profile"  ContextMenu="@(ShowContextMenuWithItems)" ButtonStyle="ButtonStyle.Secondary"  />
+<embed src="docs/EducationalARESUserGuide.pdf" type="application/pdf" frameBorder="0" scrolling="auto" height="100%" width="100%" />
 
 @code {
-    void ShowContextMenuWithItems(MouseEventArgs args)
-    {
-        ContextMenuService.Open(args,
-            new List<ContextMenuItem> {
-                new(){ Text = "Context menu item 1", Value = 1 },
-                new(){ Text = "Context menu item 2", Value = 2 },
-                new(){ Text = "Context menu item 3", Value = 3 },
-            }, OnMenuItemClick);
-    }
-
-    void OnMenuItemClick(MenuItemEventArgs args)
-    {
-        ContextMenuService.Close();
-    }
 }
