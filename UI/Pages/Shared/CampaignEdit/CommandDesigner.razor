@@ -1,12 +1,21 @@
 ﻿@using Ares.Datamodel.Templates
 @using UI.Backend.ViewModels.Automation.CampaignEdit
+@using UI.Services.DynamicViews
 @inherits ReactiveUI.Blazor.ReactiveComponentBase<CommandDesignerViewModel>
 
 <MetadataPicker ViewModel="@ViewModel!.MetadataPickerViewModel" CommandMetadataChanged="CommandMetadataChanged"  />
 
 @foreach (var argumentDesigner in ViewModel!.ArgumentDesigners)
 {
-  <CommandParameterDesigner DisablePlanning=@DisablePlanningAndOutputCheck ViewModel="@argumentDesigner" />
+  if(DynamicViewManager.TryRetrieveCustomView(argumentDesigner.Name, out var customView))
+  {
+    <DynamicComponent Type="@customView" Parameters="@CreateDynamicComponentParameters(argumentDesigner)" />
+  }
+
+  else
+  {
+    <CommandParameterDesigner DisablePlanning=@DisablePlanningAndOutputCheck ViewModel="@argumentDesigner" />
+  }
 }
 
 @if(!DisablePlanningAndOutputCheck)
@@ -45,4 +54,9 @@
       ViewModel!.CommandMetadata = metadata;
   }
 
+  private IDictionary<string, object> CreateDynamicComponentParameters(CommandParameterDesignerViewModel viewModel)
+  {
+    var customViewParamaeters = new Dictionary<string, object>() { { "ViewModel", viewModel } };
+    return customViewParamaeters;
+  }
 }

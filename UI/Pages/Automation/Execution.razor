@@ -64,6 +64,7 @@
           </div>
         </div>
 
+
         <!-- Campaign Execution Summary -->
         @if (ViewModel!.DisplayExecutionSummary && (CampaignStartupStatuses.Any() || ExperimentExecutionStatuses.Any()))
         {
@@ -193,6 +194,38 @@
         </button>
       </div>
 
+      <div class="d-flex flex-row">
+        <RadzenLabel Text="Smart Print Calculation" Component="smart_calculate_switch" Style="padding-right: 0.5rem"/>
+        <RadzenButton Click="@ShowSmartPrintTip" Icon="help" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Shade="Shade.Lighter" Size="ButtonSize.ExtraSmall"/>
+        <RadzenSwitch id="smart_calculate_switch" @bind-Value="@ViewModel!.SmartPrintCalculation" Change="@ViewModel!.SetSmartExperimentsToRun"/>
+      </div>
+
+      @if(!ViewModel!.SmartPrintCalculation)
+      {
+        <div class="d-flex flex-column">
+          <h6>Desired Number of Experiments</h6>
+          <input type="number" class="form-control" @bind="ViewModel!.ExperimentsToRun" />
+          <button class="btn btn-outline-info" @onclick="ViewModel!.SetExperimentsToRun">SET</button>
+        </div>
+
+        <div class="d-flex flex-column">
+          <h6>Desired Experiment Result</h6>
+          <div class="d-flex gap-2">
+            <input type="number" class="form-control" @bind="ViewModel!.DesiredResult" />
+            <span>±</span>
+            <input type="number" class="form-control" @bind="ViewModel!.DesiredLeeway" />
+          </div>
+          <button class="btn btn-outline-info" @onclick="ViewModel!.SetDesiredAnalysis">SET</button>
+        </div>
+      }
+
+      else
+      {
+        <div class="d-flex flex-column">
+          <RadzenLabel Text="Number of Prints (Experiments):" Component="auto_exp_number"/>
+          <input type="number" class="form-control" @bind="ViewModel!.ExperimentsToRun" disabled/>
+        </div>
+      }
       @if (ViewModel!.CurrentStopCondition is not null)
       {
         <div class="border border-1 rounded-2 p-2">
@@ -282,6 +315,18 @@
   private async Task CampaignSelected()
   {
     await ViewModel!.UpdateCurrentTemplate();
+  }
+
+  private async Task ShowSmartPrintTip()
+  {
+      await DialogService.OpenAsync("Smart Print Detection", ds =>
+  @<div>
+      Enabling this feature tells ARES to automatically determine the number of prints that can be made on a single print bed.
+      This is used to determine the number of experiments that will be completed. Without smart print enabled, objects will be 
+      printed in their original position, and print beds will need to be cleared manually at the end of an experiment.
+
+      WARNING! Taller items can cause print bed collisions to occur. When printing a tall item, the smart print feature is not recommended.
+  </div>, new DialogOptions() { CloseDialogOnOverlayClick = true });
   }
 
   protected override async Task OnInitializedAsync()

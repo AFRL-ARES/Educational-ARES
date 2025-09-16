@@ -40,13 +40,13 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
   {
     var response = new NumberOfPrintsResponse();
     response.NumberOfExperiments = 0;
-    var unpacked = request.DeviceCommand.TryUnpack<BytesValue>(out var bytes);
+    var gcodeBytes = request.Gcode.ToArray();
     var printer = GetPrinter(request.Id);
 
-    if(!unpacked || printer is null)
+    if(printer is null)
       return response;
 
-    response.NumberOfExperiments = await printer.SmartCalculateNumberOfPrints(bytes.Value.ToByteArray());
+    response.NumberOfExperiments = await printer.SmartCalculateNumberOfPrints(gcodeBytes);
     return response;
   }
 

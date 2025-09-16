@@ -1,16 +1,18 @@
-﻿using DynamicData;
+﻿using Ares.Datamodel;
+using Ares.Datamodel.Analyzing;
+using Ares.Datamodel.Planning;
+using Ares.Datamodel.Templates;
+using Ares.Services;
+using DynamicData;
 using Google.Protobuf.WellKnownTypes;
+using MK4S.Services;
+using PrusaMK4S.Enums;
 using Radzen;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
-using Ares.Datamodel;
-using Ares.Datamodel.Analyzing;
-using Ares.Datamodel.Templates;
-using Ares.Services;
 using UI.Backend.Extensions;
 using UI.Services.Notification;
-using Ares.Datamodel.Planning;
 
 namespace UI.Backend.ViewModels.Automation;
 
@@ -20,17 +22,20 @@ public class ExecutionViewModel : ReactiveObject
   private readonly AresAnalyzerManagementService.AresAnalyzerManagementServiceClient _analyzerService;
   public readonly ObservableCollection<CampaignTemplate> Templates = new();
   private readonly INotificationReceivingService _notificationService;
+  private readonly MK4SPrinterRpc.MK4SPrinterRpcClient _printerClient;
   private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
   private Task _campaignStatusListener = Task.CompletedTask;
 
   public ExecutionViewModel(AresAutomation.AresAutomationClient automationClient,
     IConfiguration configuration,
     INotificationReceivingService notificationService,
-    AresAnalyzerManagementService.AresAnalyzerManagementServiceClient analyzerService)
+    AresAnalyzerManagementService.AresAnalyzerManagementServiceClient analyzerService,
+    MK4SPrinterRpc.MK4SPrinterRpcClient printerClient)
   {
     _automationClient = automationClient;
     _notificationService = notificationService;
     _analyzerService = analyzerService;
+    _printerClient = printerClient;
   }
 
   public async Task<bool> EnsureStopConditionSet()
@@ -54,6 +59,9 @@ public class ExecutionViewModel : ReactiveObject
     CampaignTemplate = campaignTemplate;
     await _automationClient.SetCampaignForExecutionAsync(new CampaignRequest { UniqueId = campaignTemplate.UniqueId });
     _ = UpdateCurrentTemplate();
+
+    if(SmartPrintCalculation)
+      await SetSmartExperimentsToRun();
   }
 
   public async Task UpdateCurrentTemplate()
@@ -106,6 +114,41 @@ public class ExecutionViewModel : ReactiveObject
   {
     await _automationClient.SetNumExperimentsStopConditionAsync(new NumExperimentsCondition { NumExperiments = ExperimentsToRun });
     CurrentStopCondition = await GetCurrentStopCondition();
+  }
+
+  public async Task SetSmartExperimentsToRun()
+  {
+    if(CampaignTemplate is null)
+      return;
+
+    var stepTemplatesWithPrint = CampaignTemplate.ExperimentTemplate.StepTemplates.Where(step => step.CommandTemplates.Any(cmd => cmd.Metadata.Name == "Print"));
+    
+    if(stepTemplatesWithPrint.Count() > 1 || !stepTemplatesWithPrint.Any())
+    {
+      var notification = new AresNotification();
+      notification.Title = "Cannot Activate Smart Print";
+      notification.Message = "Smart Print can only be used for campaigns that have a single print command.";
+      notification.NotificationSeverity = Severity.Warning;
+      _notificationService.PushNotification(notification);
+      SmartPrintCalculation = false;
+      return;
+    }
+
+    var cmd = stepTemplatesWithPrint.First().CommandTemplates.First(cmd => cmd.Metadata.Name == "Print");
+
+    if(SmartPrintCalculation)
+    {
+      var printBytes = cmd.Parameters.First(p => p.Metadata.Name.Equals(PrusaMK4SCommandParameter.GCode.ToString())).Value.BytesValue;
+      var request = new CalculateNumberOfPrintsRequest() { Gcode = printBytes, Id = cmd.Metadata.DeviceId };
+      var response = await _printerClient.CalculateNumberOfPrintsAsync(request);
+
+      ExperimentsToRun = response.NumberOfExperiments;
+
+      await _automationClient.SetNumExperimentsStopConditionAsync(new NumExperimentsCondition { NumExperiments = ExperimentsToRun });
+      CurrentStopCondition = await GetCurrentStopCondition();
+    }
+
+    await _printerClient.SetSmartPrintModeAsync(new SmartPrintModeRequest() { Id = cmd.Metadata.DeviceId, ShouldSmartPrint = SmartPrintCalculation });
   }
 
   public async Task SetReplanRate()
@@ -244,6 +287,8 @@ public class ExecutionViewModel : ReactiveObject
   public ExperimentExecutionStatus? ExperimentStatus { get; private set; }
   [Reactive]
   public HashSet<PlannerServiceInfo?> PlannerAdapterInfos { get; set; } = new();
+  [Reactive]
+  public bool SmartPrintCalculation { get; set; }
   [Reactive]
   public AnalyzerInfo? AnalyzerInfo { get; set; }
   public uint ExperimentsToRun { get; set; }

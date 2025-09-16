@@ -40,7 +40,7 @@ message PrinterStatusResponse {
 
 message CalculateNumberOfPrintsRequest {
 	string id = 1;
-	google.protobuf.Any device_command = 2;
+	bytes gcode = 2;
 }
 
 message SmartPrintModeRequest {

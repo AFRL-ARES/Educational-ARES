@@ -1,0 +1,100 @@
+﻿@using Ares.Datamodel
+@using Ares.Datamodel.Extensions
+@using Google.Protobuf
+@using Google.Protobuf.WellKnownTypes
+@using UI.Backend.ViewModels.Automation.CampaignEdit
+@inherits ReactiveUI.Blazor.ReactiveComponentBase<CommandParameterDesignerViewModel>
+
+<style>
+	#uploadWithDragAndDrop {
+	left: 0;
+	--rz-upload-button-bar-background-color: transparent;
+	--rz-upload-button-bar-padding: 0;
+	}
+
+	#uploadWithDragAndDrop .rz-fileupload-buttonbar .rz-fileupload-choose {
+	width: 100%;
+	text-align: center;
+	font-size: 16px;
+	padding: 100px 0;
+	}
+</style>
+
+<div class="d-flex flex-column">
+	<RadzenCard Variant="Variant.Outlined" Style="margin-bottom: 1rem; margin-top: 1rem;">
+		@if(FileName is null)
+		{
+			<RadzenUpload id="uploadWithDragAndDrop" ChooseText="Drag and drop or click to choose files" Change="@FileUploaded"
+			InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})" Style="width: 100%; height: 80%;" Accept=".gcode" />
+		}
+
+		else
+		{
+			<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+				<RadzenText Text="@FileName" />
+				<RadzenText Text="@FileSize" />
+				<RadzenButton Click=@(args => FileRemovedClick()) Icon="close" ButtonStyle="ButtonStyle.Danger" />
+			</RadzenStack>
+		}
+	</RadzenCard>
+</div>
+
+@code {
+	[Parameter]
+	public AresValue? ParamValue { get; set; }
+
+	public string? FileName { get; set; }
+
+	public string? FileSize { get; set; }
+
+	private void FileRemovedClick()
+	{
+		FileName = null;
+		FileSize = null;
+		if(ParamValue is not null)
+			ParamValue = AresValueHelper.CreateNull();
+	}
+
+	private async Task FileUploaded(UploadChangeEventArgs args)
+	{
+		var file = args.Files.First();
+
+		if(!file.Name.EndsWith(".gcode"))
+			return;
+
+		using (var stream = file.OpenReadStream(file.Size))
+		using (var memoryStream = new MemoryStream(new byte[file.Size]))
+		{
+			await stream.CopyToAsync(memoryStream);
+			var fileBytes = memoryStream.ToArray();
+
+			ViewModel!.Value = AresValueHelper.CreateBytes(fileBytes);
+
+			FileName = file.Name;
+			ViewModel!.Parameter.Metadata.ExtraInfo = Any.Pack(new StringValue() { Value = file.Name });
+
+			FileSize = $"{Math.Ceiling(file.Size/1024.0)}kB";
+		}
+	}
+
+	private string CalculateFileSize(ByteString bytesValue)
+	{
+		return $"{Math.Ceiling(bytesValue.ToByteArray().Length / 1024.0)}kB";
+	}
+
+	protected override void OnInitialized()
+	{
+		ParamValue = ViewModel!.Value;
+
+		if(ParamValue is not null && ParamValue.HasBytesValue)
+		{
+			if(ViewModel!.Parameter.Metadata.ExtraInfo is not null)
+			{
+				var unpacked = ViewModel!.Parameter.Metadata.ExtraInfo.TryUnpack<StringValue>(out var fileName);
+				FileName = fileName?.Value ?? "Unknown File Name";
+			}
+
+			FileSize = CalculateFileSize(ParamValue.BytesValue);
+		}
+	}
+}

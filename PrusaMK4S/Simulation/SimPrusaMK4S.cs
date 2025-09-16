@@ -141,7 +141,7 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
   public async Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp, double extrusionMod, double speedMod, int retractionLength, double accelerationMod)
   {
     await Task.Delay(TimeSpan.FromSeconds(10));
-    return new MK4SRequestResponse() { Success = true };
+     return new MK4SRequestResponse() { Success = true };
   }
 
   public override Task EnterSafeMode(CancellationToken ct)

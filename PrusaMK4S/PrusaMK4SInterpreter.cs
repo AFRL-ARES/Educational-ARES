@@ -22,21 +22,64 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
         DeviceId = Device.UniqueId,
         Name = PrusaMK4SCommandType.Print.ToString(),
         Description = "A command that tells the printer to print with the provided G-Code source as a base file. Includes the ability to modify several parameters of " +
-        "that G-Code such as nozzle temperature, extrusion rate and acceleration.",
+        "that G-Code such as nozzle temperature, extrusion rate and acceleration. For retraction length, a value of -1 will result in no changes being made in your G-Code." +
+        "For all other parameters, a value of 0 does the same. The only required parameter for this command is the G-Code itself.",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = PrusaMK4SCommandParameter.GCode.ToString(), NotPlannable = true },
-          new ParameterMetadata { Index = 1, Name = PrusaMK4SCommandParameter.NozzleTemperature.ToString(), Unit = "Degree's Celsius" },
-          new ParameterMetadata { Index = 2, Name = PrusaMK4SCommandParameter.BedTemperature.ToString(), Unit = "Degree's Celsius" },
-          new ParameterMetadata { Index = 3, Name = PrusaMK4SCommandParameter.ExtrusionRateMod.ToString(), Unit = "Modifier" },
-          new ParameterMetadata { Index = 4, Name = PrusaMK4SCommandParameter.SpeedMod.ToString(), Unit = "Modifier" },
-          new ParameterMetadata { Index = 5, Name = PrusaMK4SCommandParameter.RetractionLength.ToString(), Unit = "Millimeters" },
-          new ParameterMetadata { Index = 6, Name = PrusaMK4SCommandParameter.AccelerationMod.ToString(), Unit = "Modifier" },
+          new ParameterMetadata
+          {
+            Index = 0,
+            Name = PrusaMK4SCommandParameter.GCode.ToString(),
+            NotPlannable = true,
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.ByteArray, false)
+          },
+          new ParameterMetadata
+          {
+            Index = 1,
+            Name = PrusaMK4SCommandParameter.NozzleTemperature.ToString(),
+            Unit = "Degree's Celsius",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+          },
+          new ParameterMetadata
+          {
+            Index = 2,
+            Name = PrusaMK4SCommandParameter.BedTemperature.ToString(),
+            Unit = "Degree's Celsius",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+          },
+          new ParameterMetadata 
+          { 
+            Index = 3,
+            Name = PrusaMK4SCommandParameter.ExtrusionRateMod.ToString(), 
+            Unit = "Modifier",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+          },
+          new ParameterMetadata 
+          { 
+            Index = 4, 
+            Name = PrusaMK4SCommandParameter.SpeedMod.ToString(), 
+            Unit = "Modifier",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+          },
+          new ParameterMetadata 
+          { 
+            Index = 5, 
+            Name = PrusaMK4SCommandParameter.RetractionLength.ToString(), 
+            Unit = "Millimeters",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+          },
+          new ParameterMetadata 
+          { 
+            Index = 6, 
+            Name = PrusaMK4SCommandParameter.AccelerationMod.ToString(), 
+            Unit = "Modifier",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+          },
         },
-        OutputMetadata = new OutputMetadata() 
-        { 
-          Description = "Returns whether or not the print was successfully executed.", 
-          DataSchema = AresSchemaHelper.CreateSchema("Success", AresDataType.Boolean), 
+        OutputMetadata = new OutputMetadata()
+        {
+          Description = "Returns whether or not the print was successfully executed.",
+          DataSchema = AresSchemaHelper.CreateSchema("Success", AresDataType.Boolean),
           Index = 0 }
       },
 
@@ -54,37 +97,37 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
         Description = "A command that tells the print head to move to a specific location with an optional dwell time value. If no dwell is desired, enter zero.",
         ParameterMetadatas =
         {
-          new ParameterMetadata 
-          { 
-            Index = 0, 
-            Name = PrusaMK4SCommandParameter.X.ToString(), 
+          new ParameterMetadata
+          {
+            Index = 0,
+            Name = PrusaMK4SCommandParameter.X.ToString(),
             Unit = "Coordinate",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
-            NotPlannable = true 
+            NotPlannable = true
           },
-          new ParameterMetadata 
-          { 
-            Index = 1, 
-            Name = PrusaMK4SCommandParameter.Y.ToString(), 
+          new ParameterMetadata
+          {
+            Index = 1,
+            Name = PrusaMK4SCommandParameter.Y.ToString(),
             Unit = "Coordinate",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
-            NotPlannable = true 
+            NotPlannable = true
           },
-          new ParameterMetadata 
-          { 
+          new ParameterMetadata
+          {
             Index = 2,
-            Name = PrusaMK4SCommandParameter.Z.ToString(), 
+            Name = PrusaMK4SCommandParameter.Z.ToString(),
             Unit = "Coordinate",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
-            NotPlannable = true 
+            NotPlannable = true
           },
-          new ParameterMetadata 
-          { 
-            Index = 3, 
-            Name = PrusaMK4SCommandParameter.DwellTime.ToString(), 
+          new ParameterMetadata
+          {
+            Index = 3,
+            Name = PrusaMK4SCommandParameter.DwellTime.ToString(),
             Unit = "Seconds",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
-            NotPlannable = true 
+            NotPlannable = true
           },
         }
       }

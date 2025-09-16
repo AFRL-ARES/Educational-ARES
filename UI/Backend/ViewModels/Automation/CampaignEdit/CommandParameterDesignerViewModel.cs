@@ -1,7 +1,6 @@
 ﻿using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
 using Ares.Datamodel.Templates;
-using Google.Protobuf.WellKnownTypes;
 using ReactiveUI;
 using UI.Backend.Helpers;
 
@@ -33,7 +32,8 @@ public class CommandParameterDesignerViewModel : ReactiveObject
       Metadata = meta
     };
 
-    Value = new AresValue();
+    
+    Value = AresValueHelper.CreateDefault(meta.Schema.Type);
   }
 
   private CommandParameterDesignerViewModel(UnitCategoryHelper unitCategoryHelper, IEnumerable<ParameterMetadata>? plannedParameters)
@@ -44,7 +44,7 @@ public class CommandParameterDesignerViewModel : ReactiveObject
 
   public Parameter Parameter
   {
-    private get => _parameter;
+    get => _parameter;
 
     set
     {
