@@ -149,6 +149,11 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     return Task.CompletedTask;
   }
 
+  public Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell)
+  {
+    throw new NotImplementedException();
+  }
+
   public double BedTemperature { get; set; } = 50;
   public double NozzleTemperature { get; set; } = 120;
   public string Username { get; set; } = string.Empty;

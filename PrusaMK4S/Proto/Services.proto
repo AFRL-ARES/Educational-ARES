@@ -11,6 +11,7 @@ import "MK4SConfig.proto";
 service MK4SPrinterRpc {
 	rpc Print(PrintRequest) returns (MK4SRequestResponse);
 	rpc Move(MoveRequest) returns (MK4SRequestResponse);
+	rpc MoveToLastPrint(MoveToLastPrintRequest) returns (MK4SRequestResponse);
   rpc UpdateTemps(MK4SRequest) returns (PrintTempsResponse);
 	rpc HomePrinter(MK4SRequest) returns (MK4SRequestResponse);
 	rpc StartStateUpdater(StartStateUpdaterRequest) returns (google.protobuf.Empty);
@@ -74,6 +75,12 @@ message MoveRequest {
 	string y_coordinate = 3;
 	string z_coordinate = 4;
 	string dwell_time = 5;
+}
+
+message MoveToLastPrintRequest {
+	string id = 1;
+	string z_coordinate = 2;
+	string dwell_time = 3;
 }
 
 message PrinterDescription {

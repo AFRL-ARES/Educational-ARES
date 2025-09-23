@@ -5,6 +5,7 @@ public enum PrusaMK4SCommandType
   Print,
   Home,
   Move,
+  MoveToLastPrint,
   GetBedTemperature,
   GetNozzleTemperature
 }

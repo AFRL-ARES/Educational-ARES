@@ -17,6 +17,7 @@ public interface IPrusaMK4S : IAresUSBDevice, IAsyncDisposable
   void PopulateCredentials(MK4SConfig config);
   Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp, double extrusionMod, double speedMod, int retractionLength, double accelerationMod);
   Task<MK4SRequestResponse> MovePrinter(string x, string y, string z, string dwell);
+  Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell);
   Task<MK4SRequestResponse> HomePrinter();
   string Username { get; }
   string Password { get; }

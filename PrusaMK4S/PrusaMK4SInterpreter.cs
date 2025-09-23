@@ -93,6 +93,32 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
       new()
       {
         DeviceId = Device.UniqueId,
+        Name = PrusaMK4SCommandType.MoveToLastPrint.ToString(),
+        Description = "A command that attempts to move the print head to be positioned above the previous print location. Designed for use with Smart Print mode ONLY.",
+        ParameterMetadatas =
+        {
+          new ParameterMetadata
+          {
+            Index = 1,
+            Name = PrusaMK4SCommandParameter.Z.ToString(),
+            Unit = "Coordinate",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            NotPlannable = true
+          },
+          new ParameterMetadata
+          {
+            Index = 2,
+            Name = PrusaMK4SCommandParameter.DwellTime.ToString(),
+            Unit = "Seconds",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            NotPlannable = true
+          }
+        }
+      },
+
+      new()
+      {
+        DeviceId = Device.UniqueId,
         Name = PrusaMK4SCommandType.Move.ToString(),
         Description = "A command that tells the print head to move to a specific location with an optional dwell time value. If no dwell is desired, enter zero.",
         ParameterMetadatas =
@@ -156,6 +182,21 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
         result.Error = print.ErrorString ?? string.Empty;
         break;
       }
+
+      case PrusaMK4SCommandType.MoveToLastPrint:
+        var z_param = parameters.FirstOrDefault(p => p.Metadata.Name == PrusaMK4SCommandParameter.Z.ToString());
+        var dwell_param = parameters.FirstOrDefault(p => p.Metadata.Name == PrusaMK4SCommandParameter.DwellTime.ToString());
+
+        if(z_param is null || dwell_param is null)
+        {
+          result.Success = false;
+          result.Error = "Required Parameter Z or Dwell Time was null!";
+          return result;
+        }
+
+        var smartMove = await Device.MoveToLastPrint(z_param.Value.StringValue, dwell_param.Value.StringValue);
+        result.Success = smartMove.Success;
+        return result;
 
       case PrusaMK4SCommandType.Home:
         var home = await Device.HomePrinter();

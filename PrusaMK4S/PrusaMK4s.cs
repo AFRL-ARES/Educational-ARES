@@ -9,6 +9,7 @@ using PrusaMK4S.Handlers;
 using System.Net;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 
@@ -134,6 +135,27 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
 
     response.Success = true;
     return response;
+  }
+
+  public async Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell)
+  {
+    //Attempts to move the print head over the last known print location
+    //Use the last GCodeHandler to try and determine our x and y positioning
+
+    if(LatestGCodeHandler is null)
+      return new MK4SRequestResponse { Success = false, ErrorString = "Determining the last print location requires existing G-Code knowledge, which wasn't found" };
+
+    var itemWidth = LatestGCodeHandler.ItemWidth;
+    var itemHeight = LatestGCodeHandler.ItemHeight;
+    var parsed = int.TryParse(AresEnvironment.GetInternalVariable(InternalVariableType.CurrentExperimentNumber), out var expNumber);
+
+    if(!parsed)
+      return new MK4SRequestResponse { Success = false, ErrorString = "Failed to determine experiment number, cannot calculate X and Y positioning of print head!" };
+
+    var calculated_x = (itemWidth * expNumber - 1) + (itemWidth / 2);
+    var calculated_y = (itemHeight * expNumber - 1) - (itemHeight / 2);
+
+    return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
   }
 
   public async Task<MK4SRequestResponse> MovePrinter(string x, string y, string z, string dwell)
@@ -341,5 +363,5 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
   public bool IsBusy { get; set; }
   public bool SmartPrint { get; set; }
   public IObservable<HttpResponseMessage?> StateStream { get; }
-
+  public GCodeHandler? LatestGCodeHandler { get; }
 }

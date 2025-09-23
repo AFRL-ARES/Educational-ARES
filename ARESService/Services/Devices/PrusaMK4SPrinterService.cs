@@ -115,6 +115,21 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
 
   }
 
+  public override async Task<MK4SRequestResponse> MoveToLastPrint(MoveToLastPrintRequest request, ServerCallContext context)
+  {
+    var printer = GetPrinter(request.Id);
+
+    var dwell = "-1";
+
+    if(!string.IsNullOrEmpty(request.DwellTime))
+      dwell = request.DwellTime;
+
+    if(printer is not null)
+      return await printer.MoveToLastPrint(request.ZCoordinate, dwell);
+
+    return new MK4SRequestResponse() { ErrorString = $"ARES could not find a printer with the ID {request.Id}" };
+  }
+
   public override async Task<MK4SRequestResponse> Move(MoveRequest request, ServerCallContext context)
   {
     var printer = GetPrinter(request.Id);
