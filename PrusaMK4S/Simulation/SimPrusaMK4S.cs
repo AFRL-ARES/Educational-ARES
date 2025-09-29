@@ -1,7 +1,10 @@
-﻿using Ares.Datamodel.Device;
+﻿using Ares.Core.AresEnvironment;
+using Ares.Datamodel.Device;
+using Ares.Datamodel.Templates;
 using Ares.Device.USB;
 using MK4S.Config;
 using MK4S.Services;
+using PrusaMK4S.Handlers;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -127,9 +130,13 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     TaskCreationOptions.LongRunning);
   }
 
-  public Task<uint> SmartCalculateNumberOfPrints(byte[] gcode)
+  public async Task<uint> SmartCalculateNumberOfPrints(byte[] gcode)
   {
-    return Task.FromResult((uint)10);
+    var handler = new GCodeHandler(gcode);
+    await handler.Init();
+    var result = await handler.SmartDetermineNumberOfPrints();
+    await handler.DisposeAsync();
+    return result;
   }
 
   public Task SetSmartPrintMode(bool smartPrintMode)
@@ -140,8 +147,65 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
 
   public async Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp, double extrusionMod, double speedMod, int retractionLength, double accelerationMod)
   {
-    await Task.Delay(TimeSpan.FromSeconds(10));
-     return new MK4SRequestResponse() { Success = true };
+    var response = new MK4SRequestResponse();
+
+    if(Address is null)
+    {
+      response.ErrorString = "Printer HTTP client was null, cannot send commands!";
+      return response;
+    }
+
+    var handler = new GCodeHandler(gcode);
+    await handler.Init();
+    LatestGCodeHandler = handler;
+
+    if(!SmartPrintMode)
+    {
+      //If this is the case, the student has opted not to utilize our auto calculation and clearing the print bed must be done manually.
+      var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, gcode);
+      var request = CreatePrintRequest(modifiedGcode);
+      Console.WriteLine("Successfully created a print request!");
+    }
+
+    else
+    {
+      //More complicated, as we need to determine the location of our print.
+      var parsed = int.TryParse(AresEnvironment.GetInternalVariable(InternalVariableType.CurrentExperimentNumber), out var expNumber);
+
+      if(!parsed)
+      {
+        response.ErrorString = "Printer couldn't determine iteration number for smart print, unable to complete print!";
+        return response;
+      }
+
+      //Customize our G Code
+      var custom_gcode = await handler.CreatePrintIteration(expNumber);
+      var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, custom_gcode);
+
+      var printJobRequest = CreatePrintRequest(modifiedGcode);
+      Console.WriteLine("Successfully created a print request!");
+    }
+
+    //Allow the printer some time to process our command.
+    Thread.Sleep(TimeSpan.FromSeconds(5));
+
+    response.Success = true;
+    return response;
+  }
+
+  private HttpRequestMessage CreatePrintRequest(byte[] fileBytes)
+  {
+    var requestAddress = new Uri($"{Address}api/v1/files/usb/aresPrint.gcode");
+    var printJobRequest = new HttpRequestMessage(HttpMethod.Put, requestAddress);
+    var content = new ByteArrayContent(fileBytes);
+    var contentLength = fileBytes.Length;
+    printJobRequest.Content = content;
+    printJobRequest.Headers.Add("Accept-Language", "en");
+    printJobRequest.Headers.Add("Accept", "application/json");
+    printJobRequest.Headers.Add("Print-After-Upload", "true");
+    printJobRequest.Headers.Add("Overwrite", "?1");
+    content.Headers.ContentLength = contentLength;
+    return printJobRequest;
   }
 
   public override Task EnterSafeMode(CancellationToken ct)
@@ -149,9 +213,22 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     return Task.CompletedTask;
   }
 
-  public Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell)
+  public async Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell)
   {
-    throw new NotImplementedException();
+    //Attempts to move the print head over the last known print location
+    //Use the last GCodeHandler to try and determine our x and y positioning
+
+    if(LatestGCodeHandler is null)
+      return new MK4SRequestResponse { Success = false, ErrorString = "Determining the last print location requires existing G-Code knowledge, which wasn't found" };
+
+    var itemWidth = LatestGCodeHandler.ItemWidth;
+    var itemHeight = LatestGCodeHandler.ItemHeight;
+
+    //Use the GCodeHandler to gather the latest shift values. Add half the items respective width or height to place the camera around the middle of the object
+    var calculated_y = LatestGCodeHandler.PrintBedHeight - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2));
+    var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2);
+
+    return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
   }
 
   public double BedTemperature { get; set; } = 50;
@@ -164,4 +241,5 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
   public bool SmartPrintMode { get; set; }
   public Uri? Address { get; set; }
   public IObservable<HttpResponseMessage?> StateStream { get; set; }
+  public IGcodeHandler LatestGCodeHandler { get; set; }
 }

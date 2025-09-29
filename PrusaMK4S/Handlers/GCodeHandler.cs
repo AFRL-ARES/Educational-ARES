@@ -329,6 +329,8 @@ public class GCodeHandler : IGcodeHandler
       iteration--;
       var xShift = CalculateXShift(iteration, numObjects);
       var yShift = CalculateYShift(iteration);
+      LatestXShift = xShift;
+      LatestYShift = yShift;
 
       if(Math.Abs(yShift) >= PrintBedHeight - ItemHeight - 5)
         return Array.Empty<byte>();
@@ -680,4 +682,6 @@ public class GCodeHandler : IGcodeHandler
   public string FileNameBase { get; } = "IterationPrint";
   public List<string> MovementCommands { get; } = new List<string>() { "G0", "G1", "G2", "G3" };
   public bool SearchForMinAndMax { get; set; }
+  public double LatestXShift { get; set; }
+  public double LatestYShift { get; set; }
 }

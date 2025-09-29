@@ -20,4 +20,6 @@ public interface IGcodeHandler : IAsyncDisposable
   public string FileNameBase { get; }
   public List<string> MovementCommands { get; }
   public bool SearchForMinAndMax { get; }
+  public double LatestXShift { get; }
+  public double LatestYShift { get; }
 }

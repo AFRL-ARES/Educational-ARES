@@ -35,6 +35,7 @@ public class PrusaMK4SPrinterDeviceManager : IDeviceManager<MK4SConfig, IPrusaMK
       printer = new PrusaMK4s(config.DeviceName) { UniqueId = id };
 
     await printer.Activate();
+    printer.PopulateCredentials(config);
     var interpreter = new PrusaMK4SInterpreter(printer);
     _deviceCommandInterpreterRepo.Add(interpreter);
     return printer;

@@ -9,7 +9,6 @@ using PrusaMK4S.Handlers;
 using System.Net;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 
@@ -152,8 +151,10 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
     if(!parsed)
       return new MK4SRequestResponse { Success = false, ErrorString = "Failed to determine experiment number, cannot calculate X and Y positioning of print head!" };
 
-    var calculated_x = (itemWidth * expNumber - 1) + (itemWidth / 2);
+    //Should always be calculated this way, as we're constantly shifting the item downward
     var calculated_y = (itemHeight * expNumber - 1) - (itemHeight / 2);
+
+    var calculated_x = (itemWidth * expNumber - 1) + (itemWidth / 2);
 
     return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
   }
