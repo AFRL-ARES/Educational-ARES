@@ -91,6 +91,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
 
     var handler = new GCodeHandler(gcode);
     await handler.Init();
+    LatestGCodeHandler = handler;
     HttpResponseMessage? httpResponse;
 
     if(!SmartPrint)
@@ -146,15 +147,10 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
 
     var itemWidth = LatestGCodeHandler.ItemWidth;
     var itemHeight = LatestGCodeHandler.ItemHeight;
-    var parsed = int.TryParse(AresEnvironment.GetInternalVariable(InternalVariableType.CurrentExperimentNumber), out var expNumber);
 
-    if(!parsed)
-      return new MK4SRequestResponse { Success = false, ErrorString = "Failed to determine experiment number, cannot calculate X and Y positioning of print head!" };
-
-    //Should always be calculated this way, as we're constantly shifting the item downward
-    var calculated_y = (itemHeight * expNumber - 1) - (itemHeight / 2);
-
-    var calculated_x = (itemWidth * expNumber - 1) + (itemWidth / 2);
+    //Use the GCodeHandler to gather the latest shift values. Add half the items respective width or height to place the camera around the middle of the object
+    var calculated_y = LatestGCodeHandler.PrintBedHeight - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2));
+    var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2);
 
     return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
   }
@@ -364,5 +360,5 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
   public bool IsBusy { get; set; }
   public bool SmartPrint { get; set; }
   public IObservable<HttpResponseMessage?> StateStream { get; }
-  public GCodeHandler? LatestGCodeHandler { get; }
+  public IGcodeHandler? LatestGCodeHandler { get; set; }
 }

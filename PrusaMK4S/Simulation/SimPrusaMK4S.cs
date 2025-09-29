@@ -241,5 +241,5 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
   public bool SmartPrintMode { get; set; }
   public Uri? Address { get; set; }
   public IObservable<HttpResponseMessage?> StateStream { get; set; }
-  public IGcodeHandler LatestGCodeHandler { get; set; }
+  public IGcodeHandler? LatestGCodeHandler { get; set; }
 }
