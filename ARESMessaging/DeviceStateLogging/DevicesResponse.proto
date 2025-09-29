@@ -3,5 +3,10 @@
 package ares.messages.device_states;
 
 message DevicesResponse {
-  repeated string device_ids = 1; // the ids/names of available devices
+  repeated DevicesDescription devices = 1; // the ids/names of available devices
+}
+
+message DevicesDescription {
+  string device_id = 1;
+  string device_name = 2;
 }

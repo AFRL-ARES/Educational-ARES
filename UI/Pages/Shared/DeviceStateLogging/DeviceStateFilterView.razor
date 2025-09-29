@@ -1,4 +1,5 @@
-﻿@using Ares.Services
+﻿@using Ares.Messages.DeviceStates
+@using Ares.Services
 @using UI.Backend.ViewModels.DeviceStateLogging;
 
 @inject AresAutomation.AresAutomationClient AutomationClient
@@ -9,7 +10,11 @@
   @if (ViewModel?.AvailableDevices is not null)
   {
     <div class="device-picker">
-      <RadzenListBox Placeholder="Devices to Export" Name="Available Devices" Style="width: 100%; max-height: 300px;" Multiple="true" Data=@ViewModel.AvailableDevices @bind-Value=@ViewModel.SelectedDevices />
+      <RadzenListBox Placeholder="Devices to Export" Name="Available Devices" Style="width: 100%; max-height: 300px;" Multiple="true" Data=@ViewModel.AvailableDevices @bind-Value="ViewModel.SelectedDevices">
+        <Template>
+          @context.DeviceName
+        </Template>
+      </RadzenListBox>
     </div>
   }
   else

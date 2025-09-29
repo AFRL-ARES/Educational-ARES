@@ -1,5 +1,15 @@
-﻿using Ares.Core;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Net.Security;
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+using Ares.Core;
 using Ares.Core.Grpc;
+using Ares.Datamodel;
+using Ares.Services;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,16 +21,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Security;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Datamodel;
-using Ares.Services;
 
 namespace AresService;
 

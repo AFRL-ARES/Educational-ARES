@@ -1,7 +1,6 @@
 ﻿using Ares.Core.Notifications;
 using Ares.Datamodel.Planning;
 using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
 
 namespace Ares.Core.Planning;
 

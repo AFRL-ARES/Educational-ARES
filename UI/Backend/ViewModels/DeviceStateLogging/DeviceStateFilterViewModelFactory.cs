@@ -5,13 +5,13 @@ namespace UI.Backend.ViewModels.DeviceStateLogging;
 public class DeviceStateFilterViewModelFactory
 {
   private readonly AresAutomation.AresAutomationClient _automationClient;
-  readonly ICombinedDeviceIdGetter _deviceIdGetter;
+  readonly ICombinedDeviceGetter _deviceGetter;
 
-  public DeviceStateFilterViewModelFactory(AresAutomation.AresAutomationClient automationClient, ICombinedDeviceIdGetter deviceIdGetter)
+  public DeviceStateFilterViewModelFactory(AresAutomation.AresAutomationClient automationClient, ICombinedDeviceGetter deviceGetter)
   {
-    _deviceIdGetter = deviceIdGetter;
+    _deviceGetter = deviceGetter;
     _automationClient = automationClient;
   }
 
-  public DeviceStateFilterViewModel Create() => new DeviceStateFilterViewModel(_automationClient, _deviceIdGetter);
+  public DeviceStateFilterViewModel Create() => new DeviceStateFilterViewModel(_automationClient, _deviceGetter);
 }

@@ -23,7 +23,7 @@
                 @if (argument.PlanningMetadata is not null)
                 {
                   <div class="border border-2 border-warning rounded px-2 py-1 mx-2">
-                      @argument.PlanningMetadata.Name
+                      @TryUnpackDisplayData(argument)
                   </div>
                 }
 
@@ -65,6 +65,10 @@
 
   public object TryUnpackDisplayData(Parameter argument)
   {
+    if(argument.PlanningMetadata is not null)
+    {
+      return $"{argument.Metadata.Name}: {argument.PlanningMetadata.Name}";
+    }
     var aresValue = argument.Value;
     if(aresValue.HasNumberValue)
       return $"{argument.Metadata.Name}: {aresValue.NumberValue} {argument.Metadata.Unit}";

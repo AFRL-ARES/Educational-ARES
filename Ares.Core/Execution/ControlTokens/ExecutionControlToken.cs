@@ -17,9 +17,9 @@ public readonly struct ExecutionControlToken
 
   public PauseToken PauseToken => _tokenSource.PauseToken;
 
-  public void WaitForResume(CancellationToken ct)
+  public void WaitForResume()
   {
-    _tokenSource.WaitForResume(ct);
+    _tokenSource.WaitForResume();
   }
 
   public void Pause()

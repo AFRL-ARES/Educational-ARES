@@ -5,16 +5,16 @@ using Ares.Core.Execution;
 using AresService.ConnectionManagement;
 using AresService.DeviceDbLoaders;
 using AresService.DeviceManagers;
-using AresService.DeviceStateExport.ExportStreamProviders;
-using AresService.DeviceStateExport.StateGetters;
-using AresService.DeviceStateLoggers;
+using Ares.Core.Device.State.Export.ExportStreamProviders;
+using Ares.Core.Device.State.Export.StateGetters;
+using Ares.Core.Device.State.Logging;
+using AresService.ConfigManagers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using AresCamera;
 using AresCamera.Config;
 using MK4S.Config;
-using AresService.ConfigManagers;
 using PrusaMK4S;
 
 
@@ -54,7 +54,6 @@ public static class ServiceCollectionExtensions
     services.AddTransient<IDeviceConfigManager<MK4SConfig>, MK4SPrinterConfigManager>();
     services.AddTransient<IDeviceConfigManager<AresCameraConfig>, AresCameraConfigManager>();
 
-
     //Device Managers
     services.AddTransient<IDeviceManager<MK4SConfig, IPrusaMK4S>, PrusaMK4SPrinterDeviceManager>();
     services.AddTransient<IDeviceManager<AresCameraConfig, IAresCamera>, AresCameraDeviceManager>();
@@ -64,14 +63,12 @@ public static class ServiceCollectionExtensions
   {
     services.AddSingleton<IDeviceStateExportStreamProvider, CombinedDeviceStateExportStreamProvider>();
     services.AddSingleton<IDeviceStateExportStreamProvider, ZippedStatesExportStreamProvider>();
-
     services.AddSingleton<IDeviceStateGetter, DeviceStateGetter>();
   }
 
   private static void AddDeviceStateLoggers(this IServiceCollection services)
   {
     services.AddSingleton<IDeviceStateLoggerRepository, DeviceStateLoggerRepository>();
-
     services.AddSingleton<IDeviceStateGetter, DeviceStateGetter>();
   }
 }

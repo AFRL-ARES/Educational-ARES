@@ -5,18 +5,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DeviceState\**" />
+    <EmbeddedResource Remove="DeviceState\**" />
+    <None Remove="DeviceState\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Authentication.proto" />
-    <None Remove="DeviceStateLogging\DevicesResponse.proto" />
-    <None Remove="DeviceStateLogging\MfcStateLogging.proto" />
-    <None Remove="DeviceState\StateExportService.proto" />
-    <None Remove="DeviceState\StateRequestFilter.proto" />
-    <None Remove="MfcState.proto" />
+		<None Remove="DeviceStateLogging\DevicesResponse.proto" />
     <None Remove="SerialConnectivity.proto" />
     <None Remove="UserManagement.proto" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.31.1" />
+    <PackageReference Include="ARES.Datamodel" Version="0.12.0-beta.1" GeneratePathProperty="True" />
+    <PackageReference Include="Google.Protobuf" Version="3.32.1" />
     <PackageReference Include="Grpc" Version="2.46.6" />
     <PackageReference Include="Grpc.Tools" Version="2.72.0">
       <PrivateAssets>all</PrivateAssets>
@@ -24,12 +27,12 @@
     </PackageReference>
   </ItemGroup>
 
+	<PropertyGroup>
+		<DataModelProtoPath>$(PkgARES_Datamodel)\Proto\datamodel\</DataModelProtoPath>
+	</PropertyGroup>
+
 	<ItemGroup>
     <Protobuf Include="DeviceStateLogging\DevicesResponse.proto" GrpcServices="None" />
-
-    <Protobuf Include="DeviceState\StateRequestFilter.proto" GrpcServices="None" />
-    
-    <Protobuf Include="DeviceState\StateExportService.proto" />
     <Protobuf Include="SerialConnectivity.proto" />
     <Protobuf Include="UserManagement.proto" />
     <Protobuf Include="Authentication.proto" />

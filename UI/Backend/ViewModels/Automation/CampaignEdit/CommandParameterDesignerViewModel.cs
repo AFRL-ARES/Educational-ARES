@@ -110,7 +110,7 @@ public class CommandParameterDesignerViewModel : ReactiveObject
   private IEnumerable<ParameterMetadata> FilterParameterMetadata(UnitCategoryHelper helper, IEnumerable<ParameterMetadata>? allMetadata)
   {
     if(allMetadata is null)
-      return Array.Empty<ParameterMetadata>();
+      return [];
 
     if(string.IsNullOrEmpty(Unit))
       return allMetadata;

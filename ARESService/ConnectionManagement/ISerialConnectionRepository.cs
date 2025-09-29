@@ -1,5 +1,5 @@
-﻿using Ares.Device;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Ares.Device;
 
 namespace AresService.ConnectionManagement;
 

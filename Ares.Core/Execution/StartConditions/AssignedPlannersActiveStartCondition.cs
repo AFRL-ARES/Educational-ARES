@@ -1,6 +1,5 @@
 ﻿using Ares.Core.Planning;
 using Ares.Datamodel.Connection;
-using Ares.Datamodel.Planning;
 
 namespace Ares.Core.Execution.StartConditions;
 

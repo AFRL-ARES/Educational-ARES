@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ares.Messages.DeviceState;
-using AresService.DeviceStateExport.ExportStreamProviders;
+using Ares.Core.Device.State.Export.ExportStreamProviders;
+using Ares.Datamodel.Device;
+using Ares.Services;
 using Google.Protobuf;
 using Grpc.Core;
 
 namespace AresService.Services.OperationalState;
 
-public class DeviceStateExportService : StateExportService.StateExportServiceBase
+public class DeviceStateExportService : Ares.Services.DeviceStateExportService.DeviceStateExportServiceBase
 {
   readonly IEnumerable<IDeviceStateExportStreamProvider> _exportProviders;
   public DeviceStateExportService(IEnumerable<IDeviceStateExportStreamProvider> exportProviders)
@@ -16,7 +17,7 @@ public class DeviceStateExportService : StateExportService.StateExportServiceBas
     _exportProviders = exportProviders;
   }
 
-  public override Task<StateResponse> GetStateExport(StateRequest request, ServerCallContext context)
+  public override Task<DeviceStateResponse> GetStateExport(DeviceStateRequest request, ServerCallContext context)
   {
     return request.ExportType switch
     {
@@ -27,22 +28,22 @@ public class DeviceStateExportService : StateExportService.StateExportServiceBas
     };
   }
 
-  private Task<StateResponse> GetZippedStates(StateRequestFilter filter)
+  private Task<DeviceStateResponse> GetZippedStates(DeviceStateRequestFilter filter)
   {
     var provider = _exportProviders.OfType<ZippedStatesExportStreamProvider>().First();
     return GenerateStateResponse(filter, provider);
   }
 
-  private Task<StateResponse> GetCombinedStates(StateRequestFilter filter)
+  private Task<DeviceStateResponse> GetCombinedStates(DeviceStateRequestFilter filter)
   {
     var provider = _exportProviders.OfType<CombinedDeviceStateExportStreamProvider>().First();
     return GenerateStateResponse(filter, provider);
   }
 
-  private static async Task<StateResponse> GenerateStateResponse(StateRequestFilter filter, IDeviceStateExportStreamProvider streamProvider)
+  private static async Task<DeviceStateResponse> GenerateStateResponse(DeviceStateRequestFilter filter, IDeviceStateExportStreamProvider streamProvider)
   {
     var stream = await streamProvider.Export(filter);
     var byteString = await ByteString.FromStreamAsync(stream.Stream);
-    return new StateResponse() { Data = byteString };
+    return new DeviceStateResponse() { Data = byteString };
   }
 }

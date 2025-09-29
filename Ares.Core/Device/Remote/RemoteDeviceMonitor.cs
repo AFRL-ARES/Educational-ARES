@@ -1,10 +1,9 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using Ares.Core.Device.Remote;
 using Ares.Datamodel.Device;
 using Microsoft.Extensions.Logging;
 
-namespace Ares.Core.Analyzing;
+namespace Ares.Core.Device.Remote;
 internal class RemoteDeviceMonitor : IDisposable
 {
   private readonly RemoteDevice _device;
@@ -51,6 +50,7 @@ internal class RemoteDeviceMonitor : IDisposable
           await _device.FetchInfo();
           await _device.FetchSettings();
           await _device.FetchCommands();
+          await _device.FetchStateSchema();
           await _device.StopStateStream();
           _ = _device.StartStateStream();
           await _device.FetchOperationalStatus();

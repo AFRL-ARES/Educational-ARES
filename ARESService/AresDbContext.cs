@@ -1,6 +1,6 @@
 ﻿using Ares.Core;
+﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace AresService;
 

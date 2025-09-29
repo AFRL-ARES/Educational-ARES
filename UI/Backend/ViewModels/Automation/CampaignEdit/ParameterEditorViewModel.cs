@@ -16,7 +16,7 @@ public class ParameterEditorViewModel : ReactiveObject
   private double _minimum;
   private string? _name;
   private ParameterMetadata _parameterMetadata = null!;
-  private string _unit = "Millimeter";
+  private string? _unit;
 
   public ParameterEditorViewModel(UnitCategoryHelper unitHelper)
   {
@@ -26,7 +26,6 @@ public class ParameterEditorViewModel : ReactiveObject
     {
       UniqueId = Guid.NewGuid().ToString(),
       Name = "Param",
-      Unit = "Millimeter",
       Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.UnspecifiedType, false),
       Constraints =
       {
@@ -80,7 +79,7 @@ public class ParameterEditorViewModel : ReactiveObject
   [Reactive]
   public List<string> UnitOptions { get; private set; } = new();
 
-  public string Unit
+  public string? Unit
   {
     get => _unit;
 

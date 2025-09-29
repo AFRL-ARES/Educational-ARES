@@ -1,9 +1,9 @@
 ﻿using Ares.Core.Analyzing;
 using Ares.Core.Tests.Data.Device;
 using Ares.Datamodel;
-using Ares.Test;
 using Ares.Datamodel.Extensions;
 using Ares.Datamodel.Templates;
+using Ares.Test;
 
 namespace Ares.Core.Tests.Data;
 
@@ -72,7 +72,7 @@ internal class TestCampaignProvider
 
     experimentTemplate.StepTemplates.AddRange(stepTemplates);
 
-    experimentTemplate.AnalyzerMaps["TestOutput1"] = "TestReply";
+    experimentTemplate.AnalyzerMaps["TestAnalyzerInput"] = "TestExperimentOutput";
 
     return experimentTemplate;
   }
@@ -96,7 +96,7 @@ internal class TestCampaignProvider
     template.Parameters.AddRange(parameters);
     template.UniqueId = metadata.UniqueId;
 
-    template.UserOutputKeyMap["TestOutput"] = "TestOutput1";
+    template.UserOutputKeyMap["TestDeviceOutput"] = "TestExperimentOutput";
 
     return template;
   }

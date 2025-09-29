@@ -1,0 +1,56 @@
+@page "/settings/logging"
+@using ReactiveUI.Blazor
+@using UI.Backend.ViewModels.Settings.Logging
+@layout SettingsLayout
+@inherits ReactiveInjectableComponentBase<LoggingSettingsListViewModel>
+
+@if (ViewModel!.LoggingSettingsViewModels is null)
+{
+  <LoadingSpinner />
+}
+else
+{
+  <div class="card flex-fill d-flex flex-column">
+    <div class="card-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" class="w-100">Device</th>
+            <th scope="col" style="min-width: 175px;">Logging Type</th>
+            <th scope="col" style="min-width: 250px;">Interval (ms)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var vm in ViewModel.LoggingSettingsViewModels)
+          {
+            <LoggingSettingsEdit ViewModel="@vm" />
+          }
+        </tbody>
+      </table>
+    </div>
+    <div hidden="@(!ViewModel!.Updated)">
+      <RadzenButton Disabled="@Saving" Text="Save" Click="SaveCallback" />
+    </div>
+  </div>
+}
+
+@code {
+  private bool Saving { get; set; }
+
+  protected override async Task OnInitializedAsync()
+  {
+    await ViewModel!.FetchLoggers();
+
+    StateHasChanged();
+  }
+
+  private async Task SaveCallback()
+  {
+
+    Saving = true;
+    await ViewModel!.Save();
+    Saving = false;
+
+    StateHasChanged();
+  }
+}

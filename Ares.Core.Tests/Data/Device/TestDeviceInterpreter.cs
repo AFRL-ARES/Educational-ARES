@@ -1,8 +1,8 @@
 ﻿using Ares.Datamodel;
-using Ares.Device;
-using Ares.Test;
 using Ares.Datamodel.Extensions;
 using Ares.Datamodel.Templates;
+using Ares.Device;
+using Ares.Test;
 
 namespace Ares.Core.Tests.Data.Device;
 
@@ -32,7 +32,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
           return Task.FromResult(result);
         }
 
-        result.Result = AresStructHelper.CreateNumberStruct("TestOutput", floatValue);
+        result.Result = AresStructHelper.CreateNumberStruct("TestDeviceOutput", floatValue);
         result.Success = true;
         result.UniqueId = Guid.NewGuid().ToString();
         return Task.FromResult(result);

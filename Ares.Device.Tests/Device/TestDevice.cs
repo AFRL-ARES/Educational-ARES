@@ -3,7 +3,7 @@
 public class TestDevice : AresDevice
 {
 
-  public TestDevice() : base("Test Device")
+  public TestDevice() : base("Test Device", "TestDevice")
   {
   }
 

@@ -9,18 +9,10 @@
     {
       if(ViewModel!.IsPlanned)
       {
-        <select @bind="ViewModel.SelectedPlannedParameterMetadataId" class="form-select align-self-stretch">
-          @if (ViewModel!.SelectedPlannedParameterMetadataId is null)
-          {
-            <option value="" selected disabled>Select a Command</option>
-          }
-          @foreach (var metadata in ViewModel!.PlannedParameters)
-          {
-            <option value="@metadata.UniqueId">
-              @metadata.Name (@metadata.Unit)
-            </option>
-          }
-        </select>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="0.5rem">
+          <RadzenLabel Text="@ViewModel.Name" Component="PlannableSelector" />
+          <RadzenDropDown TValue="string" Data="@ViewModel.PlannedParameters" @bind-Value="@ViewModel.SelectedPlannedParameterMetadataId" TextProperty="@nameof(ParameterMetadata.Name)" ValueProperty="@nameof(ParameterMetadata.UniqueId)" Placeholder="Select Planned Parameter" />
+        </RadzenStack>
       }
 
       else

@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.19">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -31,7 +30,6 @@
     <ProjectReference Include="..\Ares.Core.Grpc\Ares.Core.Grpc.csproj" />
     <ProjectReference Include="..\AresMessaging\AresMessaging.csproj" />
     <ProjectReference Include="..\CrealityCamera\AresCamera.csproj" />
-    <ProjectReference Include="..\DemoDevice\DemoDevice.csproj" />
     <ProjectReference Include="..\PrusaMK4S\PrusaMK4S.csproj" />
   </ItemGroup>
 
@@ -43,6 +41,8 @@
 
   <ItemGroup>
     <Folder Include="DeviceStateExport\ExportDataProviders\Devices\" />
+    <Folder Include="DeviceStateExport\StreamProviders\" />
+    <Folder Include="DeviceStateLoggers\" />
     <Folder Include="Services\DeviceStateLogging\" />
   </ItemGroup>
 

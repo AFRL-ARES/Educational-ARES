@@ -10,9 +10,11 @@ namespace Ares.Core.Analyzing;
 /// </summary>
 internal class NoneAnalyzer : AnalyzerBase
 {
+  public static readonly string Id = "NONE-ANALYZER";
+
   public NoneAnalyzer() : base("NONE", "NONE :)", "1.0.0")
   {
-    UniqueId = "NONE-ANALYZER";
+    UniqueId = Id;
     AnalyzerState = State.Active;
   }
 

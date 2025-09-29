@@ -1,5 +1,3 @@
-﻿using Ares.Messages;
-using Ares.Messages.DeviceState;
 using Ares.Services;
 using Ares.Services.Device;
 using AresCamera.Services;
@@ -48,7 +46,7 @@ internal static class ServiceCollectionExtensions
     services.AddScoped<CampaignEditContext>();
     services.BindViewModels();
     services.BindViewModelFactories();
-    services.AddScoped<ICombinedDeviceIdGetter, CombinedDeviceIdGetter>();
+    services.AddScoped<ICombinedDeviceGetter, CombinedDeviceGetter>();
     services.AddSingleton<INotificationRepository, NotificationRepository>();
 
     services.AddSingleton<DeviceAdapterRepository>();
@@ -61,14 +59,11 @@ internal static class ServiceCollectionExtensions
     var clientManager = tempProvider.GetRequiredService<IClientManager>();
 
     //Ares Clients
-    services.AddScoped(_ => clientManager.GetClient<Ares.Messages.Authentication.AuthenticationClient>());
     services.AddScoped(_ => clientManager.GetClient<AresServerInfo.AresServerInfoClient>());
-    services.AddScoped(_ => clientManager.GetClient<UserManagement.UserManagementClient>());
     services.AddScoped(_ => clientManager.GetClient<AresAutomation.AresAutomationClient>());
     services.AddScoped(_ => clientManager.GetClient<Health.HealthClient>());
     services.AddScoped(_ => clientManager.GetClient<AresPlannerManagementService.AresPlannerManagementServiceClient>());
     services.AddScoped(_ => clientManager.GetClient<AresValidation.AresValidationClient>());
-    services.AddScoped(_ => clientManager.GetClient<StateExportService.StateExportServiceClient>());
     services.AddScoped(_ => clientManager.GetClient<AresAnalyzerManagementService.AresAnalyzerManagementServiceClient>());
     services.AddScoped(_ => clientManager.GetClient<AresAnalysisService.AresAnalysisServiceClient>());
     services.AddScoped(_ => clientManager.GetClient<AresSafetyService.AresSafetyServiceClient>());
@@ -80,7 +75,7 @@ internal static class ServiceCollectionExtensions
     services.AddScoped(_ => clientManager.GetClient<AresCameraRpc.AresCameraRpcClient>());
 
     //Device State Logging Clients
-    services.AddScoped(_ => clientManager.GetClient<StateExportService.StateExportServiceClient>());
+    services.AddScoped(_ => clientManager.GetClient<DeviceStateExportService.DeviceStateExportServiceClient>());
   }
 
   private static void BindViewModels(this IServiceCollection services)

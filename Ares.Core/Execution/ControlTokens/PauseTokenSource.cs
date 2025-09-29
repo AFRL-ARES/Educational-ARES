@@ -36,7 +36,13 @@ internal class PauseTokenSource : IDisposable
   public void Wait(CancellationToken token)
   {
     ThrowIfDisposed();
-    _mre.Wait(token);
+    try
+    {
+      _mre.Wait(token);
+    }
+    catch(OperationCanceledException)
+    {
+    }
   }
 
   private void ThrowIfDisposed()

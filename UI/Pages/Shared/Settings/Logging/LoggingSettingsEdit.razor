@@ -1,0 +1,135 @@
+@using System.Globalization
+@using System.Linq
+@using ReactiveUI.Blazor
+@using UI.Backend.ViewModels.Settings.Logging
+@using Ares.Datamodel.Device
+@inherits ReactiveComponentBase<LoggingSettingsViewModel>
+
+@if (ViewModel == null)
+{
+  <p>ViewModel not set.</p>
+}
+else
+{
+  <tr>
+    <td>@ViewModel.DeviceName</td>
+    @if (!ViewModel.Fetched)
+    {
+      <td colspan="3">
+        <div class="d-flex justify-content-start">
+          <LoadingSpinner SpinnerSize="SpinnerSize.Small" />
+        </div>
+      </td>
+    }
+    else
+    {
+      <td>
+        <select id="loggingType-@ViewModel.DeviceName" class="form-select" @bind="ViewModel.LoggingType">
+          <option value="@DeviceLoggingSettings.Types.LoggingType.None">None</option>
+          <option value="@DeviceLoggingSettings.Types.LoggingType.OnChange">On Change</option>
+          <option value="@DeviceLoggingSettings.Types.LoggingType.Interval">Interval</option>
+        </select>
+      </td>
+      <td>
+        @if (ViewModel.LoggingType != DeviceLoggingSettings.Types.LoggingType.None)
+        {
+          <div class="input-group">
+            @if (IsOnChange)
+            {
+              <span class="input-group-text">Throttle</span>
+            }
+            <input id="interval-@ViewModel.DeviceName" type="number" class="form-control" @bind="ViewModel.IntervalMs" />
+          </div>
+        }
+      </td>
+      <td class="text-end align-middle">
+        @if (IsOnChange)
+        {
+          if (!ViewModel!.Deltas.Any())
+          {
+            <span class="text-muted small">No numeric deltas.</span>
+          }
+          else
+          {
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    @onclick="ToggleDeltas">
+              @(_deltasExpanded ? "Hide deltas" : "Edit deltas")
+            </button>
+          }
+        }
+      </td>
+    }
+  </tr>
+
+  @if (_deltasExpanded && IsOnChange)
+  {
+    <tr class="table-light">
+      <td colspan="4">
+        <div class="d-flex flex-column flex-sm-row flex-wrap gap-2">
+          @foreach (var delta in ViewModel!.Deltas)
+          {
+            <div class="input-group input-group-sm" style="max-width: 240px;">
+              <span class="input-group-text">@delta.Key</span>
+              <input
+                type="number"
+                class="form-control text-end"
+                step="any"
+                value="@FormatDelta(delta.Value)"
+                @onchange="@((ChangeEventArgs args) => OnDeltaChanged(delta.Key, args))" />
+            </div>
+          }
+
+          @if (!ViewModel.Deltas.Any())
+          {
+            <span class="text-muted small">No numeric deltas configured.</span>
+          }
+        </div>
+      </td>
+    </tr>
+  }
+}
+
+@code {
+
+  private static readonly CultureInfo DeltaCulture = CultureInfo.InvariantCulture;
+
+  protected override async Task OnInitializedAsync()
+  {
+    await ViewModel!.Init();
+    _deltasExpanded = false;
+  }
+
+  private static string FormatDelta(double value) => value.ToString("0.##########", DeltaCulture);
+
+  private void OnDeltaChanged(string key, ChangeEventArgs args)
+  {
+    var rawValue = args.Value?.ToString();
+    if (string.IsNullOrWhiteSpace(rawValue))
+    {
+      return;
+    }
+
+    if (!double.TryParse(rawValue, NumberStyles.Float | NumberStyles.AllowThousands, DeltaCulture, out var parsedValue))
+    {
+      return;
+    }
+
+    ViewModel!.UpdateDelta(key, parsedValue);
+  }
+
+  private void ToggleDeltas()
+  {
+    if (!IsOnChange || !ViewModel!.Deltas.Any())
+    {
+      _deltasExpanded = false;
+      return;
+    }
+
+    _deltasExpanded = !_deltasExpanded;
+  }
+
+  private bool _deltasExpanded;
+
+  private bool IsOnChange => ViewModel!.LoggingType == DeviceLoggingSettings.Types.LoggingType.OnChange;
+}

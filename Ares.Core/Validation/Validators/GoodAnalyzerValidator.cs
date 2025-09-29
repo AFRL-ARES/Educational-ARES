@@ -47,7 +47,7 @@ public static class GoodAnalyzerValidator
 
       var matchingMap = matchingCommand.UserOutputKeyMap.FirstOrDefault(userMap => userMap.Value == map.Value);
       var outputSchemaEntry = matchingCommand.Metadata.OutputMetadata.DataSchema.Fields.FirstOrDefault(field => field.Key == matchingMap.Key);
-      inputSchema.AddEntry(map.Value, outputSchemaEntry.Value.Type);
+      inputSchema.AddEntry(map.Key, outputSchemaEntry.Value.Type);
     }
 
     var result = await analyzer.ValidateInputs(inputSchema);

@@ -1,8 +1,8 @@
-﻿using Ares.Device;
-using Ares.Datamodel;
-using UnitsNet.Units;
-using Ares.Datamodel.Templates;
+﻿using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Templates;
+using Ares.Device;
+using UnitsNet.Units;
 
 namespace Ares.Core.CoreDevice;
 
@@ -50,7 +50,7 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
         var durationParam = parameters[0];
 
         var duration = UnitsNet.Duration.FromMilliseconds(durationParam.Value.NumberValue);
-        await Device.Sleep(duration.ToTimeSpan());
+        await Device.Sleep(duration.ToTimeSpan(), cancellationToken);
         result.Success = true;
         return result;
 

@@ -1,5 +1,4 @@
-﻿using Ares.Core.Analyzing;
-using Ares.Core.Execution.Extensions;
+﻿using Ares.Core.Execution.Extensions;
 using Ares.Datamodel;
 using Ares.Datamodel.Analyzing;
 using Ares.Datamodel.Connection;
@@ -175,7 +174,7 @@ public class RemotePlannerService : PlannerServiceBase
       .SelectMany(experiment => experiment.Template
       .GetAllPlannedParameters()
       .Where(param => param.PlanningMetadata.Name == metadata.Name));
-    //var relevantInfo = experimentHistory.SelectMany(experiment => experiment.Parameters.Where(param => param.PlanningMetadata?.Name == metadata.Name));
+
     var parameter = new PlanningParameter
     {
       ParameterName = metadata.Name,
@@ -213,9 +212,7 @@ public class RemotePlannerService : PlannerServiceBase
         matchingMetadata.Name = currentPlannedParameter.ParameterName;
       }
 
-      //TODO: Be able to plan for more than just numbers???
-      var valueResult = AresValueHelper.CreateNumber(currentPlannedParameter.ParameterValue.NumberValue);
-      var aresPlanResult = new PlanResult(matchingMetadata, valueResult);
+      var aresPlanResult = new PlanResult(matchingMetadata, currentPlannedParameter.ParameterValue);
       planResults.Add(aresPlanResult);
     }
 

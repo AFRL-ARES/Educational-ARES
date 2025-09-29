@@ -20,7 +20,7 @@ public class AnalysisHelper
     var analyzerInputs = ExperimentOutputToAnalyzerInputs(
       experimentSummary.ExperimentOverview.Result,
       template.AnalyzerMaps);
-    // TODO: Add support for settings
+    // TODO: Maybe add support for settings overrides if needed
     var analysis = await analyzer.Analyze(analyzerInputs, cancellationToken);
 
     experimentSummary.ExperimentOverview.AnalysisOverview = new AnalysisOverview
@@ -37,7 +37,7 @@ public class AnalysisHelper
   {
     if(analyzerId is null)
     {
-      var noneAnalyzer = _analyzerRepo.GetAnalyzerByName("NONE");
+      var noneAnalyzer = _analyzerRepo.GetAnalyzerById(NoneAnalyzer.Id);
       if(noneAnalyzer is null)
       {
         throw new InvalidOperationException(
@@ -54,6 +54,7 @@ public class AnalysisHelper
   private AresStruct ExperimentOutputToAnalyzerInputs(AresStruct experimentResult, MapField<string, string> analyzerMappings)
   {
     var mappedStruct = new AresStruct();
+    // Analyzer mapping is [KeyThatAnalyzerExpects, UserDefinedExperimentOutputKey]
     foreach(var map in analyzerMappings)
     {
       var expResultValue = experimentResult.Fields[map.Value];

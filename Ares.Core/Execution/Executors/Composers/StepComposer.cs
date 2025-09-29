@@ -23,13 +23,16 @@ public class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
         (
           commandTemplate =>
           {
+            var deviceId = commandTemplate.Metadata?.DeviceId;
             var commandInterpreter =
               _interpreterRepo
                 .First(interpreter =>
-                  interpreter
-                    .Device
-                    .UniqueId
-                    .Equals(commandTemplate.Metadata.DeviceId));
+                {
+                  var device = interpreter.Device;
+                  // Prefer match by UniqueId; fall back to Name. Guard against nulls.
+                  return (deviceId is not null && string.Equals(device.UniqueId, deviceId, StringComparison.Ordinal))
+                         || (deviceId is not null && string.Equals(device.Name, deviceId, StringComparison.Ordinal));
+                });
 
             var command = commandInterpreter.TemplateToDeviceCommand(commandTemplate);
             var executable = new CommandExecutor(command, commandTemplate);

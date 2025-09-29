@@ -1,18 +1,20 @@
 ﻿using System.Windows.Input;
-using Ares.Messages.DeviceState;
+using Ares.Datamodel.Device;
+using Ares.Services;
 using Ares.Services.Device;
 using Google.Protobuf.WellKnownTypes;
 using ReactiveUI;
+using DeviceStateRequest = Ares.Services.DeviceStateRequest;
 
 namespace UI.Backend.ViewModels.Misc;
 
 public class ManualExecutionWidgetViewModel : ReactiveObject
 {
-  private readonly StateExportService.StateExportServiceClient _stateExportClient;
+  private readonly DeviceStateExportService.DeviceStateExportServiceClient _stateExportClient;
   readonly AresDevices.AresDevicesClient _devicesClient;
   private IEnumerable<string> _activeDevices = Array.Empty<string>();
 
-  public ManualExecutionWidgetViewModel(StateExportService.StateExportServiceClient stateExportClient, AresDevices.AresDevicesClient devicesClient)
+  public ManualExecutionWidgetViewModel(DeviceStateExportService.DeviceStateExportServiceClient stateExportClient, AresDevices.AresDevicesClient devicesClient)
   {
     _stateExportClient = stateExportClient;
     _devicesClient = devicesClient;
@@ -33,7 +35,7 @@ public class ManualExecutionWidgetViewModel : ReactiveObject
     IsCollecting = true;
     CollectionStarted = DateTime.UtcNow;
     var devicesResponse = await _devicesClient.ListAresDevicesAsync(new Empty());
-    _activeDevices = devicesResponse.AresDevices.Select(dev => dev.Name).ToList();
+    _activeDevices = devicesResponse.AresDevices.Select(dev => dev.UniqueId).ToList();
   }
 
   public void StopDataCollection()
@@ -45,14 +47,14 @@ public class ManualExecutionWidgetViewModel : ReactiveObject
 
   public async Task<byte[]> GetExportData()
   {
-    var reqFilter = new StateRequestFilter
+    var reqFilter = new DeviceStateRequestFilter
     {
       Start = CollectionStarted.ToTimestamp(),
       End = CollectionFinished.ToTimestamp()
     };
 
     reqFilter.DeviceIds.AddRange(_activeDevices);
-    var stateReq = new StateRequest { Filter = reqFilter, ExportType = ExportType.Combined };
+    var stateReq = new DeviceStateRequest { Filter = reqFilter, ExportType = ExportType.Combined };
 
     var result = await _stateExportClient.GetStateExportAsync(stateReq);
 

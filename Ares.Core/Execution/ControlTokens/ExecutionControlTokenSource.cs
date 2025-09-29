@@ -35,8 +35,8 @@ public class ExecutionControlTokenSource : IDisposable
     _pauseTokenSource.Resume();
   }
 
-  public void WaitForResume(CancellationToken ct)
+  public void WaitForResume()
   {
-    _pauseTokenSource.Wait(ct);
+    _pauseTokenSource.Wait(CancellationToken);
   }
 }

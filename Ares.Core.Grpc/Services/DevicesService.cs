@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Ares.Core.Device;
 using Ares.Core.Device.Remote;
+using Ares.Core.Device.State.Logging;
 using Ares.Datamodel;
 using Ares.Datamodel.Device;
 using Ares.Datamodel.Templates;
@@ -24,7 +25,9 @@ public class DevicesService(
   IDeviceCommandInterpreterRepo deviceCommandInterpreterRepo,
   IDbContextFactory<CoreDatabaseContext> contextFactory,
   IRemoteDeviceManager remoteDeviceManager,
-  ILogger<DevicesService> logger)
+  ILogger<DevicesService> logger,
+  StateLoggerManager _stateLoggerManager,
+  IDeviceStateLoggerRepository _deviceStateLoggerRepository)
   : AresDevices.AresDevicesBase
 {
   private readonly ILogger<DevicesService> _logger = logger;
@@ -232,7 +235,10 @@ public class DevicesService(
       return Task.FromResult(new AresStruct());
     }
 
-    return Task.FromResult(remoteDevice.Settings);
+    var aresSettings = new AresStruct();
+    aresSettings.Fields.Add(remoteDevice.Settings);
+
+    return Task.FromResult(aresSettings);
   }
 
   public override Task<Empty> SetDeviceSettings(DeviceSettings request, ServerCallContext context)
@@ -277,7 +283,7 @@ public class DevicesService(
     try
     {
       IObservable<AresStruct?> stateStream = device.StateStream.DistinctUntilChanged();
-      if (request.PollingSettings.IntervalMs > 0)
+      if(request.PollingSettings.IntervalMs > 0)
       {
         stateStream = stateStream.Sample(TimeSpan.FromMilliseconds(interval));
       }
@@ -304,6 +310,30 @@ public class DevicesService(
 
     var schema = device.StateSchema;
     return Task.FromResult(schema is null ? new DeviceStateSchemaResponse() : new DeviceStateSchemaResponse { Schema = schema });
+  }
+
+  public override async Task<Empty> SetDeviceLoggerSettings(DeviceLoggingSettings request, ServerCallContext context)
+  {
+    await _stateLoggerManager.UpdateLogger(request.DeviceId, request);
+
+    return new Empty();
+  }
+
+  public override Task<DeviceLoggersResponse> GetDeviceLoggers(Empty request, ServerCallContext context)
+  {
+    var response = new DeviceLoggersResponse();
+    var settingsResponses = _deviceStateLoggerRepository.Select(s => s.Value.Settings).ToArray();
+
+    response.Loggers.AddRange(settingsResponses);
+
+    return Task.FromResult(response);
+  }
+
+  public override Task<DeviceLoggingSettings> GetDeviceLoggerSettings(DeviceLoggerSettingsRequest request, ServerCallContext context)
+  {
+    var settings = _stateLoggerManager.GetCurrentLoggerSettings(request.DeviceId);
+
+    return Task.FromResult(settings);
   }
 
   private DeviceInfo GetInfo(IAresDevice device)

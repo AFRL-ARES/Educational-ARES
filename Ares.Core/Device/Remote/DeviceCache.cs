@@ -33,7 +33,9 @@ internal class DeviceCache(IDbContextFactory<CoreDatabaseContext> _dbContextFact
   public async Task CacheDeviceSettings(RemoteDevice device)
   {
     var ctx = _dbContextFactory.CreateDbContext();
-    var settings = device.Settings;
+    var settings = new AresStruct();
+    settings.Fields.Add(device.Settings);
+
     var existingSettings = await ctx.DeviceSettings.FirstOrDefaultAsync(s => s.DeviceId == device.UniqueId);
 
     if(existingSettings is not null)
@@ -76,7 +78,7 @@ internal class DeviceCache(IDbContextFactory<CoreDatabaseContext> _dbContextFact
       SettingsSchema = device.SettingSchema,
     };
     info.Commands.AddRange(device.CommandDescriptors);
-    
+
     return info;
   }
 }

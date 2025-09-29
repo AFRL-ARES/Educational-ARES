@@ -1,7 +1,6 @@
 ﻿using Ares.Core.Notifications;
 using Ares.Datamodel.Analyzing;
 using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
 
 namespace Ares.Core.Analyzing;
 public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbContextFactory, IAnalyzerRepo _analyzerRepo, INotificationHandler _notificationHandler, IAnalyzerCache _analyzerCache) : IRemoteAnalyzerManager

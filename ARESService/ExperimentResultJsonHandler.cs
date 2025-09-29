@@ -1,13 +1,13 @@
-using Ares.Core;
-using Ares.Core.Execution;
-using Ares.Messages.DeviceState;
-using AresService.DeviceStateExport.ExportStreamProviders;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Ares.Core;
+using Ares.Core.Device.State.Export.ExportStreamProviders;
+using Ares.Core.Execution;
 using Ares.Datamodel;
+using Ares.Datamodel.Device;
 
 namespace AresService;
 
@@ -37,7 +37,7 @@ public class ExperimentResultJsonHandler : IExecutionSummaryHandler
 
   private async Task ExportDeviceStates(ExperimentExecutionSummary result, string destinationDirPath)
   {
-    var filter = new StateRequestFilter
+    var filter = new DeviceStateRequestFilter
     {
       Start = result.ExecutionInfo.TimeStarted,
       End = result.ExecutionInfo.TimeFinished,

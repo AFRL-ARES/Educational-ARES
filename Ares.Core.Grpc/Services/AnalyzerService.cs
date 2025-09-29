@@ -9,6 +9,7 @@ using Ares.Datamodel.Connection;
 using Ares.Services;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using StateResponse = Ares.Datamodel.Connection.StateResponse;
 
 namespace Ares.Core.Grpc.Services;
 

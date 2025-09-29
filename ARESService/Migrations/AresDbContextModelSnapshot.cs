@@ -514,6 +514,39 @@ namespace AresService.Migrations
                     b.ToTable("DeviceInfos");
                 });
 
+            modelBuilder.Entity("Ares.Datamodel.Device.DeviceLoggingSettings", b =>
+                {
+                    b.Property<Guid>("UniqueId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("DATETIME('now')");
+
+                    b.Property<string>("Deltas")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("IntervalMs")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastModified")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("DATETIME('now')");
+
+                    b.Property<int>("LoggingType")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UniqueId");
+
+                    b.ToTable("DeviceLoggingSettings");
+                });
+
             modelBuilder.Entity("Ares.Datamodel.Device.DeviceSettings", b =>
                 {
                     b.Property<Guid>("UniqueId")
@@ -539,6 +572,36 @@ namespace AresService.Migrations
                     b.HasKey("UniqueId");
 
                     b.ToTable("DeviceSettings");
+                });
+
+            modelBuilder.Entity("Ares.Datamodel.Device.DeviceState", b =>
+                {
+                    b.Property<Guid>("UniqueId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("DATETIME('now')");
+
+                    b.Property<string>("Data")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModified")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("DATETIME('now')");
+
+                    b.Property<DateTime?>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UniqueId");
+
+                    b.ToTable("DeviceStates");
                 });
 
             modelBuilder.Entity("Ares.Datamodel.Device.RemoteDeviceConfig", b =>

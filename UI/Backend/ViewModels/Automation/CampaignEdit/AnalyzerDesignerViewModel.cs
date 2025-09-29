@@ -25,7 +25,7 @@ public class AnalyzerDesignerViewModel : ReactiveObject
     _analysisServiceClient = analysisServiceClient;
     _experimentTemplate = experimentTemplate;
 
-    AnalyzerId = _experimentTemplate.AnalyzerId;
+    AnalyzerId = string.IsNullOrEmpty(_experimentTemplate.AnalyzerId) ? "NONE-ANALYZER" : _experimentTemplate.AnalyzerId;
   }
 
   [Reactive]

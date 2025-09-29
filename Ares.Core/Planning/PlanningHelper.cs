@@ -2,16 +2,19 @@ using Ares.Datamodel;
 using Ares.Datamodel.Analyzing;
 using Ares.Datamodel.Planning;
 using Ares.Datamodel.Templates;
+using Microsoft.Extensions.Logging;
 
 namespace Ares.Core.Planning;
 
 public class PlanningHelper : IPlanningHelper
 {
   private readonly IPlannerServiceRepo _plannerManager;
+  private readonly ILogger<PlanningHelper> _logger;
 
-  public PlanningHelper(IPlannerServiceRepo plannerManager)
+  public PlanningHelper(IPlannerServiceRepo plannerManager, ILogger<PlanningHelper> logger)
   {
     _plannerManager = plannerManager;
+    _logger = logger;
   }
 
   public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations,
@@ -36,19 +39,27 @@ public class PlanningHelper : IPlanningHelper
     foreach(var grouping in planGroup)
     {
       var planner = grouping.Key;
-      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedExperiments, seedAnalysesArr, cancellationToken);
-      var results = resultsEnumerable.ToArray();
-      if(!results.Any())
-        return false;
-
-      foreach(var result in results)
+      try
       {
-        var parameterPlanTarget = parameterArray.FirstOrDefault(parameter => parameter.PlanningMetadata.UniqueId == result.Metadata.UniqueId);
+        var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedExperiments, seedAnalysesArr, cancellationToken);
+        var results = resultsEnumerable.ToArray();
+        if(!results.Any())
+          return false;
 
-        if(parameterPlanTarget is null)
-          continue;
+        foreach(var result in results)
+        {
+          var parameterPlanTarget = parameterArray.FirstOrDefault(parameter => parameter.PlanningMetadata.UniqueId == result.Metadata.UniqueId);
 
-        parameterPlanTarget.Value = result.Value;
+          if(parameterPlanTarget is null)
+            continue;
+
+          parameterPlanTarget.Value = result.Value;
+        }
+      }
+      catch(Exception e)
+      {
+        _logger.LogError("Failed to plan. {}", e);
+        return false;
       }
     }
 

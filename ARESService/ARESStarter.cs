@@ -11,7 +11,6 @@ using Ares.Core.Grpc;
 using Ares.Core.Planning;
 using Ares.Services;
 using AresService.DeviceDbLoaders;
-using DemoDevice;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -47,7 +46,7 @@ public class AresStarter
     _deviceLoaders = deviceLoaders;
     _configuration = configuration;
     _remoteDeviceManager = remoteDeviceManager;
-    _dataPath = _configuration.Get<AppSettings>().AresDataPath;
+    _dataPath = _configuration.Get<AppSettings>()?.AresDataPath ?? "";
     _resultsPath = Path.Combine(_dataPath, AppSettings.ResultsFolder);
     _templatesPath = Path.Combine(_dataPath, AppSettings.TemplatesFolder);
     _devicesPath = Path.Combine(_dataPath, AppSettings.DevicesFolder);
@@ -56,12 +55,6 @@ public class AresStarter
   public async Task Start()
   {
     await EnsureDataPathsExist();
-
-#if DEBUG
-    //await AddDemoDevice(new Uri("https://localhost:7038"));
-    //await _plannerManager.CreateDemoPlanner("http://localhost:5036");
-    //await _analyzerManager.CreateDemoAnalyzer("http://localhost:5026");
-#endif
 
     foreach(var deviceLoader in _deviceLoaders)
       await deviceLoader.Load();
@@ -81,15 +74,6 @@ public class AresStarter
     Directory.CreateDirectory(_resultsPath);
     Directory.CreateDirectory(_templatesPath);
 
-    return Task.CompletedTask;
-  }
-
-  public Task AddDemoDevice(Uri address)
-  {
-    var testDevice = new AresDemoDevice(address);
-    testDevice.Activate(CancellationToken.None);
-    var testDeviceInterpreter = new DemoDeviceInterpreter(testDevice);
-    _deviceCommandInterpreterRepo.Add(testDeviceInterpreter);
     return Task.CompletedTask;
   }
 }

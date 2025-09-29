@@ -87,7 +87,11 @@ public class CommandDesignerViewModel : ReactiveObject
     CommandTemplate.Parameters.Clear();
     CommandTemplate.Parameters.AddRange(ArgumentDesigners.Select(model => model.Save()));
     if(CommandMetadata is not null)
+    {
       CommandTemplate.Metadata = CommandMetadata;
+      CommandTemplate.Metadata.DeviceType = MetadataDeviceName;
+    }
+      
 
     CommandTemplate.Index = Index;
     CommandTemplate.UserOutputKeyMap.Clear();

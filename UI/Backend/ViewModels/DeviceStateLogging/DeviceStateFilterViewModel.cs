@@ -1,5 +1,6 @@
 ﻿using Ares.Datamodel;
-using Ares.Messages.DeviceState;
+using Ares.Datamodel.Device;
+using Ares.Messages.DeviceStates;
 using Ares.Services;
 using Google.Protobuf.WellKnownTypes;
 using ReactiveUI;
@@ -13,12 +14,12 @@ public class DeviceStateFilterViewModel : ReactiveObject
 
   public DeviceStateFilterViewModel(
     AresAutomation.AresAutomationClient automationClient,
-    ICombinedDeviceIdGetter idGetter)
+    ICombinedDeviceGetter deviceGetter)
   {
     _automationClient = automationClient;
     _automationClient.GetAvailableCampaignExecutionSummariesAsync(new Empty()).ResponseAsync
       .ContinueWith(task => UpdateCampaigns(task.Result));
-    idGetter.GetAvailableIds()
+    deviceGetter.GetAvailableDevices()
       .ContinueWith(task => AvailableDevices = task.Result);
 
     var currentTime = DateTime.Now;
@@ -34,9 +35,9 @@ public class DeviceStateFilterViewModel : ReactiveObject
   }
 
   [Reactive]
-  public IEnumerable<string>? AvailableDevices { get; private set; }
+  public IEnumerable<DevicesDescription>? AvailableDevices { get; private set; }
 
-  public IEnumerable<string>? SelectedDevices { get; set; }
+  public IEnumerable<DevicesDescription>? SelectedDevices { get; set; }
 
   [Reactive]
   public IEnumerable<CampaignExecutionSummaryMetadata>? Campaigns { get; private set; }
@@ -64,9 +65,9 @@ public class DeviceStateFilterViewModel : ReactiveObject
   public bool UseEndTime { get; set; }
   public bool UseExperiment { get; set; }
 
-  public StateRequestFilter GetStateRequestFilter()
+  public DeviceStateRequestFilter GetStateRequestFilter()
   {
-    var request = new StateRequestFilter
+    var request = new DeviceStateRequestFilter
     {
       Start = UseStartTime ? StartTime.ToUniversalTime().ToTimestamp() : default,
       End = UseEndTime ? EndTime.ToUniversalTime().ToTimestamp() : default,
@@ -75,7 +76,7 @@ public class DeviceStateFilterViewModel : ReactiveObject
     };
 
     if(SelectedDevices is not null)
-      request.DeviceIds.AddRange(SelectedDevices);
+      request.DeviceIds.AddRange(SelectedDevices.Select(d => d.DeviceId));
 
     return request;
   }

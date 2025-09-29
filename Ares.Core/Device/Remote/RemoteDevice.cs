@@ -1,4 +1,5 @@
-﻿using System.Reactive.Linq;
+﻿using System.Collections.Concurrent;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Ares.Datamodel;
 using Ares.Datamodel.Device;
@@ -37,8 +38,8 @@ public sealed class RemoteDevice : AresDevice, IAsyncDisposable
 
   public Uri Address { get; }
 
-  public AresStruct Settings { get; } = new();
-  
+  public ConcurrentDictionary<string, AresValue> Settings { get; } = new();
+
   public AresDataSchema SettingSchema { get; private set; } = new();
 
   // sets the polling options with the option to restart/start the stream
@@ -224,29 +225,29 @@ public sealed class RemoteDevice : AresDevice, IAsyncDisposable
     {
     }
 
-    var newSettings = SettingSchema.Fields.Where(entry => !Settings.Fields.ContainsKey(entry.Key)).ToArray();
-    var removedSettings = Settings.Fields.Where(entry => !SettingSchema.Fields.ContainsKey(entry.Key)).ToArray();
+    var newSettings = SettingSchema.Fields.Where(entry => !Settings.ContainsKey(entry.Key)).ToArray();
+    var removedSettings = Settings.Where(entry => !SettingSchema.Fields.ContainsKey(entry.Key)).ToArray();
 
     foreach(var removedSetting in removedSettings)
     {
-      Settings.Fields.Remove(removedSetting.Key);
+      Settings.Remove(removedSetting.Key, out _);
     }
 
     foreach(var newSetting in newSettings)
     {
       if(newSetting.Value.Type == AresDataType.String)
       {
-        Settings.Fields[newSetting.Key] = AresValueHelper.CreateDefault(newSetting.Value.Type, newSetting.Value.StringChoices?.Strings);
+        Settings[newSetting.Key] = AresValueHelper.CreateDefault(newSetting.Value.Type, newSetting.Value.StringChoices?.Strings);
       }
       else if(newSetting.Value.Type == AresDataType.Number)
       {
-        Settings.Fields[newSetting.Key] = AresValueHelper.CreateDefault(
+        Settings[newSetting.Key] = AresValueHelper.CreateDefault(
           newSetting.Value.Type,
           newSetting.Value.NumberChoices?.Numbers);
       }
       else
       {
-        Settings.Fields[newSetting.Key] = AresValueHelper.CreateDefault(newSetting.Value.Type);
+        Settings[newSetting.Key] = AresValueHelper.CreateDefault(newSetting.Value.Type);
       }
     }
   }
@@ -263,7 +264,7 @@ public sealed class RemoteDevice : AresDevice, IAsyncDisposable
 
   public Task UpdateSettings(AresStruct settings)
   {
-    foreach(var setting in Settings.Fields)
+    foreach(var setting in Settings)
     {
       var newValue = settings.Fields.GetValueOrDefault(setting.Key);
       if(newValue is null)
@@ -271,11 +272,14 @@ public sealed class RemoteDevice : AresDevice, IAsyncDisposable
         continue;
       }
 
-      Settings.Fields[setting.Key] = newValue;
+      Settings[setting.Key] = newValue;
     }
 
+    var aresSettings = new AresStruct();
+    aresSettings.Fields.Add(Settings);
+
     var client = GetClient();
-    return client.SetSettingsAsync(new SetSettingsRequest { Settings = Settings }).ResponseAsync;
+    return client.SetSettingsAsync(new SetSettingsRequest { Settings = aresSettings }).ResponseAsync;
   }
 
   public IReadOnlyList<DeviceCommandDescriptor> CommandDescriptors => _commands;

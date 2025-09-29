@@ -1,7 +1,13 @@
 ﻿using Ares.Core.Analyzing;
 using Ares.Core.AresEnvironment;
 using Ares.Core.Device;
+using Ares.Core.Device.Helpers;
 using Ares.Core.Device.Remote;
+using Ares.Core.Device.Remote.State;
+using Ares.Core.Device.State.Export;
+using Ares.Core.Device.State.Export.ExportStreamProviders;
+using Ares.Core.Device.State.Export.StateGetters;
+using Ares.Core.Device.State.Logging;
 using Ares.Core.Execution;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
@@ -46,9 +52,24 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<PlannerServiceRepo>();
     services.AddSingleton<AnalysisHelper>();
     services.AddSingleton<IDesiredAnalysisResultFactory, DesiredAnalysisResultFactory>();
+    services.AddSingleton<DeviceIdHelper>();
+    
 
     services.BindComposers();
     services.BindStartConditions();
+    services.BindStateLogging();
+  }
+
+  private static void BindStateLogging(this IServiceCollection services)
+  {
+    services.AddSingleton<StateLoggerManager>();
+    services.AddSingleton<IDeviceStateStreamProvider, DeviceStateStreamProvider>();
+    services.AddSingleton<IDeviceStateDataProvider, RemoteDeviceExportDataProvider>();
+    services.AddSingleton<IDeviceStateExportStreamProvider, CombinedDeviceStateExportStreamProvider>();
+    services.AddSingleton<IDeviceStateExportStreamProvider, ZippedStatesExportStreamProvider>();
+    services.AddSingleton<IDeviceStateLoggerRepository, DeviceStateLoggerRepository>();
+    services.AddSingleton<IDeviceStateGetter, DeviceStateGetter>();
+    services.AddSingleton<IDeviceStateLoggerFactory, RemoteDeviceStateLoggerFactory>();
   }
 
   private static void BindStartConditions(this IServiceCollection services)

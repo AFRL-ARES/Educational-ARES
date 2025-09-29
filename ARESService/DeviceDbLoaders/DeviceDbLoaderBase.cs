@@ -1,9 +1,9 @@
-﻿using Ares.Device;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Ares.Device;
 using AresService.DeviceManagers;
 using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AresService.DeviceDbLoaders;
 

@@ -33,6 +33,9 @@ public class CoreDatabaseContext : DbContext
   public DbSet<PlannerSettings> PlannerSettings => Set<PlannerSettings>();
   public DbSet<AresCampaignTag> CampaignTags => Set<AresCampaignTag>();
   public DbSet<Parameter> Parameters => Set<Parameter>();
+  public DbSet<DeviceLoggingSettings> DeviceLoggingSettings => Set<DeviceLoggingSettings>();
+  public DbSet<DeviceState> DeviceStates => Set<DeviceState>();
+
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

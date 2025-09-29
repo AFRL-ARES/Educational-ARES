@@ -1,4 +1,5 @@
-﻿using Ares.Messages.DeviceState;
+﻿
+using Ares.Services;
 
 namespace UI.Backend.Extensions;
 
