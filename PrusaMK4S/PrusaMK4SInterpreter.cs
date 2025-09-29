@@ -22,8 +22,10 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
         DeviceId = Device.UniqueId,
         Name = PrusaMK4SCommandType.Print.ToString(),
         Description = "A command that tells the printer to print with the provided G-Code source as a base file. Includes the ability to modify several parameters of " +
-        "that G-Code such as nozzle temperature, extrusion rate and acceleration. For retraction length, a value of -1 will result in no changes being made in your G-Code." +
-        "For all other parameters, a value of 0 does the same. The only required parameter for this command is the G-Code itself.",
+        "that G-Code such as nozzle temperature, extrusion rate and acceleration. For retraction length, a value of -1 will result in no changes being made in your G-Code. " +
+        "For all other parameters, a value of 0 does the same. The only required parameter for this command is the G-Code itself. In the scenario you are using border objects " +
+        "for machine vision purposes, you will need to provide the name of your primary object in your print file. This ensures ARES only alters G-Code associated with the " +
+        "desired test object and not your border objects.",
         ParameterMetadatas =
         {
           new ParameterMetadata
@@ -36,42 +38,49 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
           new ParameterMetadata
           {
             Index = 1,
+            Name = PrusaMK4SCommandParameter.MainObjectName.ToString(),
+            NotPlannable= true,
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.String, false)
+          },
+          new ParameterMetadata
+          {
+            Index = 2,
             Name = PrusaMK4SCommandParameter.NozzleTemperature.ToString(),
             Unit = "Degree's Celsius",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
           },
           new ParameterMetadata
           {
-            Index = 2,
+            Index = 3,
             Name = PrusaMK4SCommandParameter.BedTemperature.ToString(),
             Unit = "Degree's Celsius",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
           },
-          new ParameterMetadata 
-          { 
-            Index = 3,
-            Name = PrusaMK4SCommandParameter.ExtrusionRateMod.ToString(), 
+          new ParameterMetadata
+          {
+            Index = 4,
+            Name = PrusaMK4SCommandParameter.ExtrusionRateMod.ToString(),
             Unit = "Modifier",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
           },
-          new ParameterMetadata 
-          { 
-            Index = 4, 
-            Name = PrusaMK4SCommandParameter.SpeedMod.ToString(), 
+          new ParameterMetadata
+          {
+            Index = 5,
+            Name = PrusaMK4SCommandParameter.SpeedMod.ToString(),
             Unit = "Modifier",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
           },
-          new ParameterMetadata 
-          { 
-            Index = 5, 
-            Name = PrusaMK4SCommandParameter.RetractionLength.ToString(), 
+          new ParameterMetadata
+          {
+            Index = 6,
+            Name = PrusaMK4SCommandParameter.RetractionLength.ToString(),
             Unit = "Millimeters",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
           },
-          new ParameterMetadata 
-          { 
-            Index = 6, 
-            Name = PrusaMK4SCommandParameter.AccelerationMod.ToString(), 
+          new ParameterMetadata
+          {
+            Index = 7,
+            Name = PrusaMK4SCommandParameter.AccelerationMod.ToString(),
             Unit = "Modifier",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
           },
@@ -160,7 +169,10 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     };
   }
 
-  protected override async Task<CommandResult> ParseAndPerformDeviceAction(PrusaMK4SCommandType deviceCommand, Parameter[] parameters, CommandMetadata metadata, CancellationToken cancellationToken)
+  protected override async Task<CommandResult> ParseAndPerformDeviceAction(PrusaMK4SCommandType deviceCommand, 
+    Parameter[] parameters, 
+    CommandMetadata metadata, 
+    CancellationToken cancellationToken)
   {
     var result = new CommandResult();
 
@@ -168,8 +180,15 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     {
       case PrusaMK4SCommandType.Print:
       {
-        var printParamsValidationResult = ValidatePrintParameters(parameters, out var gcode, out var nozzleTemperature, out var bedTemperature,
-          out var extrusionMod, out var speedMod, out var retractionLength, out var accelerationMod);
+        var printParamsValidationResult = ValidatePrintParameters(parameters, 
+          out var gcode, 
+          out var objectName, 
+          out var nozzleTemperature, 
+          out var bedTemperature,
+          out var extrusionMod, 
+          out var speedMod,
+          out var retractionLength, 
+          out var accelerationMod);
 
         if(!printParamsValidationResult.Success)
         {
@@ -177,7 +196,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
           break;
         }
 
-        var print = await Device.Print(gcode, nozzleTemperature, bedTemperature, extrusionMod, speedMod, retractionLength, accelerationMod);
+        var print = await Device.Print(gcode, objectName, nozzleTemperature, bedTemperature, extrusionMod, speedMod, retractionLength, accelerationMod);
         result.Success = print.Success;
         result.Error = print.ErrorString ?? string.Empty;
         break;
@@ -234,7 +253,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     return result;
   }
 
-  private CommandResult ValidatePrintParameters(Parameter[] parameters, out byte[] gcode,
+  private CommandResult ValidatePrintParameters(Parameter[] parameters, out byte[] gcode, out string objectName,
     out int nozzleTemperature, out int bedTemperature, out double extrusionMod, out double speedMod, out int retractionLength, out double accelerationMod)
   {
     var result = new CommandResult();
@@ -248,6 +267,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     speedMod = double.MinValue;
     retractionLength = int.MinValue;
     accelerationMod = double.MinValue;
+    objectName = string.Empty;
 
     var gcodeParameter = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.GCode}"));
     var nozzleTempParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.NozzleTemperature}"));
@@ -256,6 +276,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     var speedModParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.SpeedMod}"));
     var retractionLengthParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.RetractionLength}"));
     var accelerationModParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.AccelerationMod}"));
+    var objectNameParameter = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.MainObjectName}"));
 
     if(gcodeParameter is null || nozzleTempParam is null || bedTempParam is null || extrusionModParam is null
       || speedModParam is null || retractionLengthParam is null || accelerationModParam is null)
@@ -297,6 +318,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     speedMod = speedModParam.Value.NumberValue;
     retractionLength = (int)retractionLengthParam.Value.NumberValue;
     extrusionMod = extrusionModParam.Value.NumberValue;
+    objectName = objectNameParameter?.Value?.StringValue ?? string.Empty;
 
     return result;
   }

@@ -145,7 +145,14 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     return Task.CompletedTask;
   }
 
-  public async Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp, double extrusionMod, double speedMod, int retractionLength, double accelerationMod)
+  public async Task<MK4SRequestResponse> Print(byte[] gcode,
+    string mainObjectName,
+    int nozzleTemp, 
+    int bedTemp, 
+    double extrusionMod, 
+    double speedMod, 
+    int retractionLength, 
+    double accelerationMod)
   {
     var response = new MK4SRequestResponse();
 
@@ -162,7 +169,7 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     if(!SmartPrintMode)
     {
       //If this is the case, the student has opted not to utilize our auto calculation and clearing the print bed must be done manually.
-      var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, gcode);
+      var modifiedGcode = await handler.ApplyPlanningParameters(mainObjectName, bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, gcode);
       var request = CreatePrintRequest(modifiedGcode);
       Console.WriteLine("Successfully created a print request!");
     }
@@ -179,8 +186,8 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
       }
 
       //Customize our G Code
-      var custom_gcode = await handler.CreatePrintIteration(expNumber);
-      var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, custom_gcode);
+      var custom_gcode = await handler.CreatePrintIteration(expNumber, mainObjectName);
+      var modifiedGcode = await handler.ApplyPlanningParameters(mainObjectName, bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, custom_gcode);
 
       var printJobRequest = CreatePrintRequest(modifiedGcode);
       Console.WriteLine("Successfully created a print request!");
