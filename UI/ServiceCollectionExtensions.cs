@@ -23,6 +23,7 @@ using UI.Backend.ViewModels.Misc;
 using UI.Backend.ViewModels.Settings.Analysis;
 using UI.Backend.ViewModels.Settings.Device.AresCamera;
 using UI.Backend.ViewModels.Settings.Device.PrusaMK4S;
+using UI.Backend.ViewModels.Settings.Logging;
 using UI.Backend.ViewModels.Settings.Planning;
 using UI.Services.CampaignEdit;
 using UI.Services.Grpc;
@@ -96,6 +97,7 @@ internal static class ServiceCollectionExtensions
     //Device Settings List View Models
     services.AddTransient<DeviceStatesViewModel>();
     services.AddTransient<DeviceStateExporterViewModel>();
+    services.AddTransient<LoggingSettingsListViewModel>();
     services.AddTransient<AnalyzerSettingsListViewModel>();
     services.AddTransient<PlannerSettingsListViewModel>();
     services.AddScoped<PrusaMK4SSettingsListViewModel>();
