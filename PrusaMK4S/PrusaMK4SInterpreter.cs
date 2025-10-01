@@ -103,7 +103,8 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
       {
         DeviceId = Device.UniqueId,
         Name = PrusaMK4SCommandType.MoveToLastPrint.ToString(),
-        Description = "A command that attempts to move the print head to be positioned above the previous print location. Designed for use with Smart Print mode ONLY.",
+        Description = "A command that attempts to move the print head to be positioned above the previous print location. Designed for use with Smart Print mode ONLY. " +
+        "Optional X and Y offsets can also be provided to account for the location of your camera.",
         ParameterMetadatas =
         {
           new ParameterMetadata
@@ -111,7 +112,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 1,
             Name = PrusaMK4SCommandParameter.Z.ToString(),
             Unit = "Coordinate",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false),
             NotPlannable = true
           },
           new ParameterMetadata
@@ -119,6 +120,22 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 2,
             Name = PrusaMK4SCommandParameter.DwellTime.ToString(),
             Unit = "Seconds",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            NotPlannable = true
+          },
+          new ParameterMetadata
+          {
+            Index = 3,
+            Name = PrusaMK4SCommandParameter.XOffset.ToString(),
+            Unit = "Millimeters",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            NotPlannable = true
+          },
+          new ParameterMetadata
+          {
+            Index = 4,
+            Name = PrusaMK4SCommandParameter.YOffset.ToString(),
+            Unit = "Millimeters",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
             NotPlannable = true
           }
@@ -136,24 +153,24 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
           {
             Index = 0,
             Name = PrusaMK4SCommandParameter.X.ToString(),
-            Unit = "Coordinate",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            Unit = "Millimeters",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false),
             NotPlannable = true
           },
           new ParameterMetadata
           {
             Index = 1,
             Name = PrusaMK4SCommandParameter.Y.ToString(),
-            Unit = "Coordinate",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            Unit = "Millimeters",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false),
             NotPlannable = true
           },
           new ParameterMetadata
           {
             Index = 2,
             Name = PrusaMK4SCommandParameter.Z.ToString(),
-            Unit = "Coordinate",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            Unit = "Millimeters",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false),
             NotPlannable = true
           },
           new ParameterMetadata
@@ -203,17 +220,23 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
       }
 
       case PrusaMK4SCommandType.MoveToLastPrint:
-        var z_param = parameters.FirstOrDefault(p => p.Metadata.Name == PrusaMK4SCommandParameter.Z.ToString());
-        var dwell_param = parameters.FirstOrDefault(p => p.Metadata.Name == PrusaMK4SCommandParameter.DwellTime.ToString());
+        var zParam = parameters.FirstOrDefault(p => p.Metadata.Name == PrusaMK4SCommandParameter.Z.ToString());
+        var dwellParam = parameters.FirstOrDefault(p => p.Metadata.Name == PrusaMK4SCommandParameter.DwellTime.ToString());
+        var xOffsetParam = parameters.FirstOrDefault(p => p.Metadata.Name == PrusaMK4SCommandParameter.XOffset.ToString());
+        var yOffsetParam = parameters.FirstOrDefault(p => p.Metadata.Name == PrusaMK4SCommandParameter.YOffset.ToString());
 
-        if(z_param is null || dwell_param is null)
+        if(zParam is null)
         {
           result.Success = false;
           result.Error = "Required Parameter Z or Dwell Time was null!";
           return result;
         }
 
-        var smartMove = await Device.MoveToLastPrint(z_param.Value.StringValue, dwell_param.Value.StringValue);
+        var xOffset = xOffsetParam?.Value.NumberValue ?? 0;
+        var yOffset = yOffsetParam?.Value.NumberValue ?? 0;
+
+        var smartMove = await Device.MoveToLastPrint(zParam.Value.StringValue, dwellParam?.Value.StringValue ?? "", (int)xOffset, (int)yOffset);
+
         result.Success = smartMove.Success;
         return result;
 

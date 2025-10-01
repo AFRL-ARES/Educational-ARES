@@ -137,7 +137,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
     return response;
   }
 
-  public async Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell)
+  public async Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell, int xOffset, int yOffset)
   {
     //Attempts to move the print head over the last known print location
     //Use the last GCodeHandler to try and determine our x and y positioning
@@ -149,8 +149,8 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
     var itemHeight = LatestGCodeHandler.ItemHeight;
 
     //Use the GCodeHandler to gather the latest shift values. Add half the items respective width or height to place the camera around the middle of the object
-    var calculated_y = LatestGCodeHandler.PrintBedHeight - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2));
-    var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2);
+    var calculated_y = LatestGCodeHandler.PrintBedHeight - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2)) + yOffset;
+    var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2) + xOffset;
 
     return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
   }

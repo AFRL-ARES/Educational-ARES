@@ -10,6 +10,8 @@ public enum PrusaMK4SCommandParameter
   RetractionLength,
   AccelerationMod,
   MainObjectName,
+  XOffset,
+  YOffset,
   X,
   Y,
   Z,

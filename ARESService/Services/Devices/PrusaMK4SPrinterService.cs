@@ -125,7 +125,7 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
       dwell = request.DwellTime;
 
     if(printer is not null)
-      return await printer.MoveToLastPrint(request.ZCoordinate, dwell);
+      return await printer.MoveToLastPrint(request.ZCoordinate, dwell, 0, 0);
 
     return new MK4SRequestResponse() { ErrorString = $"ARES could not find a printer with the ID {request.Id}" };
   }

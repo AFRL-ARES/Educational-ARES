@@ -46,10 +46,9 @@ public class CampaignDesignerViewModel : ReactiveObject
     CampaignTemplate = new CampaignTemplate
     {
       Name = Placeholder,
-      UniqueId = Guid.NewGuid().ToString()
+      UniqueId = Guid.NewGuid().ToString(),
+      ExperimentTemplate = new ExperimentTemplate() { UniqueId = Guid.NewGuid().ToString(), Name = "New Experiment" }
     };
-
-    CampaignTemplate.ExperimentTemplate = new ExperimentTemplate() { UniqueId = Guid.NewGuid().ToString(), Name = "New Experiment" };
   }
 
   [Reactive] public bool IsCreatingCampaign { get; set; }
@@ -110,6 +109,7 @@ public class CampaignDesignerViewModel : ReactiveObject
     CampaignTemplate.PlannableParameters.AddRange(PlannableParameterDesigner?.Save() ?? Array.Empty<ParameterMetadata>());
     CampaignTemplate.ExperimentTemplate = null;
 
+
     if(StartupDesigner is not null)
       CampaignTemplate.StartupTemplate = StartupDesigner.Save();
 
@@ -123,6 +123,7 @@ public class CampaignDesignerViewModel : ReactiveObject
     PlannableParameterDesigner?.Save();
     PlanningDesigner?.Save();
     AnalyzerDesignerViewModel?.Save();
+
     return CampaignTemplate;
   }
 
