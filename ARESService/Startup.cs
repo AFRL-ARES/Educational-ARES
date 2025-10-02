@@ -97,11 +97,11 @@ public class Startup
     identityBuilder.AddSignInManager<SignInManager<AresUser>>();
     identityBuilder.AddDefaultTokenProviders();
 
-    var token = Configuration.Get<AppSettings>().TokensConfig?.Key ?? "DefaultKey";
+    var token = Configuration?.Get<AppSettings>()?.TokensConfig?.Key ?? "DefaultKey";
     var key = Encoding.ASCII.GetBytes(token);
 
-    var certPath = Configuration.GetRequiredSection("CertificateSettings")["Path"];
-    var certPassword = Configuration.GetRequiredSection("CertificateSettings")["Password"];
+    //var certPath = Configuration.GetRequiredSection("CertificateSettings")["Path"];
+    //var certPassword = Configuration.GetRequiredSection("CertificateSettings")["Password"];
 
     //services.Configure<KestrelServerOptions>(options => {
     //  options.ConfigureHttpsDefaults(o => {
