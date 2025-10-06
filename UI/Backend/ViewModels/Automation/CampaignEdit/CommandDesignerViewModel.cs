@@ -58,9 +58,9 @@ public class CommandDesignerViewModel : ReactiveObject
   public string? MetadataDeviceName { get; private set; }
   public string? TemplateCommandName => CommandTemplate.Metadata?.Name;
 
-  public bool TemplateExperimentOutputProvider => CommandTemplate.UserOutputKeyMap.Any();
+  public bool TemplateOutputProvider => CommandTemplate.UserOutputKeyMap.Any();
 
-  public bool ExperimentOutputProvider { get; set; }
+  public bool OutputProvider { get; set; }
 
   public IEnumerable<Parameter> Arguments => CommandTemplate.Parameters;
 
@@ -95,7 +95,7 @@ public class CommandDesignerViewModel : ReactiveObject
 
     CommandTemplate.Index = Index;
     CommandTemplate.UserOutputKeyMap.Clear();
-    if(ExperimentOutputProvider)
+    if(OutputProvider)
     {
       foreach(var selection in OutputKeyMap)
       {
@@ -128,7 +128,7 @@ public class CommandDesignerViewModel : ReactiveObject
       existingValue.CustomName = kvp.Value;
     }
 
-    ExperimentOutputProvider = existingTemplate.UserOutputKeyMap.Any();
+    OutputProvider = existingTemplate.UserOutputKeyMap.Any();
 
     // Revisit this once we have some sort of caching on the UI end.
     // that way we don't have to bother the service every time
@@ -146,7 +146,7 @@ public class CommandDesignerViewModel : ReactiveObject
     var outputs = existingMetadata?.OutputMetadata?.DataSchema;
     if(outputs is not null)
     {
-      var newOutputs = outputs.Fields.Where(kvp => !OutputKeyMap.Any(uos => uos.DeviceOutputName == kvp.Key)).Select(newKvp => new UserOutputSelection(newKvp.Key, newKvp.Value.Type, newKvp.Key));
+      var newOutputs = outputs.Fields.Where(kvp => OutputKeyMap.All(uos => uos.DeviceOutputName != kvp.Key)).Select(newKvp => new UserOutputSelection(newKvp.Key, newKvp.Value.Type, newKvp.Key));
       var removedOutputs = OutputKeyMap.Where(output => !outputs.Fields.ContainsKey(output.DeviceOutputName));
       OutputKeyMap = [.. OutputKeyMap.Concat(newOutputs).Except(removedOutputs)];
     }

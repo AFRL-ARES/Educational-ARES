@@ -1365,6 +1365,9 @@ namespace AresService.Migrations
                     b.Property<bool>("NotPlannable")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("OutputName")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("ParameterId")
                         .HasColumnType("TEXT");
 

@@ -13,7 +13,7 @@ public class ParameterEditorFactory
     _unitCategoryHelper = unitCategoryHelper;
   }
 
-  public ParameterEditorViewModel Create() => new(_unitCategoryHelper);
+  public ParameterEditorViewModel Create(IEnumerable<string> availableOutputs) => new(_unitCategoryHelper, availableOutputs);
 
-  public ParameterEditorViewModel Create(ParameterMetadata existingParameterMetadata) => new(existingParameterMetadata, _unitCategoryHelper);
+  public ParameterEditorViewModel Create(ParameterMetadata existingParameterMetadata,  IEnumerable<string> availableOutputs) => new(existingParameterMetadata, availableOutputs, _unitCategoryHelper);
 }

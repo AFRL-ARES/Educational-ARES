@@ -90,7 +90,7 @@ public class CampaignDesignerViewModel : ReactiveObject
   private async Task Init(CampaignTemplate campaignTemplate)
   {
     CampaignName = campaignTemplate.Name;
-    PlannableParameterDesigner = _plannableParameterDesignerFactory.Create(campaignTemplate.PlannableParameters);
+    PlannableParameterDesigner = _plannableParameterDesignerFactory.Create(campaignTemplate.PlannableParameters, campaignTemplate.ExperimentTemplate);
     ExperimentDesigner = _experimentDesignerFactory.Create(campaignTemplate.ExperimentTemplate);
     StartupDesigner = _startupDesignerFactory.Create(campaignTemplate.StartupTemplate);
     CloseoutDesigner = _closeoutDesignerFactory.Create(campaignTemplate.CloseoutTemplate);

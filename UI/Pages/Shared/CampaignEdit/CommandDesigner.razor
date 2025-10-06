@@ -21,14 +21,14 @@
 @if(!DisablePlanningAndOutputCheck)
 {
   <div class="mb-2">
-	  <RadzenCheckBox @bind-Value="ViewModel!.ExperimentOutputProvider" id="experiment-output-check"/>
-	  <label for="experiment-output-check">Provides Experiment Output</label>
+	  <RadzenCheckBox @bind-Value="ViewModel!.OutputProvider" id="output-check"/>
+	  <label for="output-check">Provides Output</label>
   </div>  
 }
 
 
-<div hidden="@(!ViewModel!.ExperimentOutputProvider)">
-  <RadzenDataGrid TItem="UserOutputSelection" Data="@ViewModel.OutputKeyMap" Editable="true" EditMode="DataGridEditMode.Single" RowUpdate="@OnRowUpdate" ColumnWidth="200px">
+<div hidden="@(!ViewModel!.OutputProvider)">
+  <RadzenDataGrid TItem="UserOutputSelection" Data="@ViewModel.OutputKeyMap" Editable="true" EditMode="DataGridEditMode.Single" ColumnWidth="200px">
       <Columns>
           <RadzenDataGridColumn Property="@(nameof(UserOutputSelection.DeviceOutputName))" Title="Device Output Name" />
           <RadzenDataGridColumn Property="@(nameof(UserOutputSelection.CustomName))" Title="Experiment Output Name">
@@ -43,11 +43,6 @@
 @code {
   [Parameter]
   public bool DisablePlanningAndOutputCheck { get; set; }
-
-  public void OnRowUpdate()
-  {
-    Console.WriteLine("Ayylmao");
-  }
 
   private void CommandMetadataChanged(CommandMetadata? metadata)
   {

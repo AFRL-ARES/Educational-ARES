@@ -12,6 +12,6 @@ public class PlannableParameterDesignerFactory
     _parameterEditorFactory = parameterEditorFactory;
   }
 
-  public PlannableParameterDesignerViewModel Create(IEnumerable<ParameterMetadata> existingParameterMeta)
-    => new(existingParameterMeta, _parameterEditorFactory);
+  public PlannableParameterDesignerViewModel Create(IEnumerable<ParameterMetadata> existingParameterMeta, ExperimentTemplate? experimentTemplate)
+    => new(existingParameterMeta, experimentTemplate, _parameterEditorFactory);
 }

@@ -799,6 +799,7 @@ namespace AresService.Migrations
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Unit = table.Column<string>(type: "TEXT", nullable: true),
                     Index = table.Column<long>(type: "INTEGER", nullable: false),
+                    OutputName = table.Column<string>(type: "TEXT", nullable: true),
                     NotPlannable = table.Column<bool>(type: "INTEGER", nullable: false),
                     UseDefault = table.Column<bool>(type: "INTEGER", nullable: false),
                     Schema = table.Column<string>(type: "TEXT", nullable: true),

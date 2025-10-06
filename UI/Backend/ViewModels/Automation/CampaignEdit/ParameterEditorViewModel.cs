@@ -18,7 +18,7 @@ public class ParameterEditorViewModel : ReactiveObject
   private ParameterMetadata _parameterMetadata = null!;
   private string? _unit;
 
-  public ParameterEditorViewModel(UnitCategoryHelper unitHelper)
+  public ParameterEditorViewModel(UnitCategoryHelper unitHelper, IEnumerable<string> availableOutputs)
   {
     _unitHelper = unitHelper;
 
@@ -32,12 +32,15 @@ public class ParameterEditorViewModel : ReactiveObject
         new Limits()
       }
     };
+
+    AvailableOutputs = availableOutputs.ToArray();
   }
 
-  public ParameterEditorViewModel(ParameterMetadata existingMetadata, UnitCategoryHelper unitHelper)
+  public ParameterEditorViewModel(ParameterMetadata existingMetadata, IEnumerable<string> availableOutputs, UnitCategoryHelper unitHelper)
   {
     _unitHelper = unitHelper;
     ParameterMetadata = existingMetadata;
+    AvailableOutputs = availableOutputs.ToArray();
   }
 
   public ParameterMetadata ParameterMetadata
@@ -124,6 +127,9 @@ public class ParameterEditorViewModel : ReactiveObject
       Minimum = metaConstraint.Minimum;
       Maximum = metaConstraint.Maximum;
     }
+
+    SelectedAchievedOutput = string.IsNullOrEmpty(meta.OutputName) ? null : meta.OutputName;
+    HasAchievedValue = SelectedAchievedOutput is not null;
   }
 
   public ParameterMetadata Save()
@@ -141,8 +147,17 @@ public class ParameterEditorViewModel : ReactiveObject
       ParameterMetadata.Unit = Unit.Dehumanize();
     }
 
+    // TODO Should technically set to null but protobuf complains. Maybe investigate further?
+    ParameterMetadata.OutputName = HasAchievedValue ? SelectedAchievedOutput : "";
+
     return ParameterMetadata;
   }
+
+  public bool HasAchievedValue { get; set; }
+
+  public string? SelectedAchievedOutput { get; set; }
+
+  public string[]? AvailableOutputs { get; set; }
 
   private void LockInParams(ParameterMetadata meta)
   {
@@ -155,4 +170,6 @@ public class ParameterEditorViewModel : ReactiveObject
     Category = cat.Humanize();
     Unit = unit.Humanize();
   }
+
+
 }

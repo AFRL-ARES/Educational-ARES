@@ -307,9 +307,9 @@ public class CampaignExecutor : ICampaignExecutor
 
       if(IsAwaitingResponse(experimentStatus))
         Status.State = ExecutionState.AwaitingUser;
-
       else
         Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+
       _executionStatusSubject.OnNext(Status);
       _executionReporter.Report(Status);
     });

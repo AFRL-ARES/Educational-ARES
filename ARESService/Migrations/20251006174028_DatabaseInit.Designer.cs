@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AresService.Migrations
 {
     [DbContext(typeof(AresDbContext))]
-    [Migration("20250929145250_DatabaseInit")]
+    [Migration("20251006174028_DatabaseInit")]
     partial class DatabaseInit
     {
         /// <inheritdoc />
@@ -1367,6 +1367,9 @@ namespace AresService.Migrations
 
                     b.Property<bool>("NotPlannable")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("OutputName")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("ParameterId")
                         .HasColumnType("TEXT");

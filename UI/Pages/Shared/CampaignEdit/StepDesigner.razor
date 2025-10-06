@@ -71,7 +71,7 @@
 
     public bool CommandsExpanded { get; set; }
 
-    private bool ContainsExperimentOutput => ViewModel!.CommandDesigners.Any(cmd => cmd.TemplateExperimentOutputProvider);
+    private bool ContainsExperimentOutput => ViewModel!.CommandDesigners.Any(cmd => cmd.TemplateOutputProvider);
 
     private async void AddCommandClick()
     {

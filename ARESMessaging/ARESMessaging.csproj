@@ -5,20 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DeviceState\**" />
-    <EmbeddedResource Remove="DeviceState\**" />
-    <None Remove="DeviceState\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Authentication.proto" />
-		<None Remove="DeviceStateLogging\DevicesResponse.proto" />
+    <None Remove="DeviceStateLogging\DevicesResponse.proto" />
     <None Remove="SerialConnectivity.proto" />
     <None Remove="UserManagement.proto" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ARES.Datamodel" Version="0.12.0-beta.1" GeneratePathProperty="True" />
+    <PackageReference Include="ARES.Datamodel" Version="0.13.1-beta.1" GeneratePathProperty="True" />
     <PackageReference Include="Google.Protobuf" Version="3.32.1" />
     <PackageReference Include="Grpc" Version="2.46.6" />
     <PackageReference Include="Grpc.Tools" Version="2.72.0">
@@ -32,7 +26,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-    <Protobuf Include="DeviceStateLogging\DevicesResponse.proto" GrpcServices="None" />
+    <Protobuf Include="DeviceStateLogging\DevicesResponse.proto" GrpcServices="None" /> 
     <Protobuf Include="SerialConnectivity.proto" />
     <Protobuf Include="UserManagement.proto" />
     <Protobuf Include="Authentication.proto" />

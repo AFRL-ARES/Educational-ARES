@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ARES.Datamodel" Version="0.12.0-beta.1" />
+    <PackageReference Include="ARES.Datamodel" Version="0.13.0-beta.3" />
     <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.71.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
@@ -19,8 +19,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.19" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.19" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
-    <PackageReference Include="Radzen.Blazor" Version="7.1.7" />
-    <PackageReference Include="ReactiveUI.Blazor" Version="20.4.1" />
+    <PackageReference Include="Radzen.Blazor" Version="7.4.3" />
+    <PackageReference Include="ReactiveUI.Blazor" Version="21.0.1" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />

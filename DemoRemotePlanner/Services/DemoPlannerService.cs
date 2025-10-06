@@ -41,27 +41,27 @@ public class DemoPlannerService : AresRemotePlannerService.AresRemotePlannerServ
 
     foreach(var parameter in inputs)
     {
-      switch (parameter.PlannerName)
+      switch(parameter.PlannerName)
       {
         case "Random Planner":
-        {
-          var plannedParam = await RandomPlanner(parameter);
-          response.PlannedParameters.Add(plannedParam);
-          break;
-        }
+          {
+            var plannedParam = await RandomPlanner(parameter);
+            response.PlannedParameters.Add(plannedParam);
+            break;
+          }
         case "Gradual Planner":
-        {
-          var gradualPlannedParam = await GradualPlanner(parameter);
-          response.PlannedParameters.Add(gradualPlannedParam);
-          break;
-        }
+          {
+            var gradualPlannedParam = await GradualPlanner(parameter);
+            response.PlannedParameters.Add(gradualPlannedParam);
+            break;
+          }
         default:
-        {
-          Console.WriteLine("Unrecognized Planned Requested! Defaulting to random planner...");
-          var plannedParam = await RandomPlanner(parameter);
-          response.PlannedParameters.Add(plannedParam);
-          break;
-        }
+          {
+            Console.WriteLine("Unrecognized Planned Requested! Defaulting to random planner...");
+            var plannedParam = await RandomPlanner(parameter);
+            response.PlannedParameters.Add(plannedParam);
+            break;
+          }
       }
     }
 
@@ -70,20 +70,20 @@ public class DemoPlannerService : AresRemotePlannerService.AresRemotePlannerServ
 
   public override Task<ConnectionStatus> GetConnectionStatus(Empty request, ServerCallContext context)
   {
-    return Task.FromResult(new ConnectionStatus 
-    { 
-      Status = AresStatus.Connected, 
+    return Task.FromResult(new ConnectionStatus
+    {
+      Status = AresStatus.Connected,
       Info = "Demo Planner Service is connected!"
     });
   }
 
   public override Task<InfoResponse> GetInfo(Empty request, ServerCallContext context)
   {
-    return Task.FromResult(new InfoResponse 
-    { 
-      Name = "Demo Planner Service", 
-      Description = "A demo of the ARES remote planenr service capabilities", 
-      Version = "1.0.0" 
+    return Task.FromResult(new InfoResponse
+    {
+      Name = "Demo Planner Service",
+      Description = "A demo of the ARES remote planenr service capabilities",
+      Version = "1.0.0"
     });
   }
 
@@ -113,7 +113,7 @@ public class DemoPlannerService : AresRemotePlannerService.AresRemotePlannerServ
     return Task.FromResult(capabilitesResponse);
   }
 
-  public Task<PlannedParameter> RandomPlanner(PlanningParameter aresParameter) 
+  public Task<PlannedParameter> RandomPlanner(PlanningParameter aresParameter)
   {
     var randomDouble = _random.NextDouble();
     var plannedParam = new PlannedParameter();
@@ -133,7 +133,7 @@ public class DemoPlannerService : AresRemotePlannerService.AresRemotePlannerServ
 
     else
     {
-      var previousValue = aresParameter.ParameterHistory.Last();
+      var previousValue = aresParameter.ParameterHistory.Last().PlannedValue;
       double incrementedValue;
 
       if(previousValue.HasNumberValue)

@@ -52,6 +52,23 @@
       </div>
     </div>
   }
+
+
+  <hr style="border-top: 1px solid #ccc; margin: 10px 0;" />
+
+  <RadzenRow AlignItems="AlignItems.Center">
+    <RadzenSwitch Name="AchievedValueSwitch" @bind-Value="ViewModel!.HasAchievedValue" class="my-2"/>
+    <RadzenLabel Text="Has Achieved Output" Component="AchievedValueSwitch" />
+  </RadzenRow>
+
+  @if (ViewModel!.AvailableOutputs is not null && ViewModel!.HasAchievedValue)
+  {
+    <div class="row">
+      <RadzenFormField Text="Output Value" Variant="Variant.Outlined" Style="width: 100%">
+        <RadzenDropDown Data="@ViewModel!.AvailableOutputs" @bind-Value="ViewModel!.SelectedAchievedOutput" />
+      </RadzenFormField>
+    </div>
+  }
 </div>
 
 @code {
@@ -59,7 +76,7 @@
   private IEnumerable<AresDataType> filteredTypes;
 
   [Parameter]
-  public Action<ParameterEditorViewModel> DeleteParameterCallback { get; set; } = delegate {};
+  public Action<ParameterEditorViewModel> DeleteParameterCallback { get; set; } = delegate { };
 
   private void DeleteParameterClick()
   {

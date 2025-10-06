@@ -2,6 +2,7 @@
 using Ares.Datamodel.Templates;
 using DynamicData;
 using ReactiveUI;
+using UI.Backend.Extensions;
 using UI.Backend.ViewModels.Factories;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
@@ -9,11 +10,13 @@ namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 public class PlannableParameterDesignerViewModel : ReactiveObject
 {
   private readonly ParameterEditorFactory _editorFactory;
-  private IEnumerable<ParameterMetadata> _parameterMetadata = Array.Empty<ParameterMetadata>();
+  private IEnumerable<ParameterMetadata> _parameterMetadata = [];
+  private ExperimentTemplate? _experimentTemplate;
 
-  public PlannableParameterDesignerViewModel(IEnumerable<ParameterMetadata> existingMetadata, ParameterEditorFactory editorFactory)
+  public PlannableParameterDesignerViewModel(IEnumerable<ParameterMetadata> existingMetadata, ExperimentTemplate? experimentTemplate, ParameterEditorFactory editorFactory)
   {
     _editorFactory = editorFactory;
+    _experimentTemplate = experimentTemplate;
     ParameterMetadata = existingMetadata;
   }
 
@@ -37,12 +40,14 @@ public class PlannableParameterDesignerViewModel : ReactiveObject
 
   private void Init(IEnumerable<ParameterMetadata> paramMetadata)
   {
-    ParameterEditors.AddRange(paramMetadata.Select(metadata => _editorFactory.Create(metadata)));
+    var outputs = _experimentTemplate?.GetAllOutputCommands().SelectMany(cmd => cmd.UserOutputKeyMap.Select(m => m.Value)).ToArray() ?? [];
+    ParameterEditors.AddRange(paramMetadata.Select(metadata => _editorFactory.Create(metadata, outputs)));
   }
 
   public void Create()
   {
-    ParameterEditors.Add(_editorFactory.Create());
+    var outputs = _experimentTemplate?.GetAllOutputCommands().SelectMany(cmd => cmd.UserOutputKeyMap.Select(m => m.Value)).ToArray() ?? [];
+    ParameterEditors.Add(_editorFactory.Create(outputs));
   }
 
   public void Remove(ParameterEditorViewModel vm)

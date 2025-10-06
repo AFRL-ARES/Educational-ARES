@@ -1,4 +1,5 @@
 ﻿using Ares.Datamodel.Templates;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Ares.Core.Execution.Extensions;
 
@@ -54,6 +55,9 @@ public static class ExperimentTemplateExtensions
 
     foreach(var para in parameters)
     {
+      if(!para.EnvironmentBased)
+        continue;
+
       if(para.Value.StringValue == string.Empty)
         resolved = false;
     }

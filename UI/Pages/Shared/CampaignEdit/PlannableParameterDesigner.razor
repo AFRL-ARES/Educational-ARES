@@ -12,12 +12,11 @@
 </div>
 
 @code {
-    private void NewParameterClick() => ViewModel!.Create();
+  private void NewParameterClick() => ViewModel!.Create();
 
-    private void DeleteParameterCallback(ParameterEditorViewModel paramEditor)
-    {
-      ViewModel!.Remove(paramEditor);
-      StateHasChanged();
-    }
-
+  private void DeleteParameterCallback(ParameterEditorViewModel paramEditor)
+  {
+    ViewModel!.Remove(paramEditor);
+    StateHasChanged();
+  }
 }

@@ -73,7 +73,7 @@ public class Startup
 
     else
     {
-      throw new InvalidOperationException("FIX MEEEEE");
+      throw new InvalidOperationException($"Database provider {provider} is not a supported provider for ARES. Use Sqlite, SqlServer or Postgres.");
     }
 
     services.AddTransient<IDbContextFactory<CoreDatabaseContext>>(provider

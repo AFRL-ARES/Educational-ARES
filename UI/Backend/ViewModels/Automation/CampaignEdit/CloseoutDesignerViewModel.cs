@@ -49,7 +49,7 @@ public class CloseoutDesignerViewModel : ReactiveObject
       var commandDesigners = CloseoutStepDesigners.SelectMany(model => model.CommandDesigners).Where(model => model.CommandTemplate.UserOutputKeyMap.Any());
       foreach(var designer in commandDesigners)
       {
-        designer.ExperimentOutputProvider = true;
+        designer.OutputProvider = true;
       }
 
       ExperimentOutputProviderCommand = commandDesigners.Select(designer => designer.CommandTemplate);
