@@ -30,44 +30,47 @@ public class GCodeHandler : IGcodeHandler
     var data = await ConvertGCodeToStrings(gcode);
     await DetermineModificationIndex(data, mainObjectName);
 
-    List<string> gcode_to_modify;
+    // The G-Code associated with the user defined main object
+    List<string> main_print_gcode;
+    // G-Code that comes at the end of a print, after the main object finishes, remains unmodified
     List<string> unmodified_end_gcode = new List<string>();
-    var unmodified_start_gcode = data.Take(ModificationStartIndex + 1).ToList();
+    // Start G-Code contains the nozzle and bed temperature, which we might need to edit sometimes
+    List<string> start_gcode = data.Take(ModificationStartIndex + 1).ToList();
 
 
     if(ModificationStopIndex != -1)
     {
       var lengthOfMainPrint = ModificationStopIndex - ModificationStartIndex + 1;
-      gcode_to_modify = data.Skip(ModificationStartIndex + 1).Take(lengthOfMainPrint).ToList();
+      main_print_gcode = data.Skip(ModificationStartIndex + 1).Take(lengthOfMainPrint).ToList();
       unmodified_end_gcode = data.Skip(ModificationStopIndex + 1).ToList();
     }
 
     else
     {
-      gcode_to_modify = data.Skip(ModificationStartIndex + 1).ToList();
+      main_print_gcode = data.Skip(ModificationStartIndex + 1).ToList();
     }
 
 
     if(nozzleTemperature > 0)
-      gcode_to_modify = await UpdateNozzleTemperature(nozzleTemperature, gcode_to_modify);
+      start_gcode = await UpdateNozzleTemperature(nozzleTemperature, start_gcode);
 
     if(bedTemperature > 0)
-      gcode_to_modify = await UpdateBedTemperature(bedTemperature, gcode_to_modify);
+      start_gcode = await UpdateBedTemperature(bedTemperature, start_gcode);
 
     if(extrusionMod > 0)
-      gcode_to_modify = await UpdateExtrusionRate(extrusionMod, gcode_to_modify);
+      main_print_gcode = await UpdateExtrusionRate(extrusionMod, main_print_gcode);
 
     if(speedMod > 0)
-      gcode_to_modify = await UpdateMovementSpeed(speedMod, gcode_to_modify);
+      main_print_gcode = await UpdateMovementSpeed(speedMod, main_print_gcode);
 
     if(retractionLength > -1)
-      gcode_to_modify = await UpdateRetractionLength(retractionLength, gcode_to_modify);
+      main_print_gcode = await UpdateRetractionLength(retractionLength, main_print_gcode);
 
     if(accelerationMod > 0)
-      gcode_to_modify = await UpdateAcceleration(accelerationMod, gcode_to_modify);
+      main_print_gcode = await UpdateAcceleration(accelerationMod, main_print_gcode);
 
-    var updated_gcode = await ConvertGCodeToBytes(unmodified_start_gcode, gcode_to_modify, unmodified_end_gcode);
-    return gcode;
+    var updated_gcode = await ConvertGCodeToBytes(start_gcode, main_print_gcode, unmodified_end_gcode);
+    return updated_gcode;
   }
 
   private Task<List<string>> UpdateExtrusionRate(double modifier, List<string> gcode)
@@ -334,7 +337,7 @@ public class GCodeHandler : IGcodeHandler
 
   public Task<uint> SmartDetermineNumberOfPrints()
   {
-    var max_vertical = (int)Math.Floor(PrintBedHeight / Math.Max(ItemHeight, 20));
+    var max_vertical = (int)Math.Floor(PrintBedHeight / Math.Max(ItemHeight + 10, 20));
     return Task.FromResult((uint)max_vertical);
   }
 
@@ -372,7 +375,6 @@ public class GCodeHandler : IGcodeHandler
 
       var modifiedStringData = string.Join("\n", modifiedData);
       var data = Encoding.UTF8.GetBytes(modifiedStringData);
-      File.WriteAllBytes($"Iteration_Test_{iteration}.gcode", data);
       return data;
     }
   }
@@ -396,7 +398,7 @@ public class GCodeHandler : IGcodeHandler
       return -20 * itemIndex;
 
     else
-      return -ItemHeight * itemIndex;
+      return (-ItemHeight - 10) * itemIndex;
   }
 
   private string? UpdateLine(string line, double xOffset, double yOffset, int iteration)
@@ -659,8 +661,8 @@ public class GCodeHandler : IGcodeHandler
 
   private Task<byte[]> ConvertGCodeToBytes(List<string> start_gcode, List<string> updated_gcode, List<string> end_gcode)
   {
-    updated_gcode.ForEach(line => start_gcode.Add(line));
-    end_gcode.ForEach(line => start_gcode.Add(line));
+    updated_gcode.ForEach(start_gcode.Add);
+    end_gcode.ForEach(start_gcode.Add);
     var modifiedStringData = string.Join("\n", start_gcode);
     return Task.FromResult(Encoding.UTF8.GetBytes(modifiedStringData));
   }
@@ -684,10 +686,10 @@ public class GCodeHandler : IGcodeHandler
     {
       foreach(var line in gcode)
       {
-        if(line.Contains($"; printing object {objectName}", StringComparison.CurrentCultureIgnoreCase))
+        if(line.Contains($"; printing object {objectName}", StringComparison.InvariantCultureIgnoreCase))
           ModificationStartIndex = index;
 
-        else if(line.Contains($";stop printing object {objectName}", StringComparison.CurrentCultureIgnoreCase))
+        else if(line.Contains($"; stop printing object {objectName}", StringComparison.InvariantCultureIgnoreCase))
           ModificationStopIndex = index;
 
         index++;

@@ -189,6 +189,7 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
       var custom_gcode = await handler.CreatePrintIteration(expNumber, mainObjectName);
       var modifiedGcode = await handler.ApplyPlanningParameters(mainObjectName, bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, custom_gcode);
 
+      File.WriteAllBytes($"Iteration_Test_{expNumber}.gcode", modifiedGcode);
       var printJobRequest = CreatePrintRequest(modifiedGcode);
       Console.WriteLine("Successfully created a print request!");
     }
