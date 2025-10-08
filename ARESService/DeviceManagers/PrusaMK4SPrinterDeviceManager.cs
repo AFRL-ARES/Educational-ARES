@@ -1,5 +1,6 @@
 ﻿using Ares.Core.Device;
 using AresService.DeviceDbLoaders;
+using Grpc.Core.Logging;
 using MK4S.Config;
 using PrusaMK4S;
 using PrusaMK4S.Simulation;

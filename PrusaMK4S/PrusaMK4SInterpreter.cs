@@ -197,6 +197,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     {
       case PrusaMK4SCommandType.Print:
       {
+
         var printParamsValidationResult = ValidatePrintParameters(parameters, 
           out var gcode, 
           out var objectName, 

@@ -83,109 +83,141 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
   {
     var response = new MK4SRequestResponse();
 
-    if(_httpClient is null || Address is null)
+    try
     {
-      response.ErrorString = "Printer HTTP client was null, cannot send commands!";
-      return response;
-    }
-
-    var handler = new GCodeHandler(gcode);
-    await handler.Init();
-    LatestGCodeHandler = handler;
-    HttpResponseMessage? httpResponse;
-
-    if(!SmartPrint)
-    {
-      //If this is the case, the student has opted not to utilize our auto calculation and clearing the print bed must be done manually.
-      var modifiedGcode = await handler.ApplyPlanningParameters(mainObjectName, bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, gcode);
-      var request = CreatePrintRequest(modifiedGcode);
-      httpResponse = await _httpClient.SendAsync(request);
-    }
-
-    else
-    {
-      //More complicated, as we need to determine the location of our print.
-      var parsed = int.TryParse(AresEnvironment.GetInternalVariable(InternalVariableType.CurrentExperimentNumber), out var expNumber);
-
-      if(!parsed)
+      if(_httpClient is null || Address is null)
       {
-        response.ErrorString = "Printer couldn't determine iteration number for smart print, unable to complete print!";
+        response.ErrorString = "Printer HTTP client was null, cannot send commands!";
         return response;
       }
 
-      //Customize our G Code
-      var custom_gcode = await handler.CreatePrintIteration(expNumber, mainObjectName);
-      var modifiedGcode = await handler.ApplyPlanningParameters(mainObjectName, bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, custom_gcode);
+      var handler = new GCodeHandler(gcode);
+      await handler.Init();
+      LatestGCodeHandler = handler;
+      HttpResponseMessage? httpResponse;
 
-      var printJobRequest = CreatePrintRequest(modifiedGcode);
-      httpResponse = await _httpClient.SendAsync(printJobRequest);
-    }
+      if(!SmartPrint)
+      {
+        //If this is the case, the student has opted not to utilize our auto calculation and clearing the print bed must be done manually.
+        var modifiedGcode = await handler.ApplyPlanningParameters(mainObjectName, bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, gcode);
+        var request = CreatePrintRequest(modifiedGcode);
+        httpResponse = await _httpClient.SendAsync(request);
+      }
 
-    if(!httpResponse.IsSuccessStatusCode)
-    {
-      response.ErrorString = httpResponse.ReasonPhrase;
+      else
+      {
+        //More complicated, as we need to determine the location of our print.
+        var parsed = int.TryParse(AresEnvironment.GetInternalVariable(InternalVariableType.CurrentExperimentNumber), out var expNumber);
+
+        if(!parsed)
+        {
+          response.ErrorString = "Printer couldn't determine iteration number for smart print, unable to complete print!";
+          return response;
+        }
+
+        //Customize our G Code
+        var custom_gcode = await handler.CreatePrintIteration(expNumber, mainObjectName);
+        var modifiedGcode = await handler.ApplyPlanningParameters(mainObjectName, bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, custom_gcode);
+
+        var printJobRequest = CreatePrintRequest(modifiedGcode);
+        httpResponse = await _httpClient.SendAsync(printJobRequest);
+      }
+
+      if(!httpResponse.IsSuccessStatusCode)
+      {
+        response.ErrorString = httpResponse.ReasonPhrase;
+        return response;
+      }
+
+      //Allow the printer some time to process our command.
+      Thread.Sleep(TimeSpan.FromSeconds(5));
+
+      while(IsPrinting || IsBusy)
+        Thread.Sleep(5000);
+
+      response.Success = true;
       return response;
     }
 
-    //Allow the printer some time to process our command.
-    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-    while(IsPrinting || IsBusy)
-      Thread.Sleep(5000);
-
-    response.Success = true;
-    return response;
+    catch(Exception ex)
+    {
+      response.Success = false;
+      response.ErrorString = ex.Message;
+      return response;
+    }
   }
 
   public async Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell, int xOffset, int yOffset)
   {
-    //Attempts to move the print head over the last known print location
-    //Use the last GCodeHandler to try and determine our x and y positioning
+    try
+    {
+      //Attempts to move the print head over the last known print location
+      //Use the last GCodeHandler to try and determine our x and y positioning
+      if(LatestGCodeHandler is null)
+        return new MK4SRequestResponse { Success = false, ErrorString = "Determining the last print location requires existing G-Code knowledge, which wasn't found" };
 
-    if(LatestGCodeHandler is null)
-      return new MK4SRequestResponse { Success = false, ErrorString = "Determining the last print location requires existing G-Code knowledge, which wasn't found" };
+      var itemWidth = LatestGCodeHandler.ItemWidth;
+      var itemHeight = LatestGCodeHandler.ItemHeight;
 
-    var itemWidth = LatestGCodeHandler.ItemWidth;
-    var itemHeight = LatestGCodeHandler.ItemHeight;
+      //Use the GCodeHandler to gather the latest shift values. Add half the items respective width or height to place the camera around the middle of the object
+      var calculated_y = LatestGCodeHandler.PrintBedHeight - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2)) + yOffset;
+      var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2) + xOffset;
 
-    //Use the GCodeHandler to gather the latest shift values. Add half the items respective width or height to place the camera around the middle of the object
-    var calculated_y = LatestGCodeHandler.PrintBedHeight - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2)) + yOffset;
-    var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2) + xOffset;
+      return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
+    }
 
-    return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
+    catch(Exception ex)
+    {
+      var response = new MK4SRequestResponse
+      {
+        Success = false,
+        ErrorString = ex.Message
+      };
+
+      return response;
+    }
   }
 
   public async Task<MK4SRequestResponse> MovePrinter(string x, string y, string z, string dwell)
   {
     var response = new MK4SRequestResponse();
-
-    if(_httpClient is null)
+    try
     {
-      response.ErrorString = "Printer HTTP client was null, cannot send commands!";
-      return response;
+      if(_httpClient is null)
+      {
+        response.ErrorString = "Printer HTTP client was null, cannot send commands!";
+        return response;
+      }
+
+      string movementCommand;
+      var dwellInt = int.Parse(dwell);
+
+      if(dwellInt > 0)
+        movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000 \n G4 S{dwell}";
+
+      else
+        movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000";
+
+      var movementRequest = CreateMovementRequest(Encoding.UTF8.GetBytes(movementCommand));
+      var result = await _httpClient.SendAsync(movementRequest);
+
+      if(result.IsSuccessStatusCode)
+      {
+        response.Success = true;
+        return response;
+      }
+
+      else
+      {
+        response.ErrorString = result.ReasonPhrase;
+        return response;
+      }
     }
 
-    string movementCommand;
-    var dwellInt = int.Parse(dwell);
-
-    if(dwellInt > 0)
-      movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000 \n G4 S{dwell}";
-
-    else
-      movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000";
-
-    var movementRequest = CreateMovementRequest(Encoding.UTF8.GetBytes(movementCommand));
-    var result = await _httpClient.SendAsync(movementRequest);
-
-    if(result.IsSuccessStatusCode)
+    catch(Exception ex)
     {
-      response.Success = true;
-      return response;
-    }
-
-    else
-    {
-      response.ErrorString = result.ReasonPhrase;
+      response.Success = false;
+      response.ErrorString = ex.Message;
       return response;
     }
   }
@@ -194,27 +226,37 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
   {
     var response = new MK4SRequestResponse();
 
-    if(_httpClient is null)
+    try
     {
-      response.ErrorString = "Printer HTTP client was null, cannot send commands!";
-      return response;
+      if(_httpClient is null)
+      {
+        response.ErrorString = "Printer HTTP client was null, cannot send commands!";
+        return response;
+      }
+
+      var request = CreateHomeRequest(Encoding.UTF8.GetBytes("G28"));
+      var result = await _httpClient.SendAsync(request);
+
+      while(IsPrinting || IsBusy)
+        continue;
+
+      if(result.IsSuccessStatusCode)
+      {
+        response.Success = true;
+        return response;
+      }
+
+      else
+      {
+        response.ErrorString = result.ReasonPhrase;
+        return response;
+      }
     }
 
-    var request = CreateHomeRequest(Encoding.UTF8.GetBytes("G28"));
-    var result = await _httpClient.SendAsync(request);
-
-    while(IsPrinting || IsBusy)
-      continue;
-
-    if(result.IsSuccessStatusCode)
+    catch(Exception ex)
     {
-      response.Success = true;
-      return response;
-    }
-
-    else
-    {
-      response.ErrorString = result.ReasonPhrase;
+      response.Success = false;
+      response.ErrorString = ex.Message;
       return response;
     }
   }

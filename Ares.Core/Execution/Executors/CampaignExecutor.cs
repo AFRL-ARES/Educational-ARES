@@ -162,19 +162,47 @@ public class CampaignExecutor : ICampaignExecutor
 
         //If a command failed, stop the experiment.
         if(experimentSummary.StepSummaries.Any(step => step.CommandSummaries.Any(cmd => !cmd.Result.Success)) || !experimentSummary.StepSummaries.Any())
+        {
+          executionSuccess = false;
           break;
+        }
+          
 
         // if the execution was canceled, the experiment may not have executed the command to provide the output
         // and thus sending a null result to the analyzer might break it depending on the analyzer
         if(!token.IsCancelled)
         {
-          var analysis = await _analysisHelper.Analyze(
+          var analysisResult = await _analysisHelper.Analyze(
             experimentExecutor.Template,
             experimentSummary,
             token.CancellationToken);
+
+          // The following are top level checks for analysis failure in case the
+          // failure is not properly handled on the Analysis itself
+          // which also has support for "success" and "error" message
+          if(analysisResult.ResultType == AnalysisResultType.Failure)
+          {
+            await HandleNotification("Analysis Failure", $"Failed to analyze experiment result: {analysisResult.Error}", NotificationSeverityEnum.Error);
+            break;
+          }
+
+          if(analysisResult.ResultType == AnalysisResultType.Canceled)
+          {
+            break;
+          }
+
+          if(analysisResult.Analysis is null)
+          {
+            await HandleNotification("Analysis Failure", $"Analysis was reported as successful, but not actual analysis was provided. {analysisResult.Error}", NotificationSeverityEnum.Error);
+            break;
+          }
+
+          var analysis = analysisResult.Analysis;
           analyses.Add(analysis);
 
           _analysisRepo.Add(analysis);
+          // Here the analysis has failed, but the analyzer properly reported why
+          // it failed via the analysis result.
           if(analysis.ErrorString != string.Empty && analysis.ErrorString is not null)
           {
             await HandleNotification("Analysis Process Failed!", analysis.ErrorString, NotificationSeverityEnum.Error);
@@ -215,7 +243,11 @@ public class CampaignExecutor : ICampaignExecutor
       }
 
       else
+      {
         Status.State = ExecutionState.Failed;
+        await HandleNotification("Campaign Failed", $"ARES failed to execute {Template.Name} successfully, check the event history page for errors.", NotificationSeverityEnum.Error);
+      }
+        
 
       _executionReporter.Report(Status);
 

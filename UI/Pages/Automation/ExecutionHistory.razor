@@ -20,7 +20,7 @@ else
   @if(ViewModel!.CampaignSummaries.Any())
   {
     <RadzenDataGrid AllowFiltering="true" AllowColumnResize="false"
-                    FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ViewModel!.CampaignSummaries" ColumnWidth="300px"
+                    FilterMode="FilterMode.Simple" PageSize="18" AllowPaging="true" AllowSorting="true" Data="@ViewModel!.CampaignSummaries" ColumnWidth="300px"
                     FilterCaseSensitivity="@filterCaseSensitivity" LogicalFilterOperator="@logicalFilterOperator">
       <Columns>
         <RadzenDataGridColumn Property="@nameof(CampaignExecutionSummaryMetadata.SummaryId)" Filterable="false" Title="ID" Width="225px">

@@ -29,7 +29,7 @@ public class RemoteAnalyzer : AnalyzerBase
 
   public Uri Address { get; }
 
-  public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken = default)
+  public override async Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken = default)
   {
     var client = GetClient();
     var analysisRequest = new AnalysisRequest
@@ -37,7 +37,9 @@ public class RemoteAnalyzer : AnalyzerBase
       Inputs = inputs,
       Settings = Settings
     };
-    return client.AnalyzeAsync(analysisRequest, cancellationToken: cancellationToken).ResponseAsync;
+    var analysis = await client.AnalyzeAsync(analysisRequest, cancellationToken: cancellationToken);
+
+    return analysis;
   }
 
 

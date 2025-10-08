@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ARES.Datamodel" Version="0.13.0-beta.3" />
+    <PackageReference Include="ARES.Datamodel" Version="0.13.1-beta.1" />
     <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.71.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />

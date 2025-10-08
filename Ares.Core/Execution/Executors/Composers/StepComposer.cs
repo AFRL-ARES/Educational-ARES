@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Device;
+using Ares.Core.Notifications;
 using Ares.Datamodel;
 using Ares.Datamodel.Templates;
 
@@ -7,10 +8,11 @@ namespace Ares.Core.Execution.Executors.Composers;
 public class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
 {
   private readonly IDeviceCommandInterpreterRepo _interpreterRepo;
-
-  public StepComposer(IDeviceCommandInterpreterRepo interpreterRepo)
+  private readonly IEnumerable<INotificationHandler> _notificationHandlers;
+  public StepComposer(IDeviceCommandInterpreterRepo interpreterRepo, IEnumerable<INotificationHandler> notificationHandlers)
   {
     _interpreterRepo = interpreterRepo;
+    _notificationHandlers = notificationHandlers;
   }
 
   public StepExecutor Compose(StepTemplate template)
@@ -35,7 +37,7 @@ public class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
                 });
 
             var command = commandInterpreter.TemplateToDeviceCommand(commandTemplate);
-            var executable = new CommandExecutor(command, commandTemplate);
+            var executable = new CommandExecutor(command, commandTemplate, _notificationHandlers);
             return executable;
           }
         )

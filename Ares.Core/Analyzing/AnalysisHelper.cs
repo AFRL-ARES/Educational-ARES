@@ -1,7 +1,7 @@
 ﻿using Ares.Datamodel;
-using Ares.Datamodel.Analyzing;
 using Ares.Datamodel.Templates;
 using Google.Protobuf.Collections;
+using Grpc.Core;
 
 namespace Ares.Core.Analyzing;
 
@@ -14,23 +14,38 @@ public class AnalysisHelper
     _analyzerRepo = analyzerRepo;
   }
 
-  public async Task<Analysis> Analyze(ExperimentTemplate template, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
+  public async Task<AnalysisResult> Analyze(ExperimentTemplate template, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
   {
     var analyzer = GetAnalyzer(template.AnalyzerId);
     var analyzerInputs = ExperimentOutputToAnalyzerInputs(
       experimentSummary.ExperimentOverview.Result,
       template.AnalyzerMaps);
-    // TODO: Maybe add support for settings overrides if needed
-    var analysis = await analyzer.Analyze(analyzerInputs, cancellationToken);
-
-    experimentSummary.ExperimentOverview.AnalysisOverview = new AnalysisOverview
+    try
     {
-      UniqueId = Guid.NewGuid().ToString(),
-      Result = analysis.Result,
-      AnalyzerInfo = await analyzer.CreateAnalyzerInfo(),
-      ExperimentOverviewId = experimentSummary.ExperimentOverview.UniqueId
-    };
-    return analysis;
+      // TODO: Maybe add support for settings overrides if needed
+      var analysis = await analyzer.Analyze(analyzerInputs, cancellationToken);
+      experimentSummary.ExperimentOverview.AnalysisOverview = new AnalysisOverview
+      {
+        UniqueId = Guid.NewGuid().ToString(),
+        Result = analysis.Result,
+        AnalyzerInfo = await analyzer.CreateAnalyzerInfo(),
+        ExperimentOverviewId = experimentSummary.ExperimentOverview.UniqueId
+      };
+
+      return new AnalysisResult(analysis, AnalysisResultType.Success);
+    }
+    catch(RpcException e)
+    {
+      if(e.InnerException is OperationCanceledException oce)
+      {
+        return new AnalysisResult(null, AnalysisResultType.Canceled, "Analysis has been canceled.");
+      }
+      return new AnalysisResult(null, AnalysisResultType.Failure, $"Call to analyzer has failed: {e}");
+    }
+    catch(Exception e)
+    {
+      return new AnalysisResult(null, AnalysisResultType.Failure, $"Call to analyzer has failed: {e}");
+    }
   }
 
   private IAnalyzer GetAnalyzer(string? analyzerId)

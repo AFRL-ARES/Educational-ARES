@@ -5,12 +5,14 @@ using Ares.Device;
 using Moq;
 using System.Reflection;
 using Ares.Datamodel.Templates;
+using Ares.Core.Notifications;
 
 namespace Ares.Core.Tests.Execution.Composers;
 
 internal class StepComposerTests
 {
   private IDeviceCommandInterpreterRepo _commandInterpreters;
+  private IEnumerable<INotificationHandler> _notificationHandlers;
   private StepTemplate _stepTemplate;
 
   [SetUp]
@@ -64,12 +66,14 @@ internal class StepComposerTests
     {
       interpreterMock.Object
     };
+
+    _notificationHandlers = new Mock<IEnumerable<INotificationHandler>>().Object;
   }
 
   [Test]
   public void StepComposer_Composes_CommandTemplates_Correctly()
   {
-    var stepComposer = new StepComposer(_commandInterpreters);
+    var stepComposer = new StepComposer(_commandInterpreters, _notificationHandlers);
     var stepExecutor = stepComposer.Compose(_stepTemplate);
     var templates = stepExecutor.CommandExecutors.Select(executor => typeof(CommandExecutor).GetProperty("Template", BindingFlags.Public | BindingFlags.Instance).GetValue(executor)).OfType<CommandTemplate>();
     Assert.That(templates.Select((template, i) => template.Index == i), Is.All.True);
@@ -79,7 +83,7 @@ internal class StepComposerTests
   public void StepComposer_Composes_Parallel_Template()
   {
     _stepTemplate.IsParallel = true;
-    var stepComposer = new StepComposer(_commandInterpreters);
+    var stepComposer = new StepComposer(_commandInterpreters, _notificationHandlers);
     var stepExecutor = stepComposer.Compose(_stepTemplate);
     Assert.That(stepExecutor, Is.TypeOf<ParallelStepExecutor>());
   }
@@ -88,7 +92,7 @@ internal class StepComposerTests
   public void StepComposer_Composes_Sequential_Template()
   {
     _stepTemplate.IsParallel = false;
-    var stepComposer = new StepComposer(_commandInterpreters);
+    var stepComposer = new StepComposer(_commandInterpreters, _notificationHandlers);
     var stepExecutor = stepComposer.Compose(_stepTemplate);
     Assert.That(stepExecutor, Is.TypeOf<SequentialStepExecutor>());
   }

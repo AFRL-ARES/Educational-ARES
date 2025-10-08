@@ -31,6 +31,7 @@ internal class CampaignExecutorTests
   private AnalysisHelper _analysisHelper;
   private AnalysisRepo _analysisRepo;
   private StateLoggerManager _stateLoggerManager;
+  private IEnumerable<INotificationHandler> _notificationHandlers;
 
   private IAnalyzer _replyAnalyzer;
 
@@ -47,6 +48,7 @@ internal class CampaignExecutorTests
     _planningHelper = new Mock<IPlanningHelper>().Object;
     _resultHandlers = new Mock<List<IExecutionSummaryHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
+    _notificationHandlers = new Mock<IEnumerable<INotificationHandler>>().Object;
 
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
@@ -54,7 +56,7 @@ internal class CampaignExecutorTests
     {
       cmdInterpreter
     };
-    var stepComposer = new StepComposer(repo);
+    var stepComposer = new StepComposer(repo, _notificationHandlers);
     var experimentComposer = new ExperimentComposer(stepComposer, _analyzerRepo);
 
     var stateLoggerRepository = new DeviceStateLoggerRepository();

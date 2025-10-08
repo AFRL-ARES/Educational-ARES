@@ -9,11 +9,16 @@
   <ItemGroup>
     <None Remove="Proto\DataModel.proto" />
     <None Remove="Proto\MK4SConfig.proto" />
+    <None Remove="Proto\Services.proto" />
   </ItemGroup>
 
+	<PropertyGroup>
+		<DataModelProtoPath>$(PkgARES_Datamodel)\Proto\datamodel\</DataModelProtoPath>
+	</PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.32.1" />
-    <PackageReference Include="ARES.Datamodel" Version="0.13.0-beta.3" GeneratePathProperty="True" />
+    <PackageReference Include="ARES.Datamodel" Version="0.13.1-beta.1" GeneratePathProperty="True" />
+    <PackageReference Include="DynamicData" Version="9.4.1" />
     <PackageReference Include="Grpc.Tools" Version="2.72.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,13 +27,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ares.Core\Ares.Core.csproj" />
+    <ProjectReference Include="..\Ares.Device.Rest\Ares.Device.Rest.csproj" />
     <ProjectReference Include="..\Ares.Device.USB\Ares.Device.USB.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Proto\DataModel.proto" GrpcServices="None" ProtoRoot="Proto" />
-		<Protobuf Include="Proto\Services.proto" ProtoRoot="Proto" />
-		<Protobuf Include="Proto\MK4SConfig.proto" GrpcServices="None" ProtoRoot="Proto" />
+    <Protobuf Include="Proto\DataModel.proto" GrpcServices="None" />
+		<Protobuf Include="Proto\MK4SConfig.proto" GrpcServices="None" />
+    <Protobuf Include="Proto\Services.proto" ProtoRoot="Proto" AdditionalImportDirs="$(DataModelProtoPath)" />
   </ItemGroup>
 
 </Project>
