@@ -4,7 +4,6 @@ using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Notifications;
 using Ares.Datamodel;
 using Ares.Datamodel.Templates;
-using Ares.Services;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Execution.Executors;
@@ -34,7 +33,6 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
   }
 
   public CommandTemplate Template { get; set; }
-
   public IObservable<CommandExecutionStatus> ExperimentStatusObservable { get; }
   public CommandExecutionStatus Status => _stateSubject.Value;
   public async Task<CommandExecutionSummary> Execute(ExecutionControlToken token)

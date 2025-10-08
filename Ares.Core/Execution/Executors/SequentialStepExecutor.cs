@@ -21,11 +21,18 @@ public class SequentialStepExecutor : StepExecutor
 
       var commandExecutionSummary = await command.Execute(token);
 
-      if(commandExecutionSummary.Result.Success)
-        commandSummaries.Add(commandExecutionSummary);
+      if(commandExecutionSummary is null)
+        return ExecutorSummaryHelpers.CreateEmptyStepExecutionSummary(startTime, DateTime.UtcNow);
+
 
       else
-        return ExecutorSummaryHelpers.CreateEmptyStepExecutionSummary(startTime, DateTime.UtcNow);
+      {
+        commandSummaries.Add(commandExecutionSummary);
+
+        if(!commandExecutionSummary.Result.Success)
+          break;
+      }
+        
     }
 
     return ExecutorSummaryHelpers.CreateStepExecutionSummary(startTime, DateTime.UtcNow, commandSummaries);

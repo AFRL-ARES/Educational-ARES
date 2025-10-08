@@ -59,10 +59,16 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
   public override Task<Empty> SetSmartPrintMode(SmartPrintModeRequest request, ServerCallContext context)
   {
     var printer = GetPrinter(request.Id);
+
+    if(request.ShouldSmartPrint)
+      _logger.LogInformation("Smart Print Mode Enabled");
+
+    else
+      _logger.LogInformation("Smart Print Mode Disabled");
+
     if(printer is not null)
       printer.SetSmartPrintMode(request.ShouldSmartPrint);
 
-    _logger.LogInformation("Smart print mode activated.");
     return Task.FromResult(new Empty());
   }
 

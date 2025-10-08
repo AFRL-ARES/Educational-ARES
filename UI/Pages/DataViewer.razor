@@ -21,7 +21,8 @@
 
         else
         {
-          <RadzenDropDown TValue="CampaignExecutionSummaryMetadata" Class="w-100" Placeholder="Select..." Data="ViewModel!.AvailableSummaries" @bind-Value=ViewModel!.SelectedSummaryMetadata Change="ViewModel!.GetSelectedSummary">
+          <RadzenDropDown TValue="CampaignExecutionSummaryMetadata" Class="w-100" Placeholder="Select..." Data="ViewModel!.AvailableSummaries.OrderByDescending(s => s.CompletionTime)"
+                          @bind-Value=ViewModel!.SelectedSummaryMetadata Change="ViewModel!.GetSelectedSummary">
             <Template>
               @($"{(context as CampaignExecutionSummaryMetadata)!.CampaignName} - {(context as CampaignExecutionSummaryMetadata)!.CompletionTime.ToReadableTimestamp()}")
             </Template>
@@ -81,6 +82,10 @@
                                   <RadzenTreeItem Text=@($"Description: {cmd.CommandDescription}") />
                                   <!-- TODO: Handle additional result values here potentially? -->
                                   <RadzenTreeItem Text=@($"Result: {CreateDeviceCommandResultDisplayString(cmd.Result)}") />
+                                  @if(cmd.Result.Error is not null && cmd.Result.Error != string.Empty)
+                                  {
+                                    <RadzenTreeItem Text=@($"Error: {cmd.Result.Error}") />
+                                  }
                                   <RadzenTreeItem Text=@($"Command Started: {cmd.ExecutionInfo.TimeStarted.ToReadableTimestamp()}") />
                                   <RadzenTreeItem Text=@($"Command Finished: {cmd.ExecutionInfo.TimeFinished.ToReadableTimestamp()}") />
                                 </ChildContent>

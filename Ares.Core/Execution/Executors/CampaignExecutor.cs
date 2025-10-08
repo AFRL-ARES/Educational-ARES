@@ -163,6 +163,7 @@ public class CampaignExecutor : ICampaignExecutor
         //If a command failed, stop the experiment.
         if(experimentSummary.StepSummaries.Any(step => step.CommandSummaries.Any(cmd => !cmd.Result.Success)) || !experimentSummary.StepSummaries.Any())
         {
+          experimentSummaries.Add(experimentSummary);
           executionSuccess = false;
           break;
         }

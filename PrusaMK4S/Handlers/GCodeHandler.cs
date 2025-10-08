@@ -646,6 +646,22 @@ public class GCodeHandler : IGcodeHandler
     return Task.FromResult(updated_gcode);
   }
 
+  private Task<List<string>> AddFullMeshBedLeveling(List<string> gcode)
+  {
+    List<string> updated_gcode = new List<string>();
+
+    foreach(var line in gcode)
+    {
+      if(line.StartsWith("G29"))
+        updated_gcode.Add("G80");
+
+      else
+        updated_gcode.Add(line);
+    }
+
+    return Task.FromResult(updated_gcode);
+  }
+
   private async Task<List<string>> ConvertGCodeToStrings(byte[] gcode)
   {
     var memoryStream = new MemoryStream(gcode);

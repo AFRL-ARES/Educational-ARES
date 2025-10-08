@@ -29,7 +29,7 @@ else
           </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Property="@nameof(CampaignExecutionSummaryMetadata.CampaignName)" Filterable="false" Title="Campaign Name" Width="200px" />
-        <RadzenDataGridColumn Filterable="false" Title="Completion Time" Width="200px">
+          <RadzenDataGridColumn Property="@nameof(CampaignExecutionSummaryMetadata.CompletionTime)" Filterable="false" Title="Completion Time" Width="200px">
           <Template>
               @context.CompletionTime.ToReadableTimestamp()
           </Template>
