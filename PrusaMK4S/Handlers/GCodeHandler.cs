@@ -18,8 +18,7 @@ public class GCodeHandler : IGcodeHandler
     AdjustedFileData = await GenerateFirstPrintData();
   }
 
-  public async Task<byte[]> ApplyPlanningParameters(string mainObjectName, 
-    int bedTemperature, 
+  public async Task<byte[]> ApplyPlanningParameters(int bedTemperature, 
     int nozzleTemperature, 
     double extrusionMod,
     double speedMod, 
@@ -28,7 +27,7 @@ public class GCodeHandler : IGcodeHandler
     byte[] gcode)
   {
     var data = await ConvertGCodeToStrings(gcode);
-    await DetermineModificationIndex(data, mainObjectName);
+    await DetermineModificationIndex(data);
 
     // The G-Code associated with the user defined main object
     List<string> main_print_gcode;
@@ -341,7 +340,7 @@ public class GCodeHandler : IGcodeHandler
     return Task.FromResult((uint)max_vertical);
   }
 
-  public async Task<byte[]> CreatePrintIteration(int iteration, string objectName)
+  public async Task<byte[]> CreatePrintIteration(int iteration)
   {
     if(AdjustedFileData is null)
       await Init();
@@ -363,7 +362,7 @@ public class GCodeHandler : IGcodeHandler
 
       var stringData = await ConvertGCodeToStrings(AdjustedFileData!);
       stringData = await RemoveBedLeveling(stringData);
-      await DetermineModificationIndex(stringData, objectName);
+      await DetermineModificationIndex(stringData);
 
       var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
       startup_gcode = await ShiftIterationPurgeLine(startup_gcode, iteration);
@@ -524,7 +523,7 @@ public class GCodeHandler : IGcodeHandler
       return Array.Empty<byte>();
 
     var stringData = await ConvertGCodeToStrings(OriginalFileData);
-    await DetermineModificationIndex(stringData, "");
+    await DetermineModificationIndex(stringData);
 
     var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
     var shifted_startup = await ShiftInitialPurgeLine(startup_gcode);
@@ -683,33 +682,16 @@ public class GCodeHandler : IGcodeHandler
     return Task.FromResult(Encoding.UTF8.GetBytes(modifiedStringData));
   }
 
-  private Task DetermineModificationIndex(List<string> gcode, string objectName)
+  private Task DetermineModificationIndex(List<string> gcode)
   {
     var index = 0;
 
-    if(string.IsNullOrEmpty(objectName))
+    foreach(var line in gcode)
     {
-      foreach(var line in gcode)
-      {
-        if(line.StartsWith("M221 S100"))
-          ModificationStartIndex = index;
+      if(line.StartsWith("M221 S100"))
+        ModificationStartIndex = index;
 
-        index++;
-      }
-    }
-
-    else
-    {
-      foreach(var line in gcode)
-      {
-        if(line.Contains($"; printing object {objectName}", StringComparison.InvariantCultureIgnoreCase))
-          ModificationStartIndex = index;
-
-        else if(line.Contains($"; stop printing object {objectName}", StringComparison.InvariantCultureIgnoreCase))
-          ModificationStopIndex = index;
-
-        index++;
-      }
+      index++;
     }
 
     return Task.CompletedTask;
@@ -732,7 +714,7 @@ public class GCodeHandler : IGcodeHandler
   public double YMaximumOffset { get; set; }
   public int OriginalNozzleTemp { get; set; }
   public int OriginalBedTemp { get; set; }
-  public double PrintBedHeight { get; } = 190;
+  public double PrintBedHeight { get; } = 210;
   public double PrintBedWidth { get; } = 190;
   public string FileNameBase { get; } = "IterationPrint";
   public List<string> MovementCommands { get; } = new List<string>() { "G0", "G1", "G2", "G3" };

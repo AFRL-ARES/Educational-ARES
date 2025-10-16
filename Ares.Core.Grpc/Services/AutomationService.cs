@@ -84,6 +84,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
       }
     }
 
+    var blah = campaignResponse.CalculateSize();
     return campaignResponse;
   }
 

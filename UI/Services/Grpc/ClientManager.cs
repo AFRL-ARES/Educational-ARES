@@ -47,10 +47,14 @@ internal class ClientManager : IClientManager
       // throw new InvalidOperationException("Unable to create a secure gRPC channel as the specified certificate was not found. Ensure that appsettings.json has the correct certificate path.");
     }
 
+    const int MaxCapacityBytes = 50 * 1024 * 1024;
     var serverUri = new UriBuilder("https", _remoteServiceSettings.ServerHost, _remoteServiceSettings.ServerPort ?? 443).Uri;
     var opts = new GrpcChannelOptions
     {
-      HttpHandler = handler
+      HttpHandler = handler,
+      //Quick fix, but should handle this better in the future
+      MaxSendMessageSize = MaxCapacityBytes,
+      MaxReceiveMessageSize = MaxCapacityBytes
     };
 
     _channel = GrpcChannel.ForAddress(serverUri, opts);

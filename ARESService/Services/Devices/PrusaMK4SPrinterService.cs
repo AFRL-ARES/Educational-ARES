@@ -113,7 +113,7 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
       return response;
     }
 
-    await printer.Print(request.Gcode.ToArray(), "", -1, -1, -1, -1, -1, -1);
+    await printer.Print(request.Gcode.ToArray(), -1, -1, -1, -1, -1, -1);
     response.Success = true;
     response.ErrorString = null;
     _logger.LogInformation("Finished a print job successfully");

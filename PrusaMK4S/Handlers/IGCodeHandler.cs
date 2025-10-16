@@ -2,9 +2,9 @@
 
 public interface IGcodeHandler : IAsyncDisposable
 {
-  Task<byte[]> CreatePrintIteration(int iteration, string objectName);
+  Task<byte[]> CreatePrintIteration(int iteration);
   Task<uint> SmartDetermineNumberOfPrints();
-  Task<byte[]> ApplyPlanningParameters(string objectName, int bedTemperature, int nozzleTemperature, double extrusionMod,
+  Task<byte[]> ApplyPlanningParameters(int bedTemperature, int nozzleTemperature, double extrusionMod,
     double speedMod, double retractionLength, double accelerationMod, byte[] gcode);
   Task Init();
   public double MinimumX { get; }

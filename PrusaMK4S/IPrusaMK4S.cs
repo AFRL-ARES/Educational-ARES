@@ -15,7 +15,7 @@ public interface IPrusaMK4S : IAresUSBDevice, IAsyncDisposable
   Task<uint> SmartCalculateNumberOfPrints(byte[] gcode);
   Task SetSmartPrintMode(bool smartPrintMode);
   void PopulateCredentials(MK4SConfig config);
-  Task<MK4SRequestResponse> Print(byte[] gcode, string mainObjectName, int nozzleTemp, int bedTemp, double extrusionMod, double speedMod, int retractionLength, double accelerationMod);
+  Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp, double extrusionMod, double speedMod, int retractionLength, double accelerationMod);
   Task<MK4SRequestResponse> MovePrinter(string x, string y, string z, string dwell);
   Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell, int xOffset, int yOffset);
   Task<MK4SRequestResponse> HomePrinter();

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ares.Core;
 using Ares.Core.Grpc;
+using Ares.Core.Grpc.Services;
 using Ares.Datamodel;
 using Ares.Services;
 using Microsoft.AspNetCore.Authentication.Certificate;
@@ -37,7 +38,13 @@ public class Startup
   // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
   public void ConfigureServices(IServiceCollection services)
   {
-    services.AddGrpc(options => options.EnableDetailedErrors = true);
+    services.AddGrpc(options =>
+    {
+      options.EnableDetailedErrors = true;
+      //Quick fix, but should handle this better in the future
+      options.MaxReceiveMessageSize = 50 * 1024 * 1024;
+      options.MaxSendMessageSize = 50 * 1024 * 1024;
+    });
     services.Configure<TokensConfig>(Configuration.GetSection(nameof(TokensConfig)));
     services.AddLogging(builder => builder.AddConsole());
 
