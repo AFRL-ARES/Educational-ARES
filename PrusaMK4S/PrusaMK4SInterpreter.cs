@@ -327,7 +327,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     gcode = gcodeParameter.Value.BytesValue.ToArray();
     nozzleTemperature = (int)nozzleTempParam.Value.NumberValue;
     bedTemperature = (int)bedTempParam.Value.NumberValue;
-    accelerationMod = (int)accelerationModParam.Value.NumberValue;
+    accelerationMod = accelerationModParam.Value.NumberValue;
     speedMod = speedModParam.Value.NumberValue;
     retractionLength = (int)retractionLengthParam.Value.NumberValue;
     extrusionMod = extrusionModParam.Value.NumberValue;
