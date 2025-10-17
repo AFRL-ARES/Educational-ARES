@@ -1,4 +1,5 @@
-﻿using Ares.Core;
+using System.IO;
+using Ares.Core;
 using Ares.Core.Device;
 using Ares.Core.Grpc;
 using Ares.Core.Execution;
@@ -16,7 +17,7 @@ using AresCamera;
 using AresCamera.Config;
 using MK4S.Config;
 using PrusaMK4S;
-
+using Serilog;
 
 namespace AresService;
 
@@ -42,6 +43,16 @@ public static class ServiceCollectionExtensions
         var stateExporters = provider.GetServices<IDeviceStateExportStreamProvider>();
         return new ExperimentResultJsonHandler(stateExporters);
       });
+
+    services.AddLogging(b =>
+    {
+      var logPath = Path.Combine("logs", "AresServiceLog.log");
+      var logger = new LoggerConfiguration()
+        .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
+        .CreateLogger();
+
+      b.AddSerilog(logger);
+    });
   }
 
   private static void AddDeviceManagers(this IServiceCollection services)

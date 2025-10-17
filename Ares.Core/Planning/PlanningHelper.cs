@@ -18,6 +18,7 @@ public class PlanningHelper : IPlanningHelper
   }
 
   public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations,
+    string campaignId,
     IEnumerable<Parameter> parameters,
     IEnumerable<Analysis> seedAnalyses,
     IEnumerable<ExperimentOverview> seedExperiments,
@@ -42,7 +43,7 @@ public class PlanningHelper : IPlanningHelper
       try
       {
         var plannableParameters = grouping.Select(pair => pair.Metadata).ToArray();
-        var resultsEnumerable = await planner.Plan(plannableParameters, seedExperiments, seedAnalysesArr, cancellationToken);
+        var resultsEnumerable = await planner.Plan(plannableParameters, campaignId, seedExperiments, seedAnalysesArr, cancellationToken);
         var results = resultsEnumerable.ToArray();
         if(!results.Any())
           return false;

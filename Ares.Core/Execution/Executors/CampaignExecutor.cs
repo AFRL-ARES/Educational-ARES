@@ -3,6 +3,7 @@ using System.Reactive.Subjects;
 using Ares.Core.Analyzing;
 using Ares.Core.AresEnvironment;
 using Ares.Core.Device.State.Logging;
+using Ares.Core.Exceptions;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
@@ -14,6 +15,7 @@ using Ares.Datamodel;
 using Ares.Datamodel.Analyzing;
 using Ares.Datamodel.Templates;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Logging;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -24,7 +26,8 @@ public class CampaignExecutor : ICampaignExecutor
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
   private readonly IPlanningHelper _planningHelper;
   private readonly IEnumerable<IExecutionSummaryHandler> _summaryHandlers;
-  private readonly IEnumerable<INotificationHandler> _notificationHandlers;
+  private readonly INotifier _notifier;
+  private readonly ILogger _logger;
   private readonly AresVariableManager _variableManager;
   private readonly StateLoggerManager _stateLoggerManager;
   readonly AnalysisHelper _analysisHelper;
@@ -38,8 +41,9 @@ public class CampaignExecutor : ICampaignExecutor
     CampaignTemplate template,
     IEnumerable<IExecutionSummaryHandler> resultHandlers,
     AnalysisRepo analysisRepo,
-    IEnumerable<INotificationHandler> notificationHandlers,
+    INotifier notifier,
     IAnalyzerRepo analyzerRepo,
+    ILogger logger,
     AresVariableManager variableManager,
     StateLoggerManager stateLoggerManager)
   {
@@ -51,9 +55,10 @@ public class CampaignExecutor : ICampaignExecutor
     _experimentComposer = experimentComposer;
     _planningHelper = planningHelper;
     _executionReporter = executionReporter;
-    _notificationHandlers = notificationHandlers;
     _summaryHandlers = resultHandlers;
+    _logger = logger;
     Template = template;
+    _notifier = notifier;
 
     Status = new CampaignExecutionStatus
     {
@@ -105,7 +110,7 @@ public class CampaignExecutor : ICampaignExecutor
       Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
       _executionReporter.Report(Status);
 
-      await HandleNotification("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
+      await _notifier.Notify("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
       bool executionSuccess = true;
       var experiment_count = 0;
       var startupSummary = new ExperimentExecutionSummary();
@@ -114,7 +119,7 @@ public class CampaignExecutor : ICampaignExecutor
         var startupExecutorResult = await GenerateExperimentExecutor(Template.StartupTemplate, analyses, experimentSummaries.Select(es => es.ExperimentOverview), token.CancellationToken);
         if(startupExecutorResult.ErrorString is not null || startupExecutorResult.ExperimentExecutor is null)
         {
-          await HandleNotification("Campaign Failed!", $"ARES failed to run startup routine for {Template.Name}, campaign will shut down.", NotificationSeverityEnum.Error);
+          await _notifier.Notify("Campaign Failed!", $"ARES failed to run startup routine for {Template.Name}, campaign will shut down.", NotificationSeverityEnum.Error);
           executionSuccess = false;
           return new CampaignExecutionSummary();
         }
@@ -136,14 +141,15 @@ public class CampaignExecutor : ICampaignExecutor
 
         if(experimentExecutorResult.ErrorString is not null)
         {
-          await HandleNotification("Experiment Executor Generation Failure", experimentExecutorResult.ErrorString, NotificationSeverityEnum.Error);
+          _logger.LogError("Experiment Failed! Reason: {error-message}", experimentExecutorResult.ErrorString); 
+          //await HandleNotification("Experiment Executor Generation Failure", experimentExecutorResult.ErrorString, NotificationSeverityEnum.Error);
           executionSuccess = false;
           break;
         }
 
         if(experimentExecutorResult.ExperimentExecutor is null)
         {
-          await HandleNotification("Experiment Executor Generation Failure", "Error was not specified, but the executor generation has failed.", NotificationSeverityEnum.Error);
+          await _notifier.Notify("Experiment Executor Generation Failure", "Error was not specified, but the executor generation has failed.", NotificationSeverityEnum.Error);
           executionSuccess = false;
           break;
         }
@@ -152,7 +158,7 @@ public class CampaignExecutor : ICampaignExecutor
 
         if(experimentExecutorResult.ErrorString is not null)
         {
-          await HandleNotification("Experiment Executor Generation Failure", experimentExecutorResult.ErrorString, NotificationSeverityEnum.Error);
+          await _notifier.Notify("Experiment Executor Generation Failure", experimentExecutorResult.ErrorString, NotificationSeverityEnum.Error);
           executionSuccess = false;
           break;
         }
@@ -167,7 +173,6 @@ public class CampaignExecutor : ICampaignExecutor
           executionSuccess = false;
           break;
         }
-          
 
         // if the execution was canceled, the experiment may not have executed the command to provide the output
         // and thus sending a null result to the analyzer might break it depending on the analyzer
@@ -183,7 +188,7 @@ public class CampaignExecutor : ICampaignExecutor
           // which also has support for "success" and "error" message
           if(analysisResult.ResultType == AnalysisResultType.Failure)
           {
-            await HandleNotification("Analysis Failure", $"Failed to analyze experiment result: {analysisResult.Error}", NotificationSeverityEnum.Error);
+            await _notifier.Notify("Analysis Failure", $"Failed to analyze experiment result: {analysisResult.Error}", NotificationSeverityEnum.Error);
             break;
           }
 
@@ -194,7 +199,7 @@ public class CampaignExecutor : ICampaignExecutor
 
           if(analysisResult.Analysis is null)
           {
-            await HandleNotification("Analysis Failure", $"Analysis was reported as successful, but not actual analysis was provided. {analysisResult.Error}", NotificationSeverityEnum.Error);
+            await _notifier.Notify("Analysis Failure", $"Analysis was reported as successful, but not actual analysis was provided. {analysisResult.Error}", NotificationSeverityEnum.Error);
             break;
           }
 
@@ -206,7 +211,7 @@ public class CampaignExecutor : ICampaignExecutor
           // it failed via the analysis result.
           if(analysis.ErrorString != string.Empty && analysis.ErrorString is not null)
           {
-            await HandleNotification("Analysis Process Failed!", analysis.ErrorString, NotificationSeverityEnum.Error);
+            await _notifier.Notify("Analysis Process Failed!", analysis.ErrorString, NotificationSeverityEnum.Error);
             executionSuccess = false;
             break;
           }
@@ -226,10 +231,9 @@ public class CampaignExecutor : ICampaignExecutor
         var closeoutExecutorResult = await GenerateExperimentExecutor(Template.CloseoutTemplate, analyses, experimentSummaries.Select(es => es.ExperimentOverview), token.CancellationToken);
         if(closeoutExecutorResult?.ErrorString is not null || closeoutExecutorResult?.ExperimentExecutor is null)
         {
-          await HandleNotification("Closeout Script Failed!", closeoutExecutorResult?.ErrorString ?? "Unknown Closeout Script Failure", NotificationSeverityEnum.Error);
+          await _notifier.Notify("Closeout Script Failed!", closeoutExecutorResult?.ErrorString ?? "Unknown Closeout Script Failure", NotificationSeverityEnum.Error);
           executionSuccess = false;
-          //TODO: Do this better..?
-          return new CampaignExecutionSummary();
+          throw new CloseoutScriptFailedException(closeoutExecutorResult?.ErrorString ?? "Closeout failed, but no reason for failure was provided.");
         }
 
         closeoutSummary = await ExecuteTemplate(closeoutExecutorResult.ExperimentExecutor, token);
@@ -240,15 +244,15 @@ public class CampaignExecutor : ICampaignExecutor
       if(executionSuccess)
       {
         Status.State = ExecutionState.Succeeded;
-        await HandleNotification("Campaign Completed", $"ARES completed the {Template.Name} campaign successfully.", NotificationSeverityEnum.Success);
+        await _notifier.Notify("Campaign Completed", $"ARES completed the {Template.Name} campaign successfully.", NotificationSeverityEnum.Success);
       }
 
       else
       {
         Status.State = ExecutionState.Failed;
-        await HandleNotification("Campaign Failed", $"ARES failed to execute {Template.Name} successfully, check the event history page for errors.", NotificationSeverityEnum.Error);
+        await _notifier.Notify("Campaign Failed", $"ARES failed to execute {Template.Name} successfully, check the event history page for errors.", NotificationSeverityEnum.Error);
       }
-        
+      
 
       _executionReporter.Report(Status);
 
@@ -301,7 +305,7 @@ public class CampaignExecutor : ICampaignExecutor
     {
       if(analyses.Count() % ReplanRate == 0)
       {
-        var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, previousExperiments, cancellationToken);
+        var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, Template.UniqueId, experimentTemplate.GetAllPlannedParameters(), analyses, previousExperiments, cancellationToken);
         if(!resolveSuccess)
         {
           result.ErrorString = "Failed to plan! Experiment will be terminated!";
@@ -355,14 +359,6 @@ public class CampaignExecutor : ICampaignExecutor
     foreach(var handler in _summaryHandlers)
     {
       await handler.Handle(summary);
-    }
-  }
-
-  private async Task HandleNotification(string title, string message, NotificationSeverityEnum severity)
-  {
-    foreach(var handler in _notificationHandlers)
-    {
-      await handler.HandleNotification(title, message, severity);
     }
   }
 

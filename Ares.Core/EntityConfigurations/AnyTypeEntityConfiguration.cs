@@ -13,6 +13,6 @@ internal class AnyTypeEntityConfiguration : AresEntityTypeBaseConfiguration<Any>
     builder.Property(any => any.Value)
       .HasConversion(
         s => s.ToByteArray(),
-        bytes => ByteString.CopyFrom(bytes));
+        bytes => ByteString.CopyFrom(bytes), new EnumerableOfByteComparer());
   }
 }

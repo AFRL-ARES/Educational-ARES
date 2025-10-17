@@ -55,7 +55,7 @@ internal class ManualPlannerTests
     plannerSeed.FileLines = new ManualPlannerFileLines();
     plannerSeed.FileLines.PlannerValues.AddRange(_fileLines);
     await _manualPlanner.Seed(plannerSeed);
-    var results = await _manualPlanner.Plan(_parameterMetadatas, Array.Empty<ExperimentOverview>(), Array.Empty<Analysis>(), CancellationToken.None);
+    var results = await _manualPlanner.Plan(_parameterMetadatas, string.Empty, Array.Empty<ExperimentOverview>(), Array.Empty<Analysis>(), CancellationToken.None);
     Assert.That(results, Has.Exactly(3).Items);
   }
 }

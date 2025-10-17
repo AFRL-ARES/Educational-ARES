@@ -4,6 +4,7 @@ using Ares.Core.Device.State.Logging;
 using Ares.Core.Notifications;
 using Ares.Core.Planning;
 using Ares.Datamodel.Templates;
+using Microsoft.Extensions.Logging;
 
 namespace Ares.Core.Execution.Executors.Composers;
 
@@ -13,9 +14,10 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
   private readonly IPlanningHelper _planningHelper;
   private readonly IEnumerable<IExecutionSummaryHandler> _resultHandlers;
-  private readonly IEnumerable<INotificationHandler> _notificationHandlers;
+  private readonly INotifier _notifier;
   private readonly AresVariableManager _variableManager;
   private readonly StateLoggerManager _stateLoggerManager;
+  private readonly ILogger _logger;
   readonly AnalysisHelper _analysisHelper;
   readonly AnalysisRepo _analysisRepo;
   readonly IAnalyzerRepo _analyzerRepo;
@@ -27,7 +29,8 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
     IEnumerable<IExecutionSummaryHandler> resultHandlers,
     AnalysisRepo analysisRepo,
     IAnalyzerRepo analyzerRepo,
-    IEnumerable<INotificationHandler> notificationHandlers,
+    INotifier notifier,
+    ILogger<CampaignComposer> logger,
     AresVariableManager variableManager,
     StateLoggerManager stateLoggerManager)
   {
@@ -40,9 +43,10 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
     _planningHelper = planningHelper;
     _executionReporter = executionReporter;
     _resultHandlers = resultHandlers;
-    _notificationHandlers = notificationHandlers;
+    _notifier = notifier;
+    _logger = logger;
   }
 
   public ICampaignExecutor Compose(CampaignTemplate template)
-    => new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, _analysisHelper, template, _resultHandlers, _analysisRepo, _notificationHandlers, _analyzerRepo, _variableManager, _stateLoggerManager);
+    => new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, _analysisHelper, template, _resultHandlers, _analysisRepo, _notifier, _analyzerRepo, _logger, _variableManager, _stateLoggerManager);
 }

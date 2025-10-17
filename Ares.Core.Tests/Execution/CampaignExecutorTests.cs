@@ -15,6 +15,7 @@ using Ares.Core.Tests.Data.Device;
 using Moq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Ares.Datamodel.Templates;
 
 namespace Ares.Core.Tests.Execution;
 
@@ -31,7 +32,9 @@ internal class CampaignExecutorTests
   private AnalysisHelper _analysisHelper;
   private AnalysisRepo _analysisRepo;
   private StateLoggerManager _stateLoggerManager;
-  private IEnumerable<INotificationHandler> _notificationHandlers;
+  private INotifier _notifier;
+  private ILogger<StateLoggerManager> _logger;
+  private ILogger<CampaignComposer> _composerLogger;
 
   private IAnalyzer _replyAnalyzer;
 
@@ -48,7 +51,9 @@ internal class CampaignExecutorTests
     _planningHelper = new Mock<IPlanningHelper>().Object;
     _resultHandlers = new Mock<List<IExecutionSummaryHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
-    _notificationHandlers = new Mock<IEnumerable<INotificationHandler>>().Object;
+    _notifier = new Mock<INotifier>().Object;
+    _logger = new Mock<ILogger<StateLoggerManager>>().Object;
+    _composerLogger = new Mock<ILogger<CampaignComposer>>().Object;
 
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
@@ -56,16 +61,14 @@ internal class CampaignExecutorTests
     {
       cmdInterpreter
     };
-    var stepComposer = new StepComposer(repo, _notificationHandlers);
+    var stepComposer = new StepComposer(repo, _notifier);
     var experimentComposer = new ExperimentComposer(stepComposer, _analyzerRepo);
 
     var stateLoggerRepository = new DeviceStateLoggerRepository();
     var factories = Array.Empty<IDeviceStateLoggerFactory>();
-    var logger = Mock.Of<ILogger<StateLoggerManager>>();
     var dbContextFactory = Mock.Of<IDbContextFactory<CoreDatabaseContext>>();
-    _stateLoggerManager = new StateLoggerManager(stateLoggerRepository, factories, logger, dbContextFactory);
-
-    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, _planningHelper, _executionReporter, _resultHandlers, _analysisRepo, _analyzerRepo, Array.Empty<INotificationHandler>(), _variableManager, _stateLoggerManager);
+    _stateLoggerManager = new StateLoggerManager(stateLoggerRepository, factories, _logger, dbContextFactory);
+    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, _planningHelper, _executionReporter, _resultHandlers, _analysisRepo, _analyzerRepo, _notifier, _composerLogger, _variableManager, _stateLoggerManager);
   }
 
   [SetUp]

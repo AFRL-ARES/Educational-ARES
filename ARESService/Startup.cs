@@ -11,6 +11,7 @@ using Ares.Core.Grpc;
 using Ares.Core.Grpc.Services;
 using Ares.Datamodel;
 using Ares.Services;
+using AresService.Data;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

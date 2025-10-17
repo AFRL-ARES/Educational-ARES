@@ -12,5 +12,6 @@ public static class ServiceCollectionExtensions
     var notificationService = new AresNotificationService(new AresNotificationRepo());
     var handler = new NotificationHandler(notificationService);
     services.AddSingleton<INotificationHandler>(handler);
+
   }
 }

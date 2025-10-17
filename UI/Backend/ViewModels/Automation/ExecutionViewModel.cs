@@ -20,7 +20,7 @@ public class ExecutionViewModel : ReactiveObject
 {
   private readonly AresAutomation.AresAutomationClient _automationClient;
   private readonly AresAnalyzerManagementService.AresAnalyzerManagementServiceClient _analyzerService;
-  public readonly ObservableCollection<CampaignTemplate> Templates = new();
+  public readonly ObservableCollection<CampaignTemplateSummary> CampaignTemplateSummaries = new();
   private readonly INotificationReceivingService _notificationService;
   private readonly MK4SPrinterRpc.MK4SPrinterRpcClient _printerClient;
   private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -47,17 +47,17 @@ public class ExecutionViewModel : ReactiveObject
   public async Task RefreshCampaigns()
   {
     var campaigns = await _automationClient.GetAllCampaignsAsync(new GetAllCampaignsRequest());
-    Templates.Clear();
-    Templates.AddRange(campaigns.CampaignTemplates);
+    CampaignTemplateSummaries.Clear();
+    CampaignTemplateSummaries.AddRange(campaigns.Campaigns);
   }
 
-  public async Task SelectCampaignTemplate(object? template)
+  public async Task SelectCampaignTemplate(object? templateSummary)
   {
-    if(template is null || template is not CampaignTemplate campaignTemplate)
+    if(templateSummary is null || templateSummary is not CampaignTemplateSummary campaignTemplateSummary)
       return;
 
-    CampaignTemplate = campaignTemplate;
-    await _automationClient.SetCampaignForExecutionAsync(new CampaignRequest { UniqueId = campaignTemplate.UniqueId });
+    CampaignTemplate = await _automationClient.GetSingleCampaignAsync(new CampaignRequest { UniqueId = campaignTemplateSummary.UniqueId });
+    await _automationClient.SetCampaignForExecutionAsync(new CampaignRequest { UniqueId = CampaignTemplate.UniqueId });
     _ = UpdateCurrentTemplate();
 
     if(SmartPrintCalculation)
@@ -279,6 +279,8 @@ public class ExecutionViewModel : ReactiveObject
   public bool CampaignActive { get; set; }
   [Reactive]
   public bool CampaignPaused { get; set; }
+  [Reactive]
+  public CampaignTemplateSummary SelectedTemplateSummary { get; set; }
   [Reactive]
   public CampaignTemplate? CampaignTemplate { get; set; }
   [Reactive]

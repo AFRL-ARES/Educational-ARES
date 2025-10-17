@@ -18,13 +18,13 @@
 
 
   <ItemGroup>
-	  <PackageReference Include="ARES.Datamodel" Version="0.13.1-beta.1" />
+	  <PackageReference Include="ARES.Datamodel" Version="0.13.4-beta.1" />
 	  <PackageReference Include="CsvHelper" Version="33.1.0" />
 	  <PackageReference Include="DynamicData" Version="7.14.2" />
 	  <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
-	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.11" />
+	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.19" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.19" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
 	  <PackageReference Include="Protobuf.System.Text.Json" Version="1.4.0" />
 	  <PackageReference Include="System.Runtime" Version="4.3.1" />
 	  <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />

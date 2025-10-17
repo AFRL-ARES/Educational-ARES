@@ -89,7 +89,7 @@ public class LoggingSettingsViewModel : ReactiveObject
     LoggingType = settings.LoggingType;
 
     var stateSchema = await _devicesClient.GetDeviceStateSchemaAsync(new DeviceStateSchemaRequest { DeviceId = _deviceId });
-    var numericFields = stateSchema.Schema.Fields.Where(f => f.Value.Type == Ares.Datamodel.AresDataType.Number).ToArray();
+    var numericFields = stateSchema.Schema?.Fields.Where(f => f.Value.Type == Ares.Datamodel.AresDataType.Number).ToArray() ?? [];
 
     var deviceDefaultDeltas = numericFields.Select(nf => new KeyValuePair<string, double>(nf.Key, 0)).ToDictionary();
     foreach(var delta in deviceDefaultDeltas)

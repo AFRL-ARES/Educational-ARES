@@ -144,12 +144,13 @@ public class RemotePlannerService : PlannerServiceBase
   }
 
   public override async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters,
+    string campaignId,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory,
     CancellationToken cancellationToken = default)
   {
     var client = GetClient();
-    var planRequest = new PlanningRequest() { AdapterSettings = Settings };
+    var planRequest = new PlanningRequest() { AdapterSettings = Settings, SessionId = campaignId };
     planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, previousExperiments)));
     planRequest.AnalysisResults.AddRange(analysisHistory.Select(a => (double)a.Result));
     var result = await client.PlanAsync(planRequest, cancellationToken: cancellationToken);
@@ -157,13 +158,14 @@ public class RemotePlannerService : PlannerServiceBase
   }
 
   public override async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters,
+    string campaignId,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory,
     AresStruct settings,
     CancellationToken cancellationToken = default)
   {
     var client = GetClient();
-    var planRequest = new PlanningRequest() { AdapterSettings = settings };
+    var planRequest = new PlanningRequest() { AdapterSettings = settings, SessionId = campaignId };
     planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, previousExperiments)));
     planRequest.AnalysisResults.AddRange(analysisHistory.Select(a => (double)a.Result));
     var result = await client.PlanAsync(planRequest, cancellationToken: cancellationToken);

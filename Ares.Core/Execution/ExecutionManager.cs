@@ -1,12 +1,16 @@
-﻿using Ares.Core.Execution.ControlTokens;
+﻿using Ares.Core.Exceptions;
+using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
+using Ares.Core.Execution.Safety;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
+using Ares.Core.Notifications;
 using Ares.Datamodel;
 using Ares.Datamodel.Templates;
 using DynamicData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Ares.Core.Execution;
 
@@ -16,17 +20,26 @@ public class ExecutionManager : IExecutionManager
   private readonly ICommandComposer<CampaignTemplate, ICampaignExecutor> _campaignComposer;
   private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
   private readonly IEnumerable<IStartCondition> _startConditions;
+  private readonly IExecutionSafetyManager _safetyManager;
+  private readonly INotifier _notifier;
+  private readonly ILogger _logger;
   private ExecutionControlTokenSource? _executionControlTokenSource;
 
   public ExecutionManager(IEnumerable<IStartCondition> startConditions,
     IDbContextFactory<CoreDatabaseContext> dbContextFactory,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
-    ICommandComposer<CampaignTemplate, ICampaignExecutor> campaignComposer)
+    IExecutionSafetyManager safetyManager,
+    ICommandComposer<CampaignTemplate, ICampaignExecutor> campaignComposer,
+    ILogger<ExecutionManager> logger,
+    INotifier notifier)
   {
     _startConditions = startConditions;
     _dbContextFactory = dbContextFactory;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _campaignComposer = campaignComposer;
+    _safetyManager = safetyManager;
+    _logger = logger;
+    _notifier = notifier;
   }
 
   public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>() { };
@@ -40,9 +53,7 @@ public class ExecutionManager : IExecutionManager
     var startConditions = await Task.WhenAll(startConditionTasks);
     return startConditions.All(condition => condition?.Success ?? true);
   }
-
   public int ReplanRate { get; private set; } = 1;
-
   public async Task Start(string executionNotes, List<AresCampaignTag> campaignTags)
   {
     var err = await CheckCampaignStartPrerequisites();
@@ -61,12 +72,27 @@ public class ExecutionManager : IExecutionManager
     executor.StopConditions.Add(CampaignStopConditions);
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
-    var campaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
-    campaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
-    campaignExecutionSummary.CampaignNotes = executionNotes;
-    campaignExecutionSummary.CampaignTags = string.Join(",", campaignTags.Select(tag => tag.TagName).ToList());
+    CampaignExecutionSummary campaignExecutionSummary;
 
-    await PostExecution(campaignExecutionSummary);
+    try
+    {
+      campaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
+      campaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
+      campaignExecutionSummary.CampaignNotes = executionNotes;
+      campaignExecutionSummary.CampaignTags = string.Join(",", campaignTags.Select(tag => tag.TagName).ToList());
+
+      await PostExecution(campaignExecutionSummary);
+    }
+    catch(CloseoutScriptFailedException ex)
+    {
+      await _safetyManager.EnterSafeMode();
+
+      var message = $"ARES failed to execute its closeout script. To avoid leaving lab equipment in a potentially dangerous state, safe mode has been activated.";
+
+      await _notifier.Notify("Closeout Script Failed, Safe Mode Activated!", message, NotificationSeverityEnum.Warning);
+      await _notifier.Notify("Execution Failure!", ex.Message, NotificationSeverityEnum.Error);
+      _logger.LogError("Execution Failed! Safe Mode Activated! {reason}", ex.Message);
+    }
   }
 
   public void Stop()

@@ -89,6 +89,7 @@ public interface IPlannerService
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters,
+    string campaignId,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory, 
     CancellationToken cancellationToken = default);
@@ -103,10 +104,11 @@ public interface IPlannerService
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters,
-  IEnumerable<ExperimentOverview> previousExperiments,
-  IEnumerable<Analysis> analysisHistory,
-  AresStruct settings,
-  CancellationToken cancellationToken = default);
+    string campaignId,
+    IEnumerable<ExperimentOverview> previousExperiments,
+    IEnumerable<Analysis> analysisHistory,
+    AresStruct settings,
+    CancellationToken cancellationToken = default);
 
   /// <summary>
   /// How long do we expect the planner service to do its planning before ARES decided that planning has failed.

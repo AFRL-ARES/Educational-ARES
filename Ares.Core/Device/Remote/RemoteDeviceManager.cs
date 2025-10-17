@@ -1,5 +1,4 @@
-﻿using Ares.Core.Device.Remote.State;
-using Ares.Core.Device.State.Logging;
+﻿using Ares.Core.Device.State.Logging;
 using Ares.Core.Notifications;
 using Ares.Datamodel.Device;
 using Microsoft.EntityFrameworkCore;

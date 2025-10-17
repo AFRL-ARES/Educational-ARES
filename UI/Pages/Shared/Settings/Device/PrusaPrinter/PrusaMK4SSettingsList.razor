@@ -61,8 +61,8 @@ else
       {
         var notification = new AresNotification();
         notification.Message = $"ARES failed to add {viewModel.Name}. {e.Message}";
-        notification.Title = $"Successfully Added Planner {viewModel.Name}!";
-        notification.NotificationSeverity = Severity.Success;
+        notification.Title = $"Failed to Add Printer {viewModel.Name}!";
+        notification.NotificationSeverity = Severity.Error;
         notification.Timestamp = DateTime.UtcNow.ToTimestamp();
         ViewModel!.PushNotification(notification);
       }

@@ -1,5 +1,3 @@
-using Ares.Core.AresEnvironment;
-using Ares.Datamodel.Templates;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using UI;
@@ -12,32 +10,9 @@ using UI.Settings;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if(connectionString is null)
-  throw new InvalidOperationException("Connection string was null!");
+ConfigureDatabaseServices(builder.Services, builder.Configuration);
 
-var provider = builder.Configuration.Get<AppSettings>()!.DatabaseProvider;
-
-switch(provider)
-{
-  case "SqlServer":
-    builder.Services.AddDbContextFactory<ApplicationDbContext>(dbBuilder =>
-    {
-      dbBuilder.UseSqlServer(builder.Configuration!.GetConnectionString("DefaultConnection"));
-      dbBuilder.EnableSensitiveDataLogging();
-    });
-    break;
-  case "Sqlite":
-    builder.Services.AddDbContextFactory<ApplicationDbContext>(dbBuilder =>
-    {
-      dbBuilder.UseSqlite(builder.Configuration!.GetConnectionString("DefaultConnection"));
-      dbBuilder.EnableSensitiveDataLogging();
-    });
-    break;
-  default:
-    throw new InvalidOperationException("FIX MEEEEE");
-}
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
@@ -99,3 +74,38 @@ app.MapFallbackToPage("/_Host");
 app.Services.GetService<UnitCategoryHelper>();
 
 app.Run();
+
+static void ConfigureDatabaseServices(IServiceCollection services, ConfigurationManager configuration)
+{
+  var sqlConnectionStrings = configuration.GetSection("ConnectionStrings");
+  var provider = configuration.Get<AppSettings>().DatabaseProvider ?? "Sqlite";
+
+  if(provider == "SqlServer")
+  {
+    services.AddDbContextFactory<ApplicationDbContext>(b =>
+    {
+      b.UseSqlServer(sqlConnectionStrings[provider]);
+      b.EnableSensitiveDataLogging();
+    });
+  }
+  else if(provider == "Sqlite")
+  {
+    services.AddDbContextFactory<ApplicationDbContext>(b =>
+    {
+      b.UseSqlite(sqlConnectionStrings[provider]);
+      b.EnableSensitiveDataLogging();
+    });
+  }
+  else if(provider == "Postgres")
+  {
+    services.AddDbContextFactory<ApplicationDbContext>(b =>
+    {
+      b.UseNpgsql(sqlConnectionStrings[provider]);
+      b.EnableSensitiveDataLogging();
+    });
+  }
+  else
+  {
+    throw new InvalidOperationException($"Unsupported database provider: {provider}. Available provider values: {string.Join(',', sqlConnectionStrings.AsEnumerable().Select(scs => scs.Key.Split(':').LastOrDefault()).Where(s => s != "ConnectionStrings"))}");
+  }
+}

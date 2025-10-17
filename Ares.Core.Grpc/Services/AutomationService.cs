@@ -62,9 +62,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return response;
   }
 
-  public override async Task<CampaignsResponse> GetAllCampaigns(GetAllCampaignsRequest request, ServerCallContext context)
+  public override async Task<GetAllCampaignsResponse> GetAllCampaigns(GetAllCampaignsRequest request, ServerCallContext context)
   {
-    var campaignResponse = new CampaignsResponse();
+    var campaignResponse = new GetAllCampaignsResponse();
     foreach(var file in Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json"))
     {
       try
@@ -72,7 +72,11 @@ public class AutomationService : AresAutomation.AresAutomationBase
         var contents = await File.ReadAllTextAsync(file);
         var campaignTemplate = JsonSerializer.Deserialize<CampaignTemplate>(contents, _serializerSettings);
         if(campaignTemplate is not null)
-          campaignResponse.CampaignTemplates.Add(campaignTemplate);
+        {
+          var summary = new CampaignTemplateSummary { CampaignName  = campaignTemplate.Name, UniqueId = campaignTemplate.UniqueId };
+          campaignResponse.Campaigns.Add(summary);
+        }
+          
 
         else
           throw new Exception("Deserialization of campaign template failed");

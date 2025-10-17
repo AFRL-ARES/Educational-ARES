@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Ares.Device;
+using AresService.Data;
 using AresService.DeviceManagers;
 using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;

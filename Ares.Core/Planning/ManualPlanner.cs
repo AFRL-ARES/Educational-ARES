@@ -27,7 +27,8 @@ public class ManualPlanner : IPlannerService
     .Select(result => (result.Name, result.value)));
 
 
-  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, 
+  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters,
+    string campaignId,
     IEnumerable<ExperimentOverview> experiments, 
     IEnumerable<Analysis> _, 
     CancellationToken __)
@@ -162,9 +163,9 @@ public class ManualPlanner : IPlannerService
     return Task.FromResult(response);
   }
 
-  public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<ExperimentOverview> previousExperiments, IEnumerable<Analysis> analysisHistory, AresStruct settings, CancellationToken cancellationToken = default)
+  public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, string campaignId, IEnumerable<ExperimentOverview> previousExperiments, IEnumerable<Analysis> analysisHistory, AresStruct settings, CancellationToken cancellationToken = default)
   {
-    return await Plan(plannableParameters, previousExperiments, analysisHistory, cancellationToken);
+    return await Plan(plannableParameters, campaignId, previousExperiments, analysisHistory, cancellationToken);
   }
 
   private record ManualPlanResult(string Name, AresValue value)

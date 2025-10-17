@@ -1,6 +1,7 @@
 ﻿@page "/automation"
 @page "/automation/campaignlist"
 @using Ares.Datamodel.Templates
+@using Ares.Services
 @using Newtonsoft.Json
 @using UI.Backend.ViewModels.Automation.CampaignEdit
 @inject DialogService DialogService
@@ -32,7 +33,7 @@
       {
         <tr>
           <td style="padding: 10px; vertical-align: middle">
-            @template.Name
+            @template.CampaignName
           </td>
           <td style="padding: 10px;vertical-align: middle">@template.UniqueId</td>
           <td style="width: 12%;vertical-align: middle">
@@ -60,9 +61,9 @@
     await ViewModel!.RefreshCampaigns();
   }
 
-  private async void DeleteClick(CampaignTemplate template)
+  private async void DeleteClick(CampaignTemplateSummary template)
   {
-    var result = await DialogService.OpenAsync($"Delete campaign {template.Name}?", ds =>
+    var result = await DialogService.OpenAsync($"Delete campaign {template.CampaignName}?", ds =>
             @<div class="d-flex flex-column">
                 <div class="d-flex">
                     <button class="btn btn-danger btn-outline-light" @onclick="() => ds.Close(true)">Delete</button>
@@ -83,15 +84,25 @@
     StateHasChanged();
   }
 
-  private async void ExportTemplate(CampaignTemplate template)
+  private async void ExportTemplate(CampaignTemplateSummary templateSummary)
   {
     //Generate a copy of the template, create a new unique ID and change the name to avoid collisions if the user adds it to their templates folder
-    var templateCopy = template.Clone();
-    templateCopy.UniqueId = Guid.NewGuid().ToString();
-    templateCopy.Name = $"{template.Name}-Copy";
-    var fileName = templateCopy.UniqueId;
-    var jsonData = JsonConvert.SerializeObject(templateCopy, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
-    await JS.InvokeVoidAsync("downloadJsonFile", fileName, jsonData);
+    var template = await ViewModel!.GetFullCampaignTemplate(templateSummary.UniqueId);
+
+    if(template is not null)
+    {
+      var templateCopy = template.Clone();
+      templateCopy.UniqueId = Guid.NewGuid().ToString();
+      templateCopy.Name = $"{template.Name}-Copy";
+      var fileName = templateCopy.UniqueId;
+      var jsonData = JsonConvert.SerializeObject(templateCopy, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+      await JS.InvokeVoidAsync("downloadJsonFile", fileName, jsonData);
+    }
+
+    else
+    {
+      //Notify of failure..?
+    }
   }
 
 }

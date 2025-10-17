@@ -67,7 +67,7 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
   {
     Username = config.Username;
     Password = config.Password;
-    Address = new Uri(config.Address);
+    //Address = new Uri(config.Address);
   }
 
   public Task<PrintTempsResponse> GetAndUpdateState()

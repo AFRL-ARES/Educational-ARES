@@ -1,11 +1,11 @@
 ﻿using Ares.Core.Device;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
+using Ares.Core.Notifications;
+using Ares.Datamodel.Templates;
 using Ares.Device;
 using Moq;
 using System.Reflection;
-using Ares.Datamodel.Templates;
-using Ares.Core.Notifications;
 
 namespace Ares.Core.Tests.Execution.Composers;
 
@@ -14,6 +14,7 @@ internal class StepComposerTests
   private IDeviceCommandInterpreterRepo _commandInterpreters;
   private IEnumerable<INotificationHandler> _notificationHandlers;
   private StepTemplate _stepTemplate;
+  private INotifier _notifer;
 
   [SetUp]
   public void SetUp()
@@ -67,13 +68,13 @@ internal class StepComposerTests
       interpreterMock.Object
     };
 
-    _notificationHandlers = new Mock<IEnumerable<INotificationHandler>>().Object;
+    _notifer = new Mock<INotifier>().Object;
   }
 
   [Test]
   public void StepComposer_Composes_CommandTemplates_Correctly()
   {
-    var stepComposer = new StepComposer(_commandInterpreters, _notificationHandlers);
+    var stepComposer = new StepComposer(_commandInterpreters, _notifer);
     var stepExecutor = stepComposer.Compose(_stepTemplate);
     var templates = stepExecutor.CommandExecutors.Select(executor => typeof(CommandExecutor).GetProperty("Template", BindingFlags.Public | BindingFlags.Instance).GetValue(executor)).OfType<CommandTemplate>();
     Assert.That(templates.Select((template, i) => template.Index == i), Is.All.True);
@@ -83,7 +84,7 @@ internal class StepComposerTests
   public void StepComposer_Composes_Parallel_Template()
   {
     _stepTemplate.IsParallel = true;
-    var stepComposer = new StepComposer(_commandInterpreters, _notificationHandlers);
+    var stepComposer = new StepComposer(_commandInterpreters, _notifer);
     var stepExecutor = stepComposer.Compose(_stepTemplate);
     Assert.That(stepExecutor, Is.TypeOf<ParallelStepExecutor>());
   }
@@ -92,7 +93,7 @@ internal class StepComposerTests
   public void StepComposer_Composes_Sequential_Template()
   {
     _stepTemplate.IsParallel = false;
-    var stepComposer = new StepComposer(_commandInterpreters, _notificationHandlers);
+    var stepComposer = new StepComposer(_commandInterpreters, _notifer);
     var stepExecutor = stepComposer.Compose(_stepTemplate);
     Assert.That(stepExecutor, Is.TypeOf<SequentialStepExecutor>());
   }

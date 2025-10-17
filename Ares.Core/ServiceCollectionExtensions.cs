@@ -11,8 +11,10 @@ using Ares.Core.Device.State.Logging;
 using Ares.Core.Execution;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
+using Ares.Core.Execution.Safety;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
+using Ares.Core.Notifications;
 using Ares.Core.Planning;
 using Ares.Core.Validation.Campaign;
 using Ares.Datamodel.Templates;
@@ -29,6 +31,7 @@ public static class ServiceCollectionExtensions
   public static void AddAresCoreComponents(this IServiceCollection services)
   {
     services.AddSingleton<IExecutionManager, ExecutionManager>();
+    services.AddSingleton<IExecutionSafetyManager, ExecutionSafetyManager>();
     services.AddSingleton<IPlanningHelper, PlanningHelper>();
     services.AddSingleton<IExecutionReporter, ExecutionReporter>();
     services.AddSingleton<IExecutionReportStore, ExecutionReportStore>();
@@ -53,7 +56,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<AnalysisHelper>();
     services.AddSingleton<IDesiredAnalysisResultFactory, DesiredAnalysisResultFactory>();
     services.AddSingleton<DeviceIdHelper>();
-    
+    services.AddSingleton<INotifier, Notifier>();
 
     services.BindComposers();
     services.BindStartConditions();

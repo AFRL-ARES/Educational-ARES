@@ -19,6 +19,7 @@ public interface IPlanningHelper
   /// <param name="seedAnalyses">The completed experiment analyses used to seed the plan</param>
   /// <returns>True if planning succeeded, false otherwise</returns>
   Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations,
+    string campaignId,
     IEnumerable<Parameter> parameters,
     IEnumerable<Analysis> seedAnalyses,
     IEnumerable<ExperimentOverview> seedExperiments,

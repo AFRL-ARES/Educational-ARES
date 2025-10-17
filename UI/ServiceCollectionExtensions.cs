@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using MK4S.Services;
 using Radzen;
+using Serilog;
 using UI.Areas.Identity;
 using UI.Backend.Devices;
 using UI.Backend.Helpers;
@@ -52,6 +53,16 @@ internal static class ServiceCollectionExtensions
 
     services.AddSingleton<DeviceAdapterRepository>();
     services.AddSingleton<DeviceAdapterManager>();
+
+    services.AddLogging(b =>
+    {
+      var logPath = Path.Combine("logs", "AresUiLog.log");
+      var logger = new LoggerConfiguration()
+        .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
+        .CreateLogger();
+
+      b.AddSerilog(logger);
+    });
   }
 
   public static void BindClients(this IServiceCollection services)

@@ -1,5 +1,6 @@
 ﻿using Ares.Core.Grpc.Services;
 using Ares.Core.Grpc.Services.Notifications;
+using Ares.Core.Grpc.Services.Safety;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 

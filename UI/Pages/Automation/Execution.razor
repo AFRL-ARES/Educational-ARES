@@ -20,8 +20,8 @@
   <div class="row">
     <div class="col-8 gap-2">
       <div>
-        <RadzenDropDown AllowClear="true" TValue="CampaignTemplate" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Class="w-100"
-        Placeholder="Select..." Data="campaigns" TextProperty="Name" @bind-Value=ViewModel!.CampaignTemplate Change="args => ViewModel!.SelectCampaignTemplate(args)"/>
+        <RadzenDropDown AllowClear="true" TValue="CampaignTemplateSummary" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Class="w-100"
+        Placeholder="Select..." Data="campaigns" TextProperty="CampaignName" @bind-Value=ViewModel!.SelectedTemplateSummary Change="args => ViewModel!.SelectCampaignTemplate(args)"/>
       </div>
 
       <div class="flex-column">
@@ -299,7 +299,7 @@
 </div>
 
 @code {
-  List<CampaignTemplate> campaigns = new();
+  List<CampaignTemplateSummary> campaigns = new();
   Task? _experimentStatusWatcher;
   Task? _campaignStateWatcher;
   Task? _startupStatusWatcher;
@@ -335,7 +335,7 @@
     await ViewModel!.SelectCampaignTemplate(ViewModel!.CampaignTemplate);
     await ViewModel!.UpdateCurrentTemplate();
     await ViewModel!.GetAllTags();
-    campaigns = ViewModel!.Templates.ToList();
+    campaigns = ViewModel!.CampaignTemplateSummaries.ToList();
 
     var currentStatus = await ViewModel!.GetCampaignExecutionStatus();
     if (currentStatus is not null)
