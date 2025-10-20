@@ -155,12 +155,6 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
   {
     var response = new MK4SRequestResponse();
 
-    if(Address is null)
-    {
-      response.ErrorString = "Printer HTTP client was null, cannot send commands!";
-      return response;
-    }
-
     var handler = new GCodeHandler(gcode);
     await handler.Init();
     LatestGCodeHandler = handler;
@@ -202,7 +196,7 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
 
   private HttpRequestMessage CreatePrintRequest(byte[] fileBytes)
   {
-    var requestAddress = new Uri($"{Address}api/v1/files/usb/aresPrint.gcode");
+    var requestAddress = new Uri($"https://localhost:7800/api/v1/files/usb/aresPrint.gcode");
     var printJobRequest = new HttpRequestMessage(HttpMethod.Put, requestAddress);
     var content = new ByteArrayContent(fileBytes);
     var contentLength = fileBytes.Length;

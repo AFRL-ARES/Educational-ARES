@@ -74,8 +74,8 @@ public class ExperimentDesignerViewModel : ReactiveObject
   public StepDesignerViewModel AddStep()
   {
     var stepDesigner = _stepDesignerFactory.Create();
-    stepDesigner.Index = StepDesigners.Count;
-    StepDesigners.Add(stepDesigner);
+    stepDesigner.Index = StepDesigners?.Count ?? 0;
+    StepDesigners?.Add(stepDesigner);
     return stepDesigner;
   }
 

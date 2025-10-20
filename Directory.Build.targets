@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);IDE0305;IDE0290;3270;CA1860;NU1701</NoWarn>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+  </PropertyGroup>
+</Project>

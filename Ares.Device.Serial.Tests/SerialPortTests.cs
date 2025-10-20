@@ -9,7 +9,7 @@ namespace Ares.Device.Serial.Tests;
 internal class SerialPortTests
 {
   [Test]
-  [Timeout(5000)]
+  [CancelAfter(5000)]
   public async Task AresSerialPort_Returns_Good_Response_From_Simple_Request()
   {
     const string stringToTest = "<-Oh Hello->";
@@ -23,7 +23,7 @@ internal class SerialPortTests
   }
 
   [Test]
-  [Timeout(5000)]
+  [CancelAfter(5000)]
   public async Task AresSerialPort_Returns_Good_Response_From_Multiple_Data_Adds()
   {
     const string stringToTest = "<-Oh Hello->";
@@ -37,7 +37,7 @@ internal class SerialPortTests
   }
 
   [Test]
-  [Timeout(5000)]
+  [CancelAfter(5000)]
   public async Task AresSerialPort_Returns_Good_Response_From_Multiple_Data_And_Commands()
   {
     const string stringToTest = "<-Oh Hello->";
@@ -68,7 +68,7 @@ internal class SerialPortTests
   }
 
   [Test]
-  [Timeout(5000)]
+  [CancelAfter(5000)]
   public async Task AresSerialPort_Returns_Good_Response_From_Multiple_Types_Of_Commands()
   {
     const string stringToTest = "<-Oh Hello->";
@@ -105,7 +105,7 @@ internal class SerialPortTests
   }
 
   [Test]
-  [Timeout(5000)]
+  [CancelAfter(5000)]
   [Ignore("Might not be a good idea to send asynchronously anyways.")]
   public async Task AresSerialPort_Returns_Good_Response_From_Multiple_Types_Of_Commands_Asynchronously()
   {
@@ -145,7 +145,7 @@ internal class SerialPortTests
   }
 
   [Test]
-  [Timeout(5000)]
+  [CancelAfter(5000)]
   public async Task AresSerialPort_Previous_Stream_Observable_Fires_Once_New_Command_Appears()
   {
     const string stringToTest = "<-Oh Hello->";
@@ -178,7 +178,7 @@ internal class SerialPortTests
   }
 
   [Test]
-  [Timeout(5000)]
+  [CancelAfter(5000)]
   public async Task AresSerialPort_Subscription_To_Response_Stream_Works_Without_Sending_Command()
   {
     const string stringToTest = "<-Oh Hello->";

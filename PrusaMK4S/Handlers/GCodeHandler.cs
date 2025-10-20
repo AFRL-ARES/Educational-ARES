@@ -527,6 +527,7 @@ public class GCodeHandler : IGcodeHandler
 
     var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
     var shifted_startup = await ShiftInitialPurgeLine(startup_gcode);
+    //shifted_startup = await AddFullMeshBedLeveling(shifted_startup);
 
     var modifiedData = shifted_startup
       .Concat(stringData
@@ -636,7 +637,7 @@ public class GCodeHandler : IGcodeHandler
 
     foreach(var line in gcode)
     {
-      if(line.StartsWith("G29"))
+      if(line.StartsWith("G29") || line.StartsWith("G80"))
         continue;
 
       updated_gcode.Add(line);
