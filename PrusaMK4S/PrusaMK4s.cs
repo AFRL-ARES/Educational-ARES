@@ -83,6 +83,10 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
   {
     var response = new MK4SRequestResponse();
 
+    if (IsBusy)
+      //If busy, wait the last set delay time plus a few seconds to try and print
+      await Task.Delay(TimeSpan.FromSeconds(PrintDelay + 5));
+
     try
     {
       if(_httpClient is null || Address is null)
@@ -118,7 +122,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
         //Customize our G Code
         var custom_gcode = await handler.CreatePrintIteration(expNumber);
         var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, custom_gcode);
-
+        await File.WriteAllBytesAsync($"Print_Iteration_{expNumber}.gcode", modifiedGcode);
         var printJobRequest = CreatePrintRequest(modifiedGcode);
         httpResponse = await _httpClient.SendAsync(printJobRequest);
       }
@@ -180,6 +184,9 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
 
   public async Task<MK4SRequestResponse> MovePrinter(string x, string y, string z, string dwell)
   {
+    if (string.IsNullOrEmpty(z))
+      z = "110";
+
     var response = new MK4SRequestResponse();
     try
     {
@@ -190,10 +197,16 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
       }
 
       string movementCommand;
-      var dwellInt = int.Parse(dwell);
+      var parsed = int.TryParse(dwell, out var dwellInt);
 
-      if(dwellInt > 0)
-        movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000 \n G4 S{dwell}";
+      if (!parsed)
+        PrintDelay = 10;
+
+      else
+        PrintDelay = dwellInt;
+
+      if (dwellInt > 0)
+        movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000 \n G4 S{PrintDelay}";
 
       else
         movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000";
@@ -403,4 +416,6 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
   public bool SmartPrint { get; set; }
   public IObservable<HttpResponseMessage?> StateStream { get; }
   public IGcodeHandler? LatestGCodeHandler { get; set; }
+
+  public int PrintDelay { get; set; } = 10; //Print Delay in Seconds
 }

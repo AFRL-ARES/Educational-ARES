@@ -362,6 +362,7 @@ public class GCodeHandler : IGcodeHandler
 
       var stringData = await ConvertGCodeToStrings(AdjustedFileData!);
       stringData = await RemoveBedLeveling(stringData);
+      //stringData = await RemoveRehomingSequence(stringData);
       await DetermineModificationIndex(stringData);
 
       var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
@@ -635,9 +636,28 @@ public class GCodeHandler : IGcodeHandler
   {
     List<string> updated_gcode = new List<string>();
 
-    foreach(var line in gcode)
+    foreach (var line in gcode)
     {
-      if(line.StartsWith("G29") || line.StartsWith("G80"))
+      if (line.StartsWith("G29 P9"))
+        updated_gcode.Add("G29 P9");
+
+      else if (line.StartsWith("G29 P1") || line.StartsWith("G80"))
+        continue;
+
+      else
+        updated_gcode.Add(line);
+    }
+
+    return Task.FromResult(updated_gcode);
+  }
+  
+  private Task<List<string>> RemoveRehomingSequence(List<string> gcode)
+  {
+    List<string> updated_gcode = [];
+
+    foreach (var line in gcode)
+    {
+      if (line.StartsWith("G28"))
         continue;
 
       updated_gcode.Add(line);
