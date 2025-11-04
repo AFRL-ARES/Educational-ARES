@@ -361,7 +361,7 @@ public class GCodeHandler : IGcodeHandler
         return Array.Empty<byte>();
 
       var stringData = await ConvertGCodeToStrings(AdjustedFileData!);
-      stringData = await RemoveBedLeveling(stringData);
+      stringData = await UpdateBedLeveling(stringData, iteration);
       await DetermineModificationIndex(stringData);
 
       var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
@@ -631,16 +631,37 @@ public class GCodeHandler : IGcodeHandler
     return string.Join(" ", splitLine);
   }
 
-  private Task<List<string>> RemoveBedLeveling(List<string> gcode)
+  private Task<List<string>> UpdateBedLeveling(List<string> gcode, int printIteration)
   {
     List<string> updated_gcode = new List<string>();
 
     foreach(var line in gcode)
     {
-      if(line.StartsWith("G29") || line.StartsWith("G80"))
-        continue;
+      if(line.StartsWith("M555"))
+      {
+        //M555 X0 Y0 W0 H0
+        var splitLine = line.Split();
 
-      updated_gcode.Add(line);
+        if(splitLine.Length < 5)
+        {
+          updated_gcode.Add(line);
+          continue;
+        }
+
+        splitLine[1] = "X0";
+        splitLine[2] = "Y0";
+        splitLine[3] = $"W25";
+        splitLine[4] = $"H25";
+        //splitLine[4] = $"H{210 - (printIteration * (ItemHeight + 5))}";
+
+        var newLevelAreaCmd = string.Join(" ", splitLine);
+        
+        updated_gcode.Add(newLevelAreaCmd);
+        continue;
+      }
+
+      else
+        updated_gcode.Add(line);
     }
 
     return Task.FromResult(updated_gcode);
