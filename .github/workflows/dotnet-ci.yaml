@@ -1,4 +1,4 @@
-name: ARES OS Continuous Integration
+name: Educational ARES Continuous Integration
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  SOLUTION_FILE: 'AresOS.sln' 
+  SOLUTION_FILE: 'Educational-ARES.sln' 
 
 jobs:
   build-and-test:
