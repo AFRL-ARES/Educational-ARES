@@ -4,7 +4,7 @@ namespace UI.Backend.Helpers;
 
 public class UnitCategoryHelper
 {
-  private readonly Dictionary<string, QuantityInfo> _cachedLookups = new();
+  private readonly Dictionary<string, QuantityInfo> _cachedLookups = [];
 
   public UnitCategoryHelper()
   {

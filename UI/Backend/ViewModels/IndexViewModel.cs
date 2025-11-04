@@ -8,8 +8,8 @@ public class IndexViewModel : ReactiveObject
   public IndexViewModel()
   {
     var currentMonth = DateTime.Parse("2019-12-01");
-    Revenue2019 = new List<DataItem>
-    {
+    Revenue2019 =
+    [
       new()
       {
         Date = DateTime.Parse("2019-01-01"),
@@ -70,10 +70,10 @@ public class IndexViewModel : ReactiveObject
         Date = DateTime.Parse("2019-12-01"),
         Revenue = 294000
       }
-    };
+    ];
 
-    Revenue2020 = new List<DataItem>
-    {
+    Revenue2020 =
+    [
       new()
       {
         Date = DateTime.Parse("2019-01-01"),
@@ -134,7 +134,7 @@ public class IndexViewModel : ReactiveObject
         Date = DateTime.Parse("2019-12-01"),
         Revenue = 394000
       }
-    };
+    ];
 
     // Observable.Interval(TimeSpan.FromSeconds(1)).Subscribe(_ =>
     // {

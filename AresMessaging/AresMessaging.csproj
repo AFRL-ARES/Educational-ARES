@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Authentication.proto" />
+    <None Remove="DeviceStateLogging\DevicesResponse.proto" />
+    <None Remove="SerialConnectivity.proto" />
+    <None Remove="UserManagement.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ARES.Datamodel" Version="0.14.1-beta.1" GeneratePathProperty="True" />
+    <PackageReference Include="Google.Protobuf" Version="3.33.0" />
+    <PackageReference Include="Grpc" Version="2.46.6" />
+    <PackageReference Include="Grpc.Tools" Version="2.72.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+	<PropertyGroup>
+		<DataModelProtoPath>$(PkgARES_Datamodel)\Proto\datamodel\</DataModelProtoPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+    <Protobuf Include="DeviceStateLogging\DevicesResponse.proto" GrpcServices="None" /> 
+    <Protobuf Include="SerialConnectivity.proto" />
+    <Protobuf Include="UserManagement.proto" />
+    <Protobuf Include="Authentication.proto" />
+  </ItemGroup>
+
+</Project>

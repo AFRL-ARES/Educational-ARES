@@ -8,11 +8,11 @@ public class Notifier : INotifier
     _notificationHandlers = notificationHandlers.ToList();
   }
 
-  public async Task Notify(string message, string title, NotificationSeverityEnum severity)
+  public async Task Notify(string title, string message, NotificationSeverityEnum severity)
   {
     foreach(var handler in _notificationHandlers)
     {
-      await handler.HandleNotification(message, title, severity);
+      await handler.HandleNotification(title, message, severity);
     }
   }
 }

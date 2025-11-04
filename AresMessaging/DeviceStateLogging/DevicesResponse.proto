@@ -1,0 +1,12 @@
+﻿syntax = "proto3";
+
+package ares.messages.device_states;
+
+message DevicesResponse {
+  repeated DevicesDescription devices = 1; // the ids/names of available devices
+}
+
+message DevicesDescription {
+  string device_id = 1;
+  string device_name = 2;
+}

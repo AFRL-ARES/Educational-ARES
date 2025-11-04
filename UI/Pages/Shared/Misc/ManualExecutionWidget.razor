@@ -35,8 +35,6 @@
 </DashboardWidget>
 @inject IJSRuntime JS
 @code {
-  private bool _exportInProgress;
-
   private string _error = string.Empty;
 
   private Stopwatch _stopwatch = new Stopwatch();
@@ -66,12 +64,10 @@
   private async Task Export()
   {
     _error = string.Empty;
-    _exportInProgress = true;
     var fileData = await ViewModel!.GetExportData();
     if (fileData is null)
     {
       _error = "Unable to get a state stream. Maybe provider wasn't selected.";
-      _exportInProgress = false;
       StateHasChanged();
       return;
     }
@@ -83,7 +79,6 @@
     using var streamRef = new DotNetStreamReference(stream: stream);
 
     await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
-    _exportInProgress = false;
     StateHasChanged();
   }
 }

@@ -25,7 +25,7 @@ public class ExecutionHistoryViewModel : ReactiveObject
   }
 
   [Reactive]
-  public IList<CampaignExecutionSummaryMetadata> CampaignSummaries { get; set; } = new List<CampaignExecutionSummaryMetadata>();
+  public IList<CampaignExecutionSummaryMetadata> CampaignSummaries { get; set; } = [];
 
   [Reactive]
   public bool LoadingExecutionHistory { get; set; } = false;

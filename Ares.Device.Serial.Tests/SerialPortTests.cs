@@ -1,8 +1,8 @@
-﻿using Ares.Device.Serial.Commands;
-using Ares.Device.Serial.Simulation;
-using System.IO.Ports;
+﻿using System.IO.Ports;
 using System.Reactive.Linq;
 using System.Text;
+using Ares.Device.Serial.Commands;
+using Ares.Device.Serial.Simulation;
 
 namespace Ares.Device.Serial.Tests;
 
@@ -146,6 +146,54 @@ internal class SerialPortTests
 
   [Test]
   [CancelAfter(5000)]
+  public async Task AresSerialPort_Streamed_Response_Cancel_Works()
+  {
+    const string stringToTest = "<-Oh Hello->";
+    const string stringToTest2 = "<-This Is A Test->";
+    var port = new TestConnection(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var responseObserver = port.GetTransactionStream<SomeResponse>().Select(r => r.Response);
+    var cmdStream = await port.Send(new SomeCommandWithStreamedResponse(stringToTest));
+    // keep the stream alive so it doesn't dispose prematurely
+    var keepAlive = cmdStream.Subscribe(m => Console.WriteLine(m.Response));
+    var firstResponse = await cmdStream.Take(1);
+    Assert.That(firstResponse.Response, Is.EqualTo(stringToTest));
+    await Task.Delay(1000);
+
+    keepAlive.Dispose();
+
+    var getSecondResponse = responseObserver.Take(1)
+      .Timeout(TimeSpan.FromSeconds(5))
+      .Catch<SomeResponse, TimeoutException>(_ => Observable.Return(new SomeResponse("Exception")));
+
+
+    await port.Send(new SomeCommandNoResponse(stringToTest2));
+    var result = await getSecondResponse;
+    Assert.That(result.Response, Is.EqualTo("Exception"));
+  }
+
+  [Test]
+  [CancelAfter(5000)]
+  public async Task AresSerialPort_Streamed_Observable_Works()
+  {
+    const string stringToTest = "<-Oh Hello->";
+    const string stringToTest2 = "<-This Is A Test->";
+    var port = new TestConnection(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var cmdStream = await port.Send(new SomeCommandWithStreamedResponse(stringToTest));
+    var responseObserver = cmdStream.Take(2).Do(s => Console.WriteLine($"The observer got: {s.Response}")).Timeout(TimeSpan.FromSeconds(5)).ToArray();
+    cmdStream.Subscribe(s => Console.WriteLine($"The subscriber got: {s.Response}"));
+    await Task.Delay(1000);
+    await port.Send(new SomeCommandNoResponse(stringToTest2));
+    var responses = await responseObserver;
+
+    using(Assert.EnterMultipleScope())
+    {
+      Assert.That(responses[0].Response, Is.EqualTo(stringToTest));
+      Assert.That(responses[1].Response, Is.EqualTo(stringToTest2));
+    }
+  }
+
+  [Test]
+  [CancelAfter(5000)]
   public async Task AresSerialPort_Previous_Stream_Observable_Fires_Once_New_Command_Appears()
   {
     const string stringToTest = "<-Oh Hello->";
@@ -153,7 +201,7 @@ internal class SerialPortTests
     var port = new TestConnection(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var responseObserver = port.GetTransactionStream<SomeResponse>();
     var getTest1FirstResponse = responseObserver.Take(1);
-    _ = port.Send(new SomeCommandWithStreamedResponse(stringToTest));
+    _ = await port.Send(new SomeCommandWithStreamedResponse(stringToTest));
     var test1ObservableFirstResponse = await getTest1FirstResponse;
     var secondResponseWaiter = Task.Run(async () =>
     {
@@ -163,15 +211,14 @@ internal class SerialPortTests
 
     _ = port.Send(new SomeCommandWithResponse(stringToTest2));
 
-
-    var test2ObservableFirestResponse = await responseObserver.Take(1);
+    var test2ObservableFirstResponse = await responseObserver.Take(1);
     var test1ObservableSecondResponse = await secondResponseWaiter;
-    Assert.Multiple(() =>
+    using(Assert.EnterMultipleScope())
     {
       Assert.That(test1ObservableFirstResponse.Response.Response, Is.EqualTo(stringToTest));
-      Assert.That(test2ObservableFirestResponse.Response.Response, Is.EqualTo(stringToTest2));
+      Assert.That(test2ObservableFirstResponse.Response.Response, Is.EqualTo(stringToTest2));
       Assert.That(test1ObservableSecondResponse.Response.Response, Is.EqualTo(stringToTest2));
-    });
+    }
 
     // var currentBuffer = await port.DataBufferState.FirstAsync();
     // Assert.That(currentBuffer, Is.Empty);
@@ -204,12 +251,12 @@ internal class SerialPortTests
 
     var test3Task = await port.Send(new SomeCommandWithResponse(stringToTest));
     var test1ObservableSecondResponse2 = await test1ObservableResponseWaiter2;
-    Assert.Multiple(() =>
+    using(Assert.EnterMultipleScope())
     {
       Assert.That(test1ObservableSecondResponse2.Response.Response, Is.EqualTo(stringToTest));
       Assert.That(test2ObservableFirstResponse.Response.Response, Is.EqualTo(stringToTest2));
       Assert.That(test1ObservableSecondResponse.Response.Response, Is.EqualTo(stringToTest2));
-    });
+    }
 
     Assert.That(port.BufferEmpty, Is.True);
   }
@@ -242,7 +289,7 @@ internal class SomeResponseParser : SerialResponseParser<SomeResponse>
       var startIdx = parsed.IndexOf("<-", StringComparison.InvariantCultureIgnoreCase);
       var endIdx = startIdx >= 0 ? parsed.IndexOf("->", startIdx, StringComparison.InvariantCultureIgnoreCase) : -1;
       endIdx = endIdx > 0 ? endIdx + "->".Length : endIdx;
-      if (startIdx < 0 || endIdx < 0 || string.IsNullOrEmpty(parsed))
+      if(startIdx < 0 || endIdx < 0 || string.IsNullOrEmpty(parsed))
       {
         response = null;
         dataToRemove = null;
@@ -253,7 +300,7 @@ internal class SomeResponseParser : SerialResponseParser<SomeResponse>
       dataToRemove = new ArraySegment<byte>(bufferArr, startIdx, endIdx - startIdx);
       return true;
     }
-    catch (Exception)
+    catch(Exception)
     {
       response = null;
       dataToRemove = null;
@@ -271,7 +318,7 @@ internal class SomeResponse2Parser : SerialResponseParser<SomeResponse2>
       var startIdx = parsed.IndexOf("!-", StringComparison.InvariantCultureIgnoreCase);
       var endIdx = startIdx >= 0 ? parsed.IndexOf("-!", startIdx, StringComparison.InvariantCultureIgnoreCase) : -1;
       endIdx = endIdx > 0 ? endIdx + "-!".Length : endIdx;
-      if (startIdx < 0 || endIdx <= 0 || string.IsNullOrEmpty(parsed))
+      if(startIdx < 0 || endIdx <= 0 || string.IsNullOrEmpty(parsed))
       {
         response = null;
         dataToRemove = null;
@@ -282,7 +329,7 @@ internal class SomeResponse2Parser : SerialResponseParser<SomeResponse2>
       dataToRemove = new ArraySegment<byte>(bufferArr.ToArray(), startIdx, endIdx - startIdx);
       return true;
     }
-    catch (Exception)
+    catch(Exception)
     {
       response = null;
       dataToRemove = null;
@@ -302,6 +349,14 @@ internal class SomeCommandWithResponse : SerialCommandWithResponse<SomeResponse>
   protected override byte[] Serialize()
     => Encoding.ASCII.GetBytes(Message);
 }
+
+internal class SomeCommandNoResponse(string Message) : SerialCommand
+{
+
+  protected override byte[] Serialize()
+    => Encoding.ASCII.GetBytes(Message);
+}
+
 internal class SomeCommandWithStreamedResponse : SerialCommandWithStreamedResponse<SomeResponse>
 {
   public SomeCommandWithStreamedResponse(string message) : base(new SomeResponseParser())
@@ -338,10 +393,14 @@ public class TestConnection : AresSerialSimConnection
   {
     // having the _isProcessing check will make the test fail if the thread adding to the buffer is the
     // same one as the one processing the buffer
-    if (_isProcessing)
+    if(_isProcessing)
+    {
+      Console.WriteLine($"Got something, but i'm still processing: {Encoding.ASCII.GetString(bytes)}");
       return;
+    }
 
     _isProcessing = true;
+    Console.WriteLine($"Got something: {Encoding.ASCII.GetString(bytes)}");
     var random = new Random();
     Task.Delay(random.Next(100, 300)).ContinueWith(_ =>
     {

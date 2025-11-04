@@ -143,7 +143,7 @@ public class RemotePlannerService : PlannerServiceBase
     }
   }
 
-  public override async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters,
+  public override async Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters,
     string campaignId,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory,
@@ -154,10 +154,13 @@ public class RemotePlannerService : PlannerServiceBase
     planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, previousExperiments)));
     planRequest.AnalysisResults.AddRange(analysisHistory.Select(a => (double)a.Result));
     var result = await client.PlanAsync(planRequest, cancellationToken: cancellationToken);
-    return ToPlanResults(result, plannableParameters);
+
+    var convertedResults = ToPlanResults(result, plannableParameters);
+    var response = new PlanResponse(convertedResults, result.PlanningOutcome, result.ErrorString);
+    return response;
   }
 
-  public override async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters,
+  public override async Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters,
     string campaignId,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory,
@@ -169,29 +172,38 @@ public class RemotePlannerService : PlannerServiceBase
     planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, previousExperiments)));
     planRequest.AnalysisResults.AddRange(analysisHistory.Select(a => (double)a.Result));
     var result = await client.PlanAsync(planRequest, cancellationToken: cancellationToken);
-    return ToPlanResults(result, plannableParameters);
+    
+    var convertedResults = ToPlanResults(result, plannableParameters);
+    var response = new PlanResponse(convertedResults, result.PlanningOutcome, result.ErrorString);
+    return response;
   }
 
-  private PlanningParameter ConvertToPlanningParameter(ParameterMetadata metadata, IEnumerable<ExperimentOverview> experimentHistory)
+  private static PlanningParameter ConvertToPlanningParameter(ParameterMetadata metadata, IEnumerable<ExperimentOverview> experimentHistory)
   {
     var parameter = new PlanningParameter
     {
       ParameterName = metadata.Name,
       IsPlanned = true,
-      DataType = metadata.Schema.Type
+      DataType = metadata.Schema.Type,
+      InitialValue = metadata.InitialValue
     };
 
     var paramHistory = experimentHistory.Select(exp =>
     {
-      var plannedValue = exp.Template.GetAllPlannedParameters().First(param => param.PlanningMetadata.Name == metadata.Name).Value;
+      var plannedParameters = exp.Template.GetAllPlannedParameters();
+      var plannedValue = plannedParameters.FirstOrDefault(param => param.PlanningMetadata.Name == metadata.Name)?.Value;
 
       var actualValue = string.IsNullOrEmpty(metadata.OutputName) ? null : exp.Result.Fields.FirstOrDefault(f => f.Key == metadata.OutputName).Value;
 
-      return new ParameterHistoryInfo
-      {
-        PlannedValue = plannedValue,
-        AchievedValue = actualValue ?? AresValueHelper.CreateNull()
-      };
+      if(plannedValue is null)
+        return new ParameterHistoryInfo();
+
+      else
+        return new ParameterHistoryInfo
+        {
+          PlannedValue = plannedValue,
+          AchievedValue = actualValue ?? AresValueHelper.CreateNull()
+        };
     });
 
     parameter.ParameterHistory.AddRange(paramHistory);
@@ -207,7 +219,7 @@ public class RemotePlannerService : PlannerServiceBase
     return parameter;
   }
 
-  private IEnumerable<PlanResult> ToPlanResults(PlanningResponse result, IEnumerable<ParameterMetadata> plannableMetadata)
+  private static List<PlanResult> ToPlanResults(PlanningResponse result, IEnumerable<ParameterMetadata> plannableMetadata)
   {
     var planResults = new List<PlanResult>();
 
@@ -217,11 +229,10 @@ public class RemotePlannerService : PlannerServiceBase
       var matchingMetadata = plannableMetadata.FirstOrDefault(data => data.Name == currentPlannedParameter.ParameterName);
 
       //What do we do if we don't find the old metadata?
-      if(matchingMetadata is null)
+      matchingMetadata ??= new ParameterMetadata
       {
-        matchingMetadata = new ParameterMetadata();
-        matchingMetadata.Name = currentPlannedParameter.ParameterName;
-      }
+        Name = currentPlannedParameter.ParameterName
+      };
 
       var aresPlanResult = new PlanResult(matchingMetadata, currentPlannedParameter.ParameterValue);
       planResults.Add(aresPlanResult);

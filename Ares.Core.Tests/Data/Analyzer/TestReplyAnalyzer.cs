@@ -13,7 +13,7 @@ public class TestReplyAnalyzer : AnalyzerBase
   public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken)
   {
     var firstData = inputs.Fields["TestAnalyzerInput"];
-    var analysis = new Analysis() { Result = (float)firstData.NumberValue, Success = true };
+    var analysis = new Analysis() { Result = (float)firstData.NumberValue, AnalysisOutcome = Outcome.Success };
 
     return Task.FromResult(analysis);
   }

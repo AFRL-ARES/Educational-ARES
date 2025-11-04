@@ -132,7 +132,7 @@ public class ExperimentDesignerViewModel : ReactiveObject
   [Reactive]
   public string Name { get; set; } = "Unnamed Template";
 
-  public IList<StepDesignerViewModel>? StepDesigners { get; private set; }
+  public IList<StepDesignerViewModel> StepDesigners { get; private set; } = [];
 
   public IEnumerable<CommandTemplate>? ExperimentOutputProviderCommand { get; set; }
 }

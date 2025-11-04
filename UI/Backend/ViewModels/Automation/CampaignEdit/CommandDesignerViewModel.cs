@@ -134,6 +134,7 @@ public class CommandDesignerViewModel : ReactiveObject
     // that way we don't have to bother the service every time
     if(existingTemplate.Metadata?.DeviceId is not null)
     {
+
       var deviceInfo = await _devicesClient.GetDeviceInfoAsync(new DeviceInfoRequest { DeviceId = existingTemplate.Metadata.DeviceId });
       TemplateDeviceName = string.IsNullOrEmpty(deviceInfo.Name) ? null : deviceInfo.Name;
     }

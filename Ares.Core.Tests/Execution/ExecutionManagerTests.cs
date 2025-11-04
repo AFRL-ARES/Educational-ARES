@@ -8,7 +8,6 @@ using Ares.Core.Execution.StopConditions;
 using Ares.Core.Notifications;
 using Ares.Datamodel;
 using Ares.Datamodel.Templates;
-using Castle.Core.Logging;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -36,7 +35,7 @@ internal class ExecutionManagerTests
 
     var mockCampaignComposer = new Mock<ICommandComposer<CampaignTemplate, ICampaignExecutor>>();
     var mockCampaignExecutor = new Mock<ICampaignExecutor>();
-    mockCampaignExecutor.SetupGet(executor => executor.StopConditions).Returns(new List<IStopCondition>());
+    mockCampaignExecutor.SetupGet(executor => executor.StopConditions).Returns([]);
     mockCampaignExecutor.Setup(executor => executor.Execute(It.IsAny<ExecutionControlToken>())).ReturnsAsync(new CampaignExecutionSummary
     {
       UniqueId = Guid.NewGuid().ToString(),
@@ -56,13 +55,15 @@ internal class ExecutionManagerTests
   public void ExecutionManager_Should_Execute_Without_Throwing_Exception()
   {
     var expTemplate = new ExperimentTemplate();
-    var campaignTemplate = new CampaignTemplate();
-    campaignTemplate.ExperimentTemplate = expTemplate;
+    var campaignTemplate = new CampaignTemplate
+    {
+      ExperimentTemplate = expTemplate
+    };
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns(campaignTemplate);
-    var executionManager = new ExecutionManager(Array.Empty<IStartCondition>(), _contextFactory, mockTemplateStore.Object, _safetyManager, _campaignComposer, _logger, _notifier);
+    var executionManager = new ExecutionManager([], _contextFactory, mockTemplateStore.Object, _safetyManager, _campaignComposer, _logger, _notifier);
     executionManager.CampaignStopConditions.Add(new NumExperimentsRun(_executionReportStore, 1));
-    Assert.DoesNotThrowAsync(() => executionManager.Start(string.Empty, new List<AresCampaignTag>()));
+    Assert.DoesNotThrowAsync(() => executionManager.Start(string.Empty, []));
   }
 
   [Test]
@@ -70,8 +71,8 @@ internal class ExecutionManagerTests
   {
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns((CampaignTemplate)null);
-    var executionManager = new ExecutionManager(Array.Empty<IStartCondition>(), _contextFactory, mockTemplateStore.Object, _safetyManager, _campaignComposer, _logger, _notifier);
-    Assert.ThrowsAsync<InvalidOperationException>(() => executionManager.Start(string.Empty, new List<AresCampaignTag>()));
+    var executionManager = new ExecutionManager([], _contextFactory, mockTemplateStore.Object, _safetyManager, _campaignComposer, _logger, _notifier);
+    Assert.ThrowsAsync<InvalidOperationException>(() => executionManager.Start(string.Empty, []));
   }
 
   [Test]
@@ -81,7 +82,7 @@ internal class ExecutionManagerTests
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns(new CampaignTemplate());
     var falseCondition = new Mock<IStartCondition>();
     falseCondition.Setup(condition => condition.CanStart()).Returns(Task.FromResult(new StartConditionResult(false)));
-    var executionManager = new ExecutionManager(new[] { falseCondition.Object }, _contextFactory, mockTemplateStore.Object, _safetyManager, _campaignComposer, _logger, _notifier);
-    Assert.ThrowsAsync<InvalidOperationException>(() => executionManager.Start(string.Empty, new List<AresCampaignTag>()));
+    var executionManager = new ExecutionManager([falseCondition.Object], _contextFactory, mockTemplateStore.Object, _safetyManager, _campaignComposer, _logger, _notifier);
+    Assert.ThrowsAsync<InvalidOperationException>(() => executionManager.Start(string.Empty, []));
   }
 }

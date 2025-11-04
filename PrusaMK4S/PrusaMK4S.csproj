@@ -17,9 +17,9 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ARES.Datamodel" Version="0.13.4-beta.1" GeneratePathProperty="True" />
-	  <PackageReference Include="DynamicData" Version="9.4.1" />
-	  <PackageReference Include="Grpc.Tools" Version="2.72.0">
+
+    <PackageReference Include="ARES.Datamodel" Version="0.14.1-beta.1" GeneratePathProperty="True" />
+    <PackageReference Include="Grpc.Tools" Version="2.72.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

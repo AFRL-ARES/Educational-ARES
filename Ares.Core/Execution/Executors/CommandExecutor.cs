@@ -70,7 +70,7 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
     else
     {
       Status.State = ExecutionState.Failed;
-      await _notifier.Notify(result.Error, "Command Failed!", NotificationSeverityEnum.Error);
+      await _notifier.Notify("Command Failed!", result.Error, NotificationSeverityEnum.Error);
     }
 
     _stateSubject.OnNext(Status);

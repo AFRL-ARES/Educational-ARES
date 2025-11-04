@@ -24,10 +24,10 @@ public class ManualPlanner : IPlannerService
     _planResultsQueue
     .AsEnumerable()
     .Select(results => results
-    .Select(result => (result.Name, result.value)));
+    .Select(result => (result.Name, result.Value)));
 
 
-  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters,
+  public Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters,
     string campaignId,
     IEnumerable<ExperimentOverview> experiments, 
     IEnumerable<Analysis> _, 
@@ -36,12 +36,13 @@ public class ManualPlanner : IPlannerService
     try
     {
       var currentParameterSet = _planResultsQueue.Dequeue().ToList();
-      var returnList = plannableParameters.Select(metadata => currentParameterSet.First(result => result.Name == metadata.Name).ToPlanResult(metadata));
-      return Task.FromResult(returnList);
+      var returnList = plannableParameters.Select(metadata => currentParameterSet.First(result => result.Name == metadata.Name).ToPlanResult(metadata)).ToList();
+      var response = new PlanResponse(returnList, Outcome.Success, string.Empty);
+      return Task.FromResult(response);
     }
-    catch(InvalidOperationException)
+    catch(InvalidOperationException e)
     {
-      return Task.FromResult<IEnumerable<PlanResult>>(new List<PlanResult>());
+      return Task.FromResult(new PlanResponse([], Outcome.Failure, e.Message));
     }
   }
 
@@ -65,7 +66,7 @@ public class ManualPlanner : IPlannerService
         LoadPlanQueue(seedParam.FileLines.PlannerValues);
         break;
       default:
-        throw new ArgumentOutOfRangeException();
+        throw new ArgumentOutOfRangeException($"Parameter was out of range for Manual Planner Seed! {seedParam.PlannerStuffCase}");
     }
 
     return Task.CompletedTask;
@@ -102,7 +103,8 @@ public class ManualPlanner : IPlannerService
     // Create a useful Func to split lines
     var tokenizeLine = new Func<string, List<string>>(line =>
     {
-      return line.Trim().Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries).ToList();
+      line = line.Trim();
+      return line.Split(delim, StringSplitOptions.RemoveEmptyEntries).ToList();
     });
 
     // Tokenize the first line of the file
@@ -119,7 +121,7 @@ public class ManualPlanner : IPlannerService
 
     // Tokenize each line and parse to doubles
     int expNum = 1;// 1 based index
-    List<List<string>> data = new List<List<string>>();
+    List<List<string>> data = [];
     dataFileLines.ForEach(expDataLine =>
     {
       // Tokenize the line and check the validity of it
@@ -130,7 +132,7 @@ public class ManualPlanner : IPlannerService
 
       // Parse the tokens to double and check the validities
       int tokenNum = 0;// 1 based index
-      List<string> expData = new();
+      List<string> expData = [];
       expLineTokens.ForEach(dataToken =>
       {
         tokenNum += 1;
@@ -163,23 +165,22 @@ public class ManualPlanner : IPlannerService
     return Task.FromResult(response);
   }
 
-  public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, string campaignId, IEnumerable<ExperimentOverview> previousExperiments, IEnumerable<Analysis> analysisHistory, AresStruct settings, CancellationToken cancellationToken = default)
+  public async Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters, string campaignId, IEnumerable<ExperimentOverview> previousExperiments, IEnumerable<Analysis> analysisHistory, AresStruct settings, CancellationToken cancellationToken = default)
   {
     return await Plan(plannableParameters, campaignId, previousExperiments, analysisHistory, cancellationToken);
   }
 
-  private record ManualPlanResult(string Name, AresValue value)
-
+  private record ManualPlanResult(string Name, AresValue Value)
   {
     public PlanResult ToPlanResult(ParameterMetadata metadata)
-      => new(metadata, value);
+      => new(metadata, Value);
   }
 
   public string UniqueId { get; set; } = new Guid().ToString();
   public ConnectionStatus Status { get; protected set; }
   public string Name { get; set; } = "Manual Planner";
   public string Address { get; set; } = string.Empty;
-  public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
+  public IList<Planner> AvailablePlanners { get; } = [];
   public string Type { get; } = "Manual Planner";
   public string Version { get; } = "1.0.0";
   public string Description { get; } = "A planner designed for executing a pre-determined set of values";

@@ -1,0 +1,75 @@
+name: ARES OS Release Pipeline
+
+on:
+  release:
+    types: [released]
+
+env:
+  UI_PROJECT_FILE: 'UI/UI.csproj'
+  SERVICE_PROJECT_FILE: 'AresService/AresService.csproj'
+  OUTPUT_PATH: 'publish' # Shared output directory for all artifacts
+
+jobs:
+  build-and-deploy-prerelease:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            runtime_id: linux-x64
+            os_name_tag: linux
+          - os: windows-latest
+            runtime_id: win-x64
+            os_name_tag: windows
+          - os: macos-latest
+            runtime_id: osx-x64
+            os_name_tag: macos
+            
+    runs-on: ${{ matrix.os }}
+    env:
+      ZIP_FILE_NAME: 'ARES-OS-${{ github.event.release.tag_name }}-${{ matrix.os_name_tag }}.zip'
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v5
+      with:
+        ref: ${{ github.event.release.tag_name }}
+
+    - name: Set up .NET 8.x
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '8.x'
+
+    - name: Restore Dependencies for UI and Service
+      run: |
+        dotnet restore ${{ env.UI_PROJECT_FILE }}
+        dotnet restore ${{ env.SERVICE_PROJECT_FILE }}
+
+    - name: Build and Publish Self-Contained Release Artifacts
+      run: |
+        echo "Publishing UI Project for ${{ matrix.os_name_tag }}  (${{ matrix.runtime_id }})"
+        dotnet publish ${{ env.UI_PROJECT_FILE }} --configuration Release --output ${{ env.OUTPUT_PATH }} /p:UseAppHost=true -r ${{ matrix.runtime_id }} --self-contained true
+
+        echo "Publishing Service Project for ${{ matrix.os_name_tag }}  (${{ matrix.runtime_id }})"
+        dotnet publish ${{ env.SERVICE_PROJECT_FILE }} --configuration Release --output ${{ env.OUTPUT_PATH }} /p:UseAppHost=true -r ${{ matrix.runtime_id }} --self-contained true
+
+    - name: Create ZIP Archive (Windows)
+      if: runner.os == 'Windows'
+      run: 7z a -r "${{ env.ZIP_FILE_NAME }}" .\"${{ env.OUTPUT_PATH }}\*"
+      
+    - name: Create ZIP Archive (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        cd ${{ env.OUTPUT_PATH }}
+        zip -r ../${{ env.ZIP_FILE_NAME }} .
+    
+    - name: Upload Published Binaries to Pre-release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ env.ZIP_FILE_NAME }}
+        body: |
+          Pre-release assets for version ${{ github.event.release.tag_name }} have been automatically compiled and uploaded. Ready for QA validation.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+        

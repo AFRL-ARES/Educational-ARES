@@ -37,7 +37,7 @@ internal class ClientManager : IClientManager
     var handler = new HttpClientHandler();
     try
     {
-      var cert = new X509Certificate2(_certificateOptions.Path, _certificateOptions.Password);
+      var cert = new X509Certificate2(_certificateOptions.Path ?? "", _certificateOptions.Password);
       handler.ClientCertificates.Add(cert);
       handler.CheckCertificateRevocationList = false;
     }

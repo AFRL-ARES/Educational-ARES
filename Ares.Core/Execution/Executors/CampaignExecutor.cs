@@ -178,7 +178,7 @@ public class CampaignExecutor : ICampaignExecutor
         // and thus sending a null result to the analyzer might break it depending on the analyzer
         if(!token.IsCancelled)
         {
-          var analysisResult = await _analysisHelper.Analyze(
+          var analysis = await _analysisHelper.Analyze(
             experimentExecutor.Template,
             experimentSummary,
             token.CancellationToken);
@@ -186,30 +186,37 @@ public class CampaignExecutor : ICampaignExecutor
           // The following are top level checks for analysis failure in case the
           // failure is not properly handled on the Analysis itself
           // which also has support for "success" and "error" message
-          if(analysisResult.ResultType == AnalysisResultType.Failure)
+          if (analysis is null || analysis.Result == float.NaN)
           {
-            await _notifier.Notify("Analysis Failure", $"Failed to analyze experiment result: {analysisResult.Error}", NotificationSeverityEnum.Error);
+            await _notifier.Notify("Analysis Failure", $"Analysis was reported as successful, but no actual analysis was provided. {analysis?.ErrorString ?? "No error string provided"}", NotificationSeverityEnum.Error);
+            executionSuccess = false;
             break;
           }
 
-          if(analysisResult.ResultType == AnalysisResultType.Canceled)
+          if(analysis.AnalysisOutcome == Outcome.Failure)
           {
+            await _notifier.Notify("Analysis Failure", $"Failed to analyze experiment result: {analysis.ErrorString}", NotificationSeverityEnum.Error);
+            executionSuccess = false;
+            break;           
+          }
+
+          else if(analysis.AnalysisOutcome == Outcome.Canceled)
+          {
+            await _notifier.Notify("Analysis Canceled", "The requested analysis has been canceled", NotificationSeverityEnum.Info);
             break;
           }
 
-          if(analysisResult.Analysis is null)
-          {
-            await _notifier.Notify("Analysis Failure", $"Analysis was reported as successful, but not actual analysis was provided. {analysisResult.Error}", NotificationSeverityEnum.Error);
-            break;
+          else if(analysis.AnalysisOutcome == Outcome.Warning) 
+          { 
+            await _notifier.Notify("Warning From Analyzer!", $"Analysis completed successfully, but the analyzer emitted a warning! {analysis.ErrorString}", NotificationSeverityEnum.Warning);
           }
 
-          var analysis = analysisResult.Analysis;
           analyses.Add(analysis);
 
           _analysisRepo.Add(analysis);
           // Here the analysis has failed, but the analyzer properly reported why
           // it failed via the analysis result.
-          if(analysis.ErrorString != string.Empty && analysis.ErrorString is not null)
+          if(analysis.ErrorString != string.Empty && string.IsNullOrEmpty(analysis.ErrorString))
           {
             await _notifier.Notify("Analysis Process Failed!", analysis.ErrorString, NotificationSeverityEnum.Error);
             executionSuccess = false;
@@ -363,10 +370,10 @@ public class CampaignExecutor : ICampaignExecutor
   }
 
   public CampaignTemplate Template { get; }
-  public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
+  public IList<IStopCondition> StopConditions { get; } = [];
   public double ReplanRate { get; set; } = 1;
   public string? ExecutionNotes { get; set; }
-  public List<AresCampaignTag> CampaignTags { get; set; } = new();
+  public List<AresCampaignTag> CampaignTags { get; set; } = [];
   public IObservable<CampaignExecutionStatus> ExperimentStatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
 }

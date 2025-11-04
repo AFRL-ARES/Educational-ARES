@@ -1,0 +1,40 @@
+name: ARES OS Continuous Integration
+
+on:
+  push:
+    branches:
+      - Develop
+  pull_request:
+    branches:
+      - Develop
+  workflow_dispatch:
+
+env:
+  SOLUTION_FILE: 'AresOS.sln' 
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v5
+
+    - name: Set up .NET 8.x
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '8.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }}
+      working-directory: .
+
+      
+    - name: Build All Projects
+      run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+      working-directory: .
+      
+    - name: Run Unit Tests
+      run: dotnet test ${{ env.SOLUTION_FILE }} --configuration Release --no-build
+      working-directory: .

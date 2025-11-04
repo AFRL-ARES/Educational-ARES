@@ -1,5 +1,4 @@
 ﻿@using Ares.Datamodel.Connection
-@using Ares.Datamodel.Planning
 
 <div class="planner-settings-grid">
   <h5 class="planner-settings-name">@Name</h5>
@@ -69,8 +68,6 @@
     }
   }
 
-  private bool _activateInProgress;
-
   private StateResponse? _plannerStatus; 
 
   private Task EditClicked()
@@ -102,9 +99,7 @@
     if(ActivateCallback is null)
       return;
 
-    _activateInProgress = true;
     await ActivateCallback();
     await UpdatePlannerStatus();
-    _activateInProgress = false;
   }
 }

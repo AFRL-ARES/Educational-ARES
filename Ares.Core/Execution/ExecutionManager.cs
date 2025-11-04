@@ -42,7 +42,7 @@ public class ExecutionManager : IExecutionManager
     _notifier = notifier;
   }
 
-  public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>() { };
+  public IList<IStopCondition> CampaignStopConditions { get; } = [];
 
   public async Task<bool> CanRun()
   {
@@ -157,7 +157,7 @@ public class ExecutionManager : IExecutionManager
       await context.SaveChangesAsync();
     }
 
-    catch(Exception ex)
+    catch(Exception)
     {
       throw;
     }

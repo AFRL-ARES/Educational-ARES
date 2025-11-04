@@ -56,15 +56,14 @@
         Planned
       </label>
     </div>
-
-
-    <div class="mb-2">
-      <RadzenCheckBox @bind-Value="ViewModel!.IsEnvironmentBased" id="flexCheckDefault" Disabled="ViewModel!.IsPlanned" />
-      <label class="form-check-label" for="flexCheckDefault">
-        Environment Variable
-      </label>
-    </div>
   }
+
+  <div class="mb-2">
+    <RadzenCheckBox @bind-Value="ViewModel!.IsEnvironmentBased" id="flexCheckDefault" Disabled="ViewModel!.IsPlanned" />
+    <label class="form-check-label" for="flexCheckDefault">
+      Environment Variable
+    </label>
+  </div>
 
 </div>
 

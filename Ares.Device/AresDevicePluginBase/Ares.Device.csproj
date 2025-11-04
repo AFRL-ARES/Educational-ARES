@@ -35,8 +35,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ARES.Datamodel" Version="0.13.4-beta.1" />
-    <PackageReference Include="System.Reactive" Version="6.0.2" />
+    <PackageReference Include="ARES.Datamodel" Version="0.14.1-beta.1" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
 
 </Project>

@@ -14,7 +14,7 @@ internal class ExperimentComposerTests
   {
     var stepComposerMock = new Mock<ICommandComposer<StepTemplate, StepExecutor>>();
 
-    stepComposerMock.Setup(composer => composer.Compose(It.IsAny<StepTemplate>())).Returns<StepTemplate>(template => new SequentialStepExecutor(template, Array.Empty<CommandExecutor>()));
+    stepComposerMock.Setup(composer => composer.Compose(It.IsAny<StepTemplate>())).Returns<StepTemplate>(template => new SequentialStepExecutor(template, []));
     var stepTemplate1 = new StepTemplate
     { Index = 0, UniqueId = Guid.NewGuid().ToString() };
 

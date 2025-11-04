@@ -22,7 +22,7 @@ internal class NoneAnalyzer : AnalyzerBase
   {
     var analysis = new Analysis
     {
-      Success = true,
+      AnalysisOutcome = Outcome.Success,
       Result = 0
     };
 

@@ -105,7 +105,7 @@ public class ManualPlannerViewModel : ReactiveObject
 
   public List<ManualPlannerDisplayObject> DisplayObjects { get; set; } = [];
 
-  public List<string> PlannerValueHeaders { get; set; } = new List<string>();
+  public List<string> PlannerValueHeaders { get; set; } = [];
 
   public int NumberOfPlannedExperiments { get; set; } = 0;
 }

@@ -26,7 +26,7 @@ public class DemoAnalyzerService : AresRemoteAnalyzerService.AresRemoteAnalyzerS
     var analysis = new Analysis
     {
       Result = (float)input,
-      Success = true
+      AnalysisOutcome = Outcome.Success,
     };
 
     var numOperand = request.Inputs.Fields.GetValueOrDefault(DemoDataTypes.Operand.Key);

@@ -61,8 +61,6 @@
 
   private DeviceOperationalStatus? _deviceOperationalStatus;
 
-  private bool _activateInProgress;
-
   protected override async Task OnInitializedAsync()
   {
     if (DeviceOperationalStatusGetter is not null)
@@ -101,10 +99,8 @@
     if (ActivateCallback is null)
       return;
 
-    _activateInProgress = true;
     await ActivateCallback();
     await UpdateDeviceOperationalStatus();
-    _activateInProgress = false;
   }
 
 }

@@ -1,4 +1,4 @@
-﻿using Ares.Core.Analyzing;
+using Ares.Core.Analyzing;
 using Ares.Core.AresEnvironment;
 using Ares.Core.Device;
 using Ares.Core.Device.State.Logging;
@@ -15,13 +15,12 @@ using Ares.Core.Tests.Data.Device;
 using Moq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Ares.Datamodel.Templates;
 
 namespace Ares.Core.Tests.Execution;
 
 internal class CampaignExecutorTests
 {
-  private IAnalyzerRepo _analyzerRepo;
+  private AnalyzerRepo _analyzerRepo;
   private CampaignComposer _campaignComposer;
   private ICampaignExecutor _campaignExecutor;
   private IExecutionReporter _executionReporter;
@@ -36,6 +35,7 @@ internal class CampaignExecutorTests
   private ILogger<StateLoggerManager> _logger;
   private ILogger<CampaignComposer> _composerLogger;
 
+
   private IAnalyzer _replyAnalyzer;
 
   [OneTimeSetUp]
@@ -44,7 +44,7 @@ internal class CampaignExecutorTests
     _analyzerRepo = new AnalyzerRepo();
     _replyAnalyzer = new TestReplyAnalyzer();
     _analyzerRepo.AddAnalyzer(_replyAnalyzer);
-    _analysisRepo = new AnalysisRepo();
+    _analysisRepo = [];
     _analysisHelper = new AnalysisHelper(_analyzerRepo);
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);

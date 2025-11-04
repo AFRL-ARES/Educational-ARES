@@ -1,7 +1,6 @@
 ﻿@using Ares.Datamodel
-@using Ares.Datamodel.Extensions
 
-  @if(Schema?.Type is AresDataType.String)
+@if(Schema?.Type is AresDataType.String)
   {
     <RadzenFormField Text="@GetFormFieldName()" Variant="Variant.Outlined" AllowFloatingLabel="false" Style="width: 100%">
       @if(HasStringChoices)

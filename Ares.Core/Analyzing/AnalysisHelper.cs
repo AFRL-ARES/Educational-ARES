@@ -1,4 +1,6 @@
-﻿using Ares.Datamodel;
+﻿using Ares.Core.Notifications;
+using Ares.Datamodel;
+using Ares.Datamodel.Analyzing;
 using Ares.Datamodel.Templates;
 using Google.Protobuf.Collections;
 using Grpc.Core;
@@ -14,7 +16,7 @@ public class AnalysisHelper
     _analyzerRepo = analyzerRepo;
   }
 
-  public async Task<AnalysisResult> Analyze(ExperimentTemplate template, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
+  public async Task<Analysis> Analyze(ExperimentTemplate template, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
   {
     var analyzer = GetAnalyzer(template.AnalyzerId);
     var analyzerInputs = ExperimentOutputToAnalyzerInputs(
@@ -32,19 +34,19 @@ public class AnalysisHelper
         ExperimentOverviewId = experimentSummary.ExperimentOverview.UniqueId
       };
 
-      return new AnalysisResult(analysis, AnalysisResultType.Success);
+      return analysis;
     }
     catch(RpcException e)
     {
       if(e.InnerException is OperationCanceledException oce)
       {
-        return new AnalysisResult(null, AnalysisResultType.Canceled, "Analysis has been canceled.");
+        return new Analysis { Result = float.NaN, AnalysisOutcome = Outcome.Canceled, ErrorString = $" Anlysis has been canceled" };
       }
-      return new AnalysisResult(null, AnalysisResultType.Failure, $"Call to analyzer has failed: {e}");
+      return new Analysis {Result = float.NaN, AnalysisOutcome = Outcome.Failure, ErrorString = $"Call to analyzer has failed: {e}" };
     }
     catch(Exception e)
     {
-      return new AnalysisResult(null, AnalysisResultType.Failure, $"Call to analyzer has failed: {e}");
+      return new Analysis { Result = float.NaN, AnalysisOutcome = Outcome.Failure, ErrorString = $"Call to analyzer has failed: {e}" };
     }
   }
 

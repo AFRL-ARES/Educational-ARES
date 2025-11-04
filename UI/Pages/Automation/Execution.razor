@@ -1,9 +1,9 @@
 ﻿@page "/automation/execution"
 @using System.Collections.ObjectModel
 @using Ares.Datamodel
-@using Ares.Datamodel.Templates
 @using Ares.Services
 @using Google.Protobuf.WellKnownTypes
+@using Radzen.Blazor
 @using UI.Backend.Extensions
 @using UI.Pages.Shared.CampaignEdit
 @using UI.Pages.Shared.Execution.Planning
@@ -39,9 +39,8 @@
 
                 else
                 {
-                  @planner!.Name
+                  <h4>@planner!.Name</h4>
                 }
-                @* <DynamicComponent Type="GetTypeFromString(planner?.Type)"/> *@
               }
             </div>
           } 

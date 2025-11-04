@@ -1,4 +1,5 @@
-﻿using Google.Protobuf;
+﻿using Ares.Core.EntityConfigurations.Helpers;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,6 +14,6 @@ internal class AnyTypeEntityConfiguration : AresEntityTypeBaseConfiguration<Any>
     builder.Property(any => any.Value)
       .HasConversion(
         s => s.ToByteArray(),
-        bytes => ByteString.CopyFrom(bytes), new EnumerableOfByteComparer());
+        bytes => ByteString.CopyFrom(bytes), new ByteStringComparer());
   }
 }

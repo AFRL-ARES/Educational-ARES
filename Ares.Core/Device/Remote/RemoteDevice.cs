@@ -262,7 +262,7 @@ public sealed class RemoteDevice : AresDevice, IAsyncDisposable
     await FetchSettings();
   }
 
-  public Task UpdateSettings(AresStruct settings)
+  public async Task UpdateSettings(AresStruct settings)
   {
     foreach(var setting in Settings)
     {
@@ -279,7 +279,7 @@ public sealed class RemoteDevice : AresDevice, IAsyncDisposable
     aresSettings.Fields.Add(Settings);
 
     var client = GetClient();
-    return client.SetSettingsAsync(new SetSettingsRequest { Settings = aresSettings }).ResponseAsync;
+    await client.SetSettingsAsync(new SetSettingsRequest { Settings = aresSettings });    
   }
 
   public IReadOnlyList<DeviceCommandDescriptor> CommandDescriptors => _commands;

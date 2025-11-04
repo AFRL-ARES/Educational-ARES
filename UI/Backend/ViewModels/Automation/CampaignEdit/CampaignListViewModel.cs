@@ -9,10 +9,9 @@ namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 public class CampaignListViewModel : ReactiveObject
 {
   private readonly AresAutomation.AresAutomationClient _automationClient;
+  public readonly ObservableCollection<CampaignTemplateSummary> Templates = [];
 
-  public readonly ObservableCollection<CampaignTemplateSummary> Templates = new();
-
-  public CampaignListViewModel(AresAutomation.AresAutomationClient automationClient, IConfiguration configuration)
+  public CampaignListViewModel(AresAutomation.AresAutomationClient automationClient)
   {
     _automationClient = automationClient;
   }

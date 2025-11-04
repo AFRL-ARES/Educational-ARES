@@ -1,6 +1,4 @@
-﻿using System.Reactive.Linq;
-using Ares.Services.Device;
-using DynamicData;
+﻿using Ares.Services.Device;
 using Google.Protobuf.WellKnownTypes;
 
 namespace UI.Backend.Devices;

@@ -130,6 +130,6 @@ public class CloseoutDesignerViewModel : ReactiveObject
 
   [Reactive]
   public string Name { get; set; } = "Unnamed Startup Template";
-  public IList<StepDesignerViewModel> CloseoutStepDesigners { get; private set; } = new List<StepDesignerViewModel>();
+  public IList<StepDesignerViewModel> CloseoutStepDesigners { get; private set; } = [];
   public IEnumerable<CommandTemplate>? ExperimentOutputProviderCommand { get; set; }
 }

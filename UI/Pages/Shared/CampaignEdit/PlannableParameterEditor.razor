@@ -16,7 +16,7 @@
 
   <div class="row">
     <RadzenFormField Text="Data Type" Variant="Variant.Outlined" Style="width: 100%">
-      <RadzenDropDown Data="@filteredTypes" @bind-Value="ViewModel!.DataType" />
+      <RadzenDropDown Data="@FilteredTypes" @bind-Value="ViewModel!.DataType" />
     </RadzenFormField>
   </div>
 
@@ -53,8 +53,18 @@
     </div>
   }
 
+  @if(ViewModel!.HasInitialValue)
+  {
+    <AresValueDesigner ValueEditCallback="ValueEditCallback" Schema="new SchemaEntry { Type = ViewModel!.DataType }" Value="@ViewModel!.InitialValue" Unit="" Name="Initial Value"/>
+  }
+
 
   <hr style="border-top: 1px solid #ccc; margin: 10px 0;" />
+
+  <RadzenRow AlignItems="AlignItems.Center">
+    <RadzenSwitch Name="AchievedValueSwitch" @bind-Value="ViewModel!.HasInitialValue" class="my-2" />
+    <RadzenLabel Text="Has Initial Value" Component="InitalValueSwitch" />
+  </RadzenRow>
 
   <RadzenRow AlignItems="AlignItems.Center">
     <RadzenSwitch Name="AchievedValueSwitch" @bind-Value="ViewModel!.HasAchievedValue" class="my-2"/>
@@ -73,7 +83,7 @@
 
 @code {
 
-  private IEnumerable<AresDataType> filteredTypes;
+  private IEnumerable<AresDataType>? FilteredTypes;
 
   [Parameter]
   public Action<ParameterEditorViewModel> DeleteParameterCallback { get; set; } = delegate { };
@@ -83,8 +93,21 @@
     DeleteParameterCallback(ViewModel!);
   }
 
+  private Task ValueEditCallback(AresValue value)
+  {
+    //Not sure what scenario this would be to be honest
+    if(value is null)
+      return Task.CompletedTask;
+
+    if(ViewModel!.InitialValue is null)
+      ViewModel!.InitialValue = new AresValue();
+
+    ViewModel!.InitialValue = value;
+    return Task.CompletedTask;
+  }
+
   protected override void OnInitialized()
   {
-    filteredTypes = Enum.GetValues(typeof(AresDataType)).Cast<AresDataType>().Where(s => s != AresDataType.Null && s != AresDataType.UnspecifiedType);
+    FilteredTypes = Enum.GetValues(typeof(AresDataType)).Cast<AresDataType>().Where(s => s != AresDataType.Null && s != AresDataType.UnspecifiedType);
   }
 }

@@ -14,6 +14,8 @@ internal class ParameterMetadataEntityConfiguration : AresEntityTypeBaseConfigur
       .WithOne()
       .IsRequired();
 
+    builder.Property(parameterMetadata => parameterMetadata.InitialValue).HasAresValue();
+
     builder.Property(parameterMetadata => parameterMetadata.Schema)
       .HasAresSchemaEntry();
 

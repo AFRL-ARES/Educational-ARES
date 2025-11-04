@@ -2,5 +2,5 @@
 
 public interface INotifier
 {
-  Task Notify(string message, string title, NotificationSeverityEnum severity);
+  Task Notify(string title, string message, NotificationSeverityEnum severity);
 }

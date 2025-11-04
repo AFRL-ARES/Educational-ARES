@@ -20,7 +20,7 @@ public class PlannableParameterDesignerViewModel : ReactiveObject
     ParameterMetadata = existingMetadata;
   }
 
-  public ObservableCollection<ParameterEditorViewModel> ParameterEditors { get; } = new();
+  public ObservableCollection<ParameterEditorViewModel> ParameterEditors { get; } = [];
 
   public IEnumerable<ParameterMetadata> ParameterMetadata
   {

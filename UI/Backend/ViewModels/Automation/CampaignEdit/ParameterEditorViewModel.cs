@@ -17,6 +17,9 @@ public class ParameterEditorViewModel : ReactiveObject
   private string? _name;
   private ParameterMetadata _parameterMetadata = null!;
   private string? _unit;
+  private AresValue? _initialValue;
+  private bool _hasInitialValue;
+  private AresDataType _dataType;
 
   public ParameterEditorViewModel(UnitCategoryHelper unitHelper, IEnumerable<string> availableOutputs)
   {
@@ -41,6 +44,8 @@ public class ParameterEditorViewModel : ReactiveObject
     _unitHelper = unitHelper;
     ParameterMetadata = existingMetadata;
     AvailableOutputs = availableOutputs.ToArray();
+    HasInitialValue = existingMetadata.InitialValue != null;
+    InitialValue = existingMetadata.InitialValue;
   }
 
   public ParameterMetadata ParameterMetadata
@@ -54,7 +59,18 @@ public class ParameterEditorViewModel : ReactiveObject
     }
   }
 
-  public AresDataType DataType { get; set; }
+  public AresDataType DataType 
+  {
+    get => _dataType; 
+    
+    set
+    {
+      _dataType = value;
+
+      if(HasInitialValue)
+        InitialValue = AresValueHelper.CreateDefault(value);
+    }
+  }
 
   public string? Category
   {
@@ -77,10 +93,10 @@ public class ParameterEditorViewModel : ReactiveObject
   }
 
   [Reactive]
-  public List<string> CategoryOptions { get; private set; } = new();
+  public List<string> CategoryOptions { get; private set; } = [];
 
   [Reactive]
-  public List<string> UnitOptions { get; private set; } = new();
+  public List<string> UnitOptions { get; private set; } = [];
 
   public string? Unit
   {
@@ -139,6 +155,7 @@ public class ParameterEditorViewModel : ReactiveObject
 
     ParameterMetadata.Schema = AresSchemaHelper.CreateSchemaEntry(DataType, false);
     ParameterMetadata.Name = Name;
+    ParameterMetadata.InitialValue ??= InitialValue;
 
     if(DataType == AresDataType.Number)
     {
@@ -153,7 +170,43 @@ public class ParameterEditorViewModel : ReactiveObject
     return ParameterMetadata;
   }
 
+  private bool IsValid(AresValue value)
+  {
+    switch(ParameterMetadata.Schema.Type)
+    {
+      case AresDataType.Number:
+        if(!value.HasNumberValue)
+          return false;
+
+        if(ParameterMetadata.Constraints.Count == 0)
+          return true;
+
+        return ParameterMetadata.Constraints.Any(limits => value.NumberValue >= limits.Minimum && value.NumberValue <= limits.Maximum);
+
+      case AresDataType.String:
+        return value.HasStringValue;
+
+      default:
+        return true;
+    }
+  }
+
   public bool HasAchievedValue { get; set; }
+
+  public bool HasInitialValue 
+  {
+    get => _hasInitialValue; 
+    
+    set
+    {
+      _hasInitialValue = value;
+      if(value)
+        InitialValue = AresValueHelper.CreateDefault(DataType);
+
+      else
+        InitialValue = null;
+    }
+  }
 
   public string? SelectedAchievedOutput { get; set; }
 
@@ -171,5 +224,20 @@ public class ParameterEditorViewModel : ReactiveObject
     Unit = unit.Humanize();
   }
 
+  public AresValue? InitialValue
+  {
+    get => _initialValue;
+
+    set
+    {
+      this.RaiseAndSetIfChanged(ref _initialValue, value);
+      if(value is null)
+        return;
+
+      IsInitialValueValid = IsValid(value);
+    }
+  }
+
+  public bool IsInitialValueValid { get; set; }
 
 }

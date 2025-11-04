@@ -34,10 +34,7 @@
 
 @code {
   [Parameter]
-  public ExperimentTemplate CloseoutTemplate
-  {
-    set => ViewModel!.CloseoutTemplate = value;
-  }
+  public ExperimentTemplate? CloseoutTemplate { get; set; }
 
   private void RemoveStepCallback(StepDesignerViewModel vm)
   {

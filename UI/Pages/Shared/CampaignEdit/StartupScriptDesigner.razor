@@ -34,10 +34,7 @@
 
 @code {
   [Parameter]
-  public ExperimentTemplate StartupTemplate
-  {
-    set => ViewModel!.StartupTemplate = value;
-  }
+  public ExperimentTemplate? StartupTemplate { get; set; }
 
   private void RemoveStepCallback(StepDesignerViewModel vm)
   {
