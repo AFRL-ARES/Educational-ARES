@@ -5,7 +5,6 @@ namespace PrusaMK4S.Handlers;
 
 public class GCodeHandler : IGcodeHandler
 {
-  private const string _fileNameBase = "IterationPrint";
   private const int _printBedHeight = 210;
   private const int _printBedWidth = 190;
   private static string[] _movementCommands = [ "G0", "G1", "G2", "G3" ];
@@ -18,7 +17,6 @@ public class GCodeHandler : IGcodeHandler
   public async Task Init()
   {
     ModificationStartIndex = -1;
-    ModificationStopIndex = -1;
     await CalculateObjectSize();
     AdjustedFileData = await GenerateFirstPrintData();
   }
@@ -37,25 +35,11 @@ public class GCodeHandler : IGcodeHandler
 
     // The G-Code associated with the user defined main object
     List<string> main_print_gcode;
-    // G-Code that comes at the end of a print, after the main object finishes, remains unmodified
-    List<string> unmodified_end_gcode = new List<string>();
     // Start G-Code contains the nozzle and bed temperature, which we might need to edit sometimes
     List<string> start_gcode = data.Take(ModificationStartIndex + 1).ToList();
 
-
-    if(ModificationStopIndex != -1)
-    {
-      var lengthOfMainPrint = ModificationStopIndex - ModificationStartIndex + 1;
-      main_print_gcode = data.Skip(ModificationStartIndex + 1).Take(lengthOfMainPrint).ToList();
-      unmodified_end_gcode = data.Skip(ModificationStopIndex + 1).ToList();
-    }
-
-    else
-    {
-      main_print_gcode = data.Skip(ModificationStartIndex + 1).ToList();
-    }
-
-
+    main_print_gcode = data.Skip(ModificationStartIndex + 1).ToList();
+    
     if(nozzleTemperature > 0)
       start_gcode = UpdateNozzleTemperature(nozzleTemperature, start_gcode);
 
@@ -77,7 +61,7 @@ public class GCodeHandler : IGcodeHandler
     if(fanSpeedMod > 0)
       main_print_gcode = UpdateFanSpeed(fanSpeedMod, main_print_gcode);
 
-    var updated_gcode = ConvertGCodeToBytes(start_gcode, main_print_gcode, unmodified_end_gcode);
+    var updated_gcode = ConvertGCodeToBytes(start_gcode, main_print_gcode);
     return updated_gcode;
   }
 
@@ -324,21 +308,16 @@ public class GCodeHandler : IGcodeHandler
 
   private List<string> UpdateBedTemperature(int desiredTemp, List<string> gcode)
   {
-    var updatedData = new List<string>();
-    var bedTempMatchOne = $"M140 S{OriginalBedTemp}";
-    var bedTempMatchTwo = $"M190 S{OriginalBedTemp}";
-
-    foreach(var entry in gcode)
+    var updatedData = gcode.Select(entry =>
     {
-      if(entry.StartsWith(bedTempMatchOne))
-        updatedData.Add($"M140 S{desiredTemp}");
+      if(entry.StartsWith("M140 S"))
+        return $"M140 S{desiredTemp}";
 
-      else if(entry.StartsWith(bedTempMatchTwo))
-        updatedData.Add($"M190 S{desiredTemp}");
+      if(entry.StartsWith("M190 S"))
+        return $"M190 S{desiredTemp}";
 
-      else
-        updatedData.Add(entry);
-    }
+      return entry;
+    }).ToList();
 
     return updatedData;
   }
@@ -418,7 +397,7 @@ public class GCodeHandler : IGcodeHandler
       var modifiedData = startup_gcode
       .Concat(stringData
         .Skip(ModificationStartIndex)
-        .Select(line => UpdateLine(line, xShift, yShift, 0)));
+        .Select(line => ApplyOffsetToLine(line, xShift, yShift, 0)));
 
       var modifiedStringData = string.Join("\n", modifiedData);
       var data = Encoding.UTF8.GetBytes(modifiedStringData);
@@ -447,32 +426,8 @@ public class GCodeHandler : IGcodeHandler
       return (-ItemHeight - 10) * itemIndex;
   }
 
-  private string? UpdateLine(string line, double xOffset, double yOffset, int iteration)
+  private string? ApplyOffsetToLine(string line, double xOffset, double yOffset, int iteration)
   {
-    //Determine original desired nozzle temperature
-    if(line.StartsWith("; temperature = "))
-    {
-      var temp = line.Substring(16);
-      var parsed = int.TryParse(temp, out var intTemp);
-
-      if(parsed)
-        OriginalNozzleTemp = intTemp;
-
-      return line;
-    }
-
-    //Determine original desired bed temperature
-    if(iteration == 0 && line.StartsWith("; bed_temperature = "))
-    {
-      var temp = line.Substring(20);
-      var parsed = int.TryParse(temp, out var intTemp);
-
-      if(parsed)
-        OriginalBedTemp = intTemp;
-
-      return line;
-    }
-
     if(string.IsNullOrWhiteSpace(line) || line.StartsWith(";"))
       return line;
 
@@ -574,12 +529,11 @@ public class GCodeHandler : IGcodeHandler
 
     var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
     var shifted_startup = ShiftInitialPurgeLine(startup_gcode);
-    //shifted_startup = await AddFullMeshBedLeveling(shifted_startup);
 
     var modifiedData = shifted_startup
       .Concat(stringData
         .Skip(ModificationStartIndex)
-        .Select(line => UpdateLine(line, XMinimumOffset, YMaximumOffset, 0)));
+        .Select(line => ApplyOffsetToLine(line, XMinimumOffset, YMaximumOffset, 0)));
 
     var modifiedStringData = string.Join("\n", modifiedData);
     var bytes = Encoding.UTF8.GetBytes(modifiedStringData);
@@ -726,10 +680,9 @@ public class GCodeHandler : IGcodeHandler
     return data;
   }
 
-  private byte[] ConvertGCodeToBytes(List<string> start_gcode, List<string> updated_gcode, List<string> end_gcode)
+  private byte[] ConvertGCodeToBytes(List<string> start_gcode, List<string> updated_gcode)
   {
     updated_gcode.ForEach(start_gcode.Add);
-    end_gcode.ForEach(start_gcode.Add);
     var modifiedStringData = string.Join("\n", start_gcode);
     return Encoding.UTF8.GetBytes(modifiedStringData);
   }
@@ -749,6 +702,7 @@ public class GCodeHandler : IGcodeHandler
 
   public int GetPrintBedHeight() => _printBedHeight;
   public int GetPrintBedWidth() => _printBedWidth;
+
   public ValueTask DisposeAsync()
   {
     return ValueTask.CompletedTask;
@@ -764,11 +718,8 @@ public class GCodeHandler : IGcodeHandler
   public double ItemWidth { get; set; }
   public double XMinimumOffset { get; set; }
   public double YMaximumOffset { get; set; }
-  public int OriginalNozzleTemp { get; set; }
-  public int OriginalBedTemp { get; set; }
   public bool SearchForMinAndMax { get; set; }
   public double LatestXShift { get; set; }
   public double LatestYShift { get; set; }
   public int ModificationStartIndex { get; set; } = -1;
-  public int ModificationStopIndex { get; set; } = -1;
 }
