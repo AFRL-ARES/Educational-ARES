@@ -5,6 +5,11 @@ namespace PrusaMK4S.Handlers;
 
 public class GCodeHandler : IGcodeHandler
 {
+  private const string _fileNameBase = "IterationPrint";
+  private const int _printBedHeight = 210;
+  private const int _printBedWidth = 190;
+  private static string[] _movementCommands = [ "G0", "G1", "G2", "G3" ];
+
   public GCodeHandler(byte[] original_data)
   {
     OriginalFileData = original_data;
@@ -23,11 +28,12 @@ public class GCodeHandler : IGcodeHandler
     double extrusionMod,
     double speedMod, 
     double retractionLength, 
-    double accelerationMod, 
+    double accelerationMod,
+    double fanSpeedMod,
     byte[] gcode)
   {
     var data = await ConvertGCodeToStrings(gcode);
-    await DetermineModificationIndex(data);
+    DetermineModificationIndex(data);
 
     // The G-Code associated with the user defined main object
     List<string> main_print_gcode;
@@ -51,28 +57,31 @@ public class GCodeHandler : IGcodeHandler
 
 
     if(nozzleTemperature > 0)
-      start_gcode = await UpdateNozzleTemperature(nozzleTemperature, start_gcode);
+      start_gcode = UpdateNozzleTemperature(nozzleTemperature, start_gcode);
 
     if(bedTemperature > 0)
-      start_gcode = await UpdateBedTemperature(bedTemperature, start_gcode);
+      start_gcode = UpdateBedTemperature(bedTemperature, start_gcode);
 
     if(extrusionMod > 0)
-      main_print_gcode = await UpdateExtrusionRate(extrusionMod, main_print_gcode);
+      main_print_gcode = UpdateExtrusionRate(extrusionMod, main_print_gcode);
 
     if(speedMod > 0)
-      main_print_gcode = await UpdateMovementSpeed(speedMod, main_print_gcode);
+      main_print_gcode = UpdateMovementSpeed(speedMod, main_print_gcode);
 
     if(retractionLength > -1)
-      main_print_gcode = await UpdateRetractionLength(retractionLength, main_print_gcode);
+      main_print_gcode = UpdateRetractionLength(retractionLength, main_print_gcode);
 
     if(accelerationMod > 0)
-      main_print_gcode = await UpdateAcceleration(accelerationMod, main_print_gcode);
+      main_print_gcode = UpdateAcceleration(accelerationMod, main_print_gcode);
 
-    var updated_gcode = await ConvertGCodeToBytes(start_gcode, main_print_gcode, unmodified_end_gcode);
+    if(fanSpeedMod > 0)
+      main_print_gcode = UpdateFanSpeed(fanSpeedMod, main_print_gcode);
+
+    var updated_gcode = ConvertGCodeToBytes(start_gcode, main_print_gcode, unmodified_end_gcode);
     return updated_gcode;
   }
 
-  private Task<List<string>> UpdateExtrusionRate(double modifier, List<string> gcode)
+  private List<string> UpdateExtrusionRate(double modifier, List<string> gcode)
   {
     var updatedData = new List<string>();
 
@@ -83,7 +92,7 @@ public class GCodeHandler : IGcodeHandler
         var splitString = entry.Split();
 
         //All non-movement based G code commands
-        if(!MovementCommands.Contains(splitString[0]))
+        if(!_movementCommands.Contains(splitString[0]))
         {
           updatedData.Add(entry);
           continue;
@@ -137,10 +146,10 @@ public class GCodeHandler : IGcodeHandler
         updatedData.Add(entry);
     }
 
-    return Task.FromResult(updatedData);
+    return updatedData;
   }
 
-  private Task<List<string>> UpdateMovementSpeed(double modifier, List<string> gcode)
+  private List<string> UpdateMovementSpeed(double modifier, List<string> gcode)
   {
     var updatedData = new List<string>();
 
@@ -151,7 +160,7 @@ public class GCodeHandler : IGcodeHandler
         var splitString = entry.Split();
 
         //All non-movement based G code commands
-        if(!MovementCommands.Contains(splitString[0]))
+        if(!_movementCommands.Contains(splitString[0]))
         {
           updatedData.Add(entry);
           continue;
@@ -186,10 +195,10 @@ public class GCodeHandler : IGcodeHandler
         updatedData.Add(entry);
     }
 
-    return Task.FromResult(updatedData);
+    return updatedData;
   }
 
-  private Task<List<string>> UpdateAcceleration(double accelerationMod, List<string> gcode)
+  private List<string> UpdateAcceleration(double accelerationMod, List<string> gcode)
   {
     var stringData = new List<string>();
 
@@ -229,10 +238,10 @@ public class GCodeHandler : IGcodeHandler
       }
     }
 
-    return Task.FromResult(stringData);
+    return stringData;
   }
 
-  private Task<List<string>> UpdateRetractionLength(double retractionLength, List<string> gcode)
+  private List<string> UpdateRetractionLength(double retractionLength, List<string> gcode)
   {
     string? retractionCommand = null;
     var existingCommandIndex = -1;
@@ -272,10 +281,10 @@ public class GCodeHandler : IGcodeHandler
       gcode.Insert(insertionIndex + 1, command);
     }
 
-    return Task.FromResult(gcode);
+    return gcode;
   }
 
-  private Task<List<string>> UpdateNozzleTemperature(int desiredTemp, List<string> gcode)
+  private List<string> UpdateNozzleTemperature(int desiredTemp, List<string> gcode)
   {
     var updatedData = new List<string>();
 
@@ -292,7 +301,7 @@ public class GCodeHandler : IGcodeHandler
         updatedData.Add(entry);
     }
 
-    return Task.FromResult(updatedData);
+    return updatedData;
   }
 
   private bool MatchesNozzleTempCommand(string entry)
@@ -313,7 +322,7 @@ public class GCodeHandler : IGcodeHandler
     return false;
   }
 
-  private Task<List<string>> UpdateBedTemperature(int desiredTemp, List<string> gcode)
+  private List<string> UpdateBedTemperature(int desiredTemp, List<string> gcode)
   {
     var updatedData = new List<string>();
     var bedTempMatchOne = $"M140 S{OriginalBedTemp}";
@@ -331,12 +340,51 @@ public class GCodeHandler : IGcodeHandler
         updatedData.Add(entry);
     }
 
-    return Task.FromResult(updatedData);
+    return updatedData;
+  }
+
+  private List<string> UpdateFanSpeed(double fanSpeedMod, List<string> gcode)
+  {
+    var updatedData = new List<string>();
+    
+    foreach(var line in gcode)
+    {
+      if(line.StartsWith("M106"))
+      {
+        var tokens = line.Split();
+
+        if(tokens.Length < 2 || !tokens[1].StartsWith("S", StringComparison.OrdinalIgnoreCase))
+        {
+          updatedData.Add(line);
+          continue;
+        }
+
+        var fanToken = tokens[1];
+        var parsedSpeed = double.TryParse(fanToken.Substring(1), out var speed);
+
+        if(!parsedSpeed)
+        {
+          updatedData.Add(line);
+          continue;
+        }
+
+        var newSpeed = speed * fanSpeedMod;
+        newSpeed = Math.Clamp(newSpeed, 0, 255);
+
+        var newLine = $"M106 S{newSpeed}";
+        updatedData.Add(newLine);
+      }
+
+      else
+        updatedData.Add(line);
+    }
+
+    return updatedData;
   }
 
   public Task<uint> SmartDetermineNumberOfPrints()
   {
-    var max_vertical = (int)Math.Floor(PrintBedHeight / Math.Max(ItemHeight + 10, 20));
+    var max_vertical = (int)Math.Floor(_printBedHeight / Math.Max(ItemHeight + 10, 20));
     return Task.FromResult((uint)max_vertical);
   }
 
@@ -350,22 +398,22 @@ public class GCodeHandler : IGcodeHandler
 
     else
     {
-      var numObjects = Math.Floor(PrintBedWidth / (ItemWidth * 1.5));
+      var numObjects = Math.Floor(_printBedWidth / (ItemWidth * 1.5));
       iteration--;
       var xShift = CalculateXShift(iteration, numObjects);
       var yShift = CalculateYShift(iteration);
       LatestXShift = xShift;
       LatestYShift = yShift;
 
-      if(Math.Abs(yShift) >= PrintBedHeight - ItemHeight - 5)
+      if(Math.Abs(yShift) >= _printBedHeight - ItemHeight - 5)
         return Array.Empty<byte>();
 
       var stringData = await ConvertGCodeToStrings(AdjustedFileData!);
-      stringData = await UpdateBedLeveling(stringData, iteration);
-      await DetermineModificationIndex(stringData);
+      stringData = UpdateBedLeveling(stringData, iteration);
+      DetermineModificationIndex(stringData);
 
       var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
-      startup_gcode = await ShiftIterationPurgeLine(startup_gcode, iteration);
+      startup_gcode = ShiftIterationPurgeLine(startup_gcode, iteration);
 
       var modifiedData = startup_gcode
       .Concat(stringData
@@ -382,7 +430,6 @@ public class GCodeHandler : IGcodeHandler
   {
     var position = itemIndex % numObjects;
 
-    //The first object in a row
     if(position == 0)
       return 0;
 
@@ -435,7 +482,7 @@ public class GCodeHandler : IGcodeHandler
       var command = splitLine[0];
 
       //Check if our command is a movment related command.
-      if(MovementCommands.Contains(command) && line.Contains("X") || line.Contains("Y"))
+      if(_movementCommands.Contains(command) && line.Contains("X") || line.Contains("Y"))
       {
         var x = splitLine[1];
         var y = splitLine[2];
@@ -490,7 +537,7 @@ public class GCodeHandler : IGcodeHandler
         var command = splitLine[0];
 
         //Check if our command is a movment related command.
-        if(MovementCommands.Contains(command) && line.Contains("X") || line.Contains("Y"))
+        if(_movementCommands.Contains(command) && line.Contains("X") || line.Contains("Y"))
         {
           var x = splitLine[1];
           var y = splitLine[2];
@@ -523,10 +570,10 @@ public class GCodeHandler : IGcodeHandler
       return Array.Empty<byte>();
 
     var stringData = await ConvertGCodeToStrings(OriginalFileData);
-    await DetermineModificationIndex(stringData);
+    DetermineModificationIndex(stringData);
 
     var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
-    var shifted_startup = await ShiftInitialPurgeLine(startup_gcode);
+    var shifted_startup = ShiftInitialPurgeLine(startup_gcode);
     //shifted_startup = await AddFullMeshBedLeveling(shifted_startup);
 
     var modifiedData = shifted_startup
@@ -540,7 +587,7 @@ public class GCodeHandler : IGcodeHandler
     return bytes;
   }
 
-  private Task<List<string>> ShiftInitialPurgeLine(List<string> gcode)
+  private List<string> ShiftInitialPurgeLine(List<string> gcode)
   {
     var updatedGcode = new List<string>();
     var shouldEdit = false;
@@ -557,7 +604,7 @@ public class GCodeHandler : IGcodeHandler
         updatedGcode.Add(line);
     }
 
-    return Task.FromResult(updatedGcode);
+    return updatedGcode;
   }
 
   private string ApplyPurgeXOffset(string[] splitLine, int shift)
@@ -585,7 +632,7 @@ public class GCodeHandler : IGcodeHandler
     return string.Join(" ", splitLine);
   }
 
-  private Task<List<string>> ShiftIterationPurgeLine(List<string> gcode, int iteration)
+  private List<string> ShiftIterationPurgeLine(List<string> gcode, int iteration)
   {
     var yShift = iteration * 5;
     var updatedGcode = new List<string>();
@@ -603,7 +650,7 @@ public class GCodeHandler : IGcodeHandler
         updatedGcode.Add(line);
     }
 
-    return Task.FromResult(updatedGcode);
+    return updatedGcode;
   }
 
   private string ApplyPurgeYOffset(string[] splitLine, int shift)
@@ -631,7 +678,7 @@ public class GCodeHandler : IGcodeHandler
     return string.Join(" ", splitLine);
   }
 
-  private Task<List<string>> UpdateBedLeveling(List<string> gcode, int printIteration)
+  private List<string> UpdateBedLeveling(List<string> gcode, int printIteration)
   {
     List<string> updated_gcode = new List<string>();
 
@@ -652,7 +699,6 @@ public class GCodeHandler : IGcodeHandler
         splitLine[2] = "Y0";
         splitLine[3] = $"W25";
         splitLine[4] = $"H25";
-        //splitLine[4] = $"H{210 - (printIteration * (ItemHeight + 5))}";
 
         var newLevelAreaCmd = string.Join(" ", splitLine);
         
@@ -664,23 +710,7 @@ public class GCodeHandler : IGcodeHandler
         updated_gcode.Add(line);
     }
 
-    return Task.FromResult(updated_gcode);
-  }
-
-  private Task<List<string>> AddFullMeshBedLeveling(List<string> gcode)
-  {
-    List<string> updated_gcode = new List<string>();
-
-    foreach(var line in gcode)
-    {
-      if(line.StartsWith("G29"))
-        updated_gcode.Add("G80");
-
-      else
-        updated_gcode.Add(line);
-    }
-
-    return Task.FromResult(updated_gcode);
+    return updated_gcode;
   }
 
   private async Task<List<string>> ConvertGCodeToStrings(byte[] gcode)
@@ -696,15 +726,15 @@ public class GCodeHandler : IGcodeHandler
     return data;
   }
 
-  private Task<byte[]> ConvertGCodeToBytes(List<string> start_gcode, List<string> updated_gcode, List<string> end_gcode)
+  private byte[] ConvertGCodeToBytes(List<string> start_gcode, List<string> updated_gcode, List<string> end_gcode)
   {
     updated_gcode.ForEach(start_gcode.Add);
     end_gcode.ForEach(start_gcode.Add);
     var modifiedStringData = string.Join("\n", start_gcode);
-    return Task.FromResult(Encoding.UTF8.GetBytes(modifiedStringData));
+    return Encoding.UTF8.GetBytes(modifiedStringData);
   }
 
-  private Task DetermineModificationIndex(List<string> gcode)
+  private void DetermineModificationIndex(List<string> gcode)
   {
     var index = 0;
 
@@ -715,10 +745,10 @@ public class GCodeHandler : IGcodeHandler
 
       index++;
     }
-
-    return Task.CompletedTask;
   }
 
+  public int GetPrintBedHeight() => _printBedHeight;
+  public int GetPrintBedWidth() => _printBedWidth;
   public ValueTask DisposeAsync()
   {
     return ValueTask.CompletedTask;
@@ -736,10 +766,6 @@ public class GCodeHandler : IGcodeHandler
   public double YMaximumOffset { get; set; }
   public int OriginalNozzleTemp { get; set; }
   public int OriginalBedTemp { get; set; }
-  public double PrintBedHeight { get; } = 210;
-  public double PrintBedWidth { get; } = 190;
-  public string FileNameBase { get; } = "IterationPrint";
-  public List<string> MovementCommands { get; } = new List<string>() { "G0", "G1", "G2", "G3" };
   public bool SearchForMinAndMax { get; set; }
   public double LatestXShift { get; set; }
   public double LatestYShift { get; set; }

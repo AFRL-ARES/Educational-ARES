@@ -7,6 +7,7 @@ public enum PrusaMK4SCommandParameter
   BedTemperature,
   ExtrusionRateMod,
   SpeedMod,
+  FanSpeedMod,
   RetractionLength,
   AccelerationMod,
   XOffset,

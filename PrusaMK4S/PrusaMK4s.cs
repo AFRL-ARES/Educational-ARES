@@ -79,7 +79,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
   }
 
   public async Task<MK4SRequestResponse> Print(byte[] gcode, int nozzleTemp, int bedTemp, double extrusionMod,
-    double speedMod, int retractionLength, double accelerationMod)
+    double speedMod, int retractionLength, double accelerationMod, double fanSpeedMod)
   {
     var response = new MK4SRequestResponse();
 
@@ -104,7 +104,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
       if(!SmartPrint)
       {
         //If this is the case, the student has opted not to utilize our auto calculation and clearing the print bed must be done manually.
-        var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, gcode);
+        var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, fanSpeedMod, gcode);
         var request = CreatePrintRequest(modifiedGcode);
         httpResponse = await _httpClient.SendAsync(request);
       }
@@ -122,7 +122,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
 
         //Customize our G Code
         var custom_gcode = await handler.CreatePrintIteration(expNumber);
-        var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, custom_gcode);
+        var modifiedGcode = await handler.ApplyPlanningParameters(bedTemp, nozzleTemp, extrusionMod, speedMod, retractionLength, accelerationMod, fanSpeedMod, custom_gcode);
 
         await File.WriteAllBytesAsync($"Iteration_Test_{expNumber}.gcode", modifiedGcode);
         var printJobRequest = CreatePrintRequest(modifiedGcode);
@@ -166,7 +166,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
       var itemHeight = LatestGCodeHandler.ItemHeight;
 
       //Use the GCodeHandler to gather the latest shift values. Add half the items respective width or height to place the camera around the middle of the object
-      var calculated_y = LatestGCodeHandler.PrintBedHeight - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2)) + yOffset;
+      var calculated_y = LatestGCodeHandler.GetPrintBedHeight() - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2)) + yOffset;
       var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2) + xOffset;
 
       return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);

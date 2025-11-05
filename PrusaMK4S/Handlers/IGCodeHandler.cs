@@ -5,8 +5,10 @@ public interface IGcodeHandler : IAsyncDisposable
   Task<byte[]> CreatePrintIteration(int iteration);
   Task<uint> SmartDetermineNumberOfPrints();
   Task<byte[]> ApplyPlanningParameters(int bedTemperature, int nozzleTemperature, double extrusionMod,
-    double speedMod, double retractionLength, double accelerationMod, byte[] gcode);
+    double speedMod, double retractionLength, double accelerationMod, double fanSpeedMod, byte[] gcode);
   Task Init();
+  int GetPrintBedHeight();
+  int GetPrintBedWidth();
   public double MinimumX { get; }
   public double MaximumX { get; }
   public double MinimumY { get; }
@@ -15,10 +17,6 @@ public interface IGcodeHandler : IAsyncDisposable
   public double ItemWidth { get; }
   public double XMinimumOffset { get; }
   public double YMaximumOffset { get; }
-  public double PrintBedHeight { get; }
-  public double PrintBedWidth { get; }
-  public string FileNameBase { get; }
-  public List<string> MovementCommands { get; }
   public bool SearchForMinAndMax { get; }
   public double LatestXShift { get; }
   public double LatestYShift { get; }

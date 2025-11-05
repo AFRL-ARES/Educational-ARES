@@ -77,6 +77,13 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Unit = "Modifier",
             Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
           },
+          new ParameterMetadata
+          {
+            Index = 7,
+            Name = PrusaMK4SCommandParameter.FanSpeedMod.ToString(),
+            Unit = "Modifier",
+            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+          }
         },
         OutputMetadata = new OutputMetadata()
         {
@@ -197,7 +204,8 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
           out var extrusionMod, 
           out var speedMod,
           out var retractionLength, 
-          out var accelerationMod);
+          out var accelerationMod,
+          out var fanSpeedMod);
 
         if(!printParamsValidationResult.Success)
         {
@@ -205,7 +213,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
           break;
         }
 
-        var print = await Device.Print(gcode, nozzleTemperature, bedTemperature, extrusionMod, speedMod, retractionLength, accelerationMod);
+        var print = await Device.Print(gcode, nozzleTemperature, bedTemperature, extrusionMod, speedMod, retractionLength, accelerationMod, fanSpeedMod);
         result.Success = print.Success;
         result.Error = print.ErrorString ?? string.Empty;
         break;
@@ -269,7 +277,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
   }
 
   private CommandResult ValidatePrintParameters(Parameter[] parameters, out byte[] gcode,
-    out int nozzleTemperature, out int bedTemperature, out double extrusionMod, out double speedMod, out int retractionLength, out double accelerationMod)
+    out int nozzleTemperature, out int bedTemperature, out double extrusionMod, out double speedMod, out int retractionLength, out double accelerationMod, out double fanSpeedMod)
   {
     var result = new CommandResult();
     result.Success = true;
@@ -282,6 +290,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     speedMod = double.MinValue;
     retractionLength = int.MinValue;
     accelerationMod = double.MinValue;
+    fanSpeedMod = double.MinValue;
 
     var gcodeParameter = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.GCode}"));
     var nozzleTempParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.NozzleTemperature}"));
@@ -290,9 +299,10 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     var speedModParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.SpeedMod}"));
     var retractionLengthParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.RetractionLength}"));
     var accelerationModParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.AccelerationMod}"));
+    var fanSpeedModParam = parameters.FirstOrDefault(param => param.Metadata.Name.Equals($"{PrusaMK4SCommandParameter.FanSpeedMod}"));
 
     if(gcodeParameter is null || nozzleTempParam is null || bedTempParam is null || extrusionModParam is null
-      || speedModParam is null || retractionLengthParam is null || accelerationModParam is null)
+      || speedModParam is null || retractionLengthParam is null || accelerationModParam is null || fanSpeedModParam is null)
     {
       result.Success = false;
       result.Error = "Not all command parameters were present. Cannot execute print command!";
@@ -319,10 +329,13 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
       return new CommandResult { Success = false, Error = "Speed modification was not set!" };
 
     if(!retractionLengthParam.Value.HasNumberValue)
-      return new CommandResult { Success = false, Error = "Bed Temp was not set!" };
+      return new CommandResult { Success = false, Error = "Retraction length was not set!" };
 
     if(!accelerationModParam.Value.HasNumberValue)
-      return new CommandResult { Success = false, Error = "Bed Temp was not set!" };
+      return new CommandResult { Success = false, Error = "Acceleration modification was not set!" };
+
+    if(!fanSpeedModParam.Value.HasNumberValue)
+      return new CommandResult { Success = false, Error = "Fan Speed was not set!" };
 
     gcode = gcodeParameter.Value.BytesValue.ToArray();
     nozzleTemperature = (int)nozzleTempParam.Value.NumberValue;
@@ -331,6 +344,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
     speedMod = speedModParam.Value.NumberValue;
     retractionLength = (int)retractionLengthParam.Value.NumberValue;
     extrusionMod = extrusionModParam.Value.NumberValue;
+    fanSpeedMod = fanSpeedModParam.Value.NumberValue;
 
     return result;
   }
