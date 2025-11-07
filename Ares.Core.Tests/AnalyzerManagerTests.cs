@@ -24,12 +24,12 @@ internal class AnalyzerManagerTests
     {
     }
 
-    public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken)
+    public override Task<Analysis> Analyze(AresStruct inputs, RequestMetadata metadata, CancellationToken cancellationToken)
     {
       throw new NotImplementedException();
     }
 
-    public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, CancellationToken cancellationToken)
+    public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, RequestMetadata metadata, CancellationToken cancellationToken)
     {
       throw new NotImplementedException();
     }

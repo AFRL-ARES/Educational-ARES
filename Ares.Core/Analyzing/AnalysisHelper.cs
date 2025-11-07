@@ -16,7 +16,7 @@ public class AnalysisHelper
     _analyzerRepo = analyzerRepo;
   }
 
-  public async Task<Analysis> Analyze(ExperimentTemplate template, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
+  public async Task<Analysis> Analyze(ExperimentTemplate template, ExperimentExecutionSummary experimentSummary, RequestMetadata metadata, CancellationToken cancellationToken)
   {
     var analyzer = GetAnalyzer(template.AnalyzerId);
     var analyzerInputs = ExperimentOutputToAnalyzerInputs(
@@ -25,7 +25,7 @@ public class AnalysisHelper
     try
     {
       // TODO: Maybe add support for settings overrides if needed
-      var analysis = await analyzer.Analyze(analyzerInputs, cancellationToken);
+      var analysis = await analyzer.Analyze(analyzerInputs, metadata, cancellationToken);
       experimentSummary.ExperimentOverview.AnalysisOverview = new AnalysisOverview
       {
         UniqueId = Guid.NewGuid().ToString(),

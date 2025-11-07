@@ -178,9 +178,17 @@ public class CampaignExecutor : ICampaignExecutor
         // and thus sending a null result to the analyzer might break it depending on the analyzer
         if(!token.IsCancelled)
         {
+          var metadata = new RequestMetadata 
+          { 
+            CampaignId = Template.UniqueId, 
+            CampaignName = Template.Name, 
+            ExperimentId = experimentExecutor.Template.UniqueId, 
+            SystemName = "ARES OS" 
+          };
           var analysis = await _analysisHelper.Analyze(
             experimentExecutor.Template,
             experimentSummary,
+            metadata,
             token.CancellationToken);
 
           // The following are top level checks for analysis failure in case the
@@ -312,7 +320,8 @@ public class CampaignExecutor : ICampaignExecutor
     {
       if(analyses.Count() % ReplanRate == 0)
       {
-        var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, Template.UniqueId, experimentTemplate.GetAllPlannedParameters(), analyses, previousExperiments, cancellationToken);
+        var metadata = new RequestMetadata { CampaignId = Template.UniqueId, CampaignName = Template.Name, ExperimentId = template.UniqueId, SystemName = "ARES OS" };
+        var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, metadata, experimentTemplate.GetAllPlannedParameters(), analyses, previousExperiments, cancellationToken);
         if(!resolveSuccess)
         {
           result.ErrorString = "Failed to plan! Experiment will be terminated!";

@@ -89,7 +89,7 @@ public interface IPlannerService
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters,
-    string campaignId,
+    RequestMetadata metadata,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory, 
     CancellationToken cancellationToken = default);
@@ -104,7 +104,7 @@ public interface IPlannerService
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters,
-    string campaignId,
+    RequestMetadata metadata,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory,
     AresStruct settings,

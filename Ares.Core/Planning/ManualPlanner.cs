@@ -4,6 +4,7 @@ using Ares.Datamodel.Connection;
 using Ares.Datamodel.Extensions;
 using Ares.Datamodel.Planning;
 using Ares.Datamodel.Templates;
+using Grpc.Core;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -28,7 +29,7 @@ public class ManualPlanner : IPlannerService
 
 
   public Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters,
-    string campaignId,
+    RequestMetadata metadata,
     IEnumerable<ExperimentOverview> experiments, 
     IEnumerable<Analysis> _, 
     CancellationToken __)
@@ -165,9 +166,9 @@ public class ManualPlanner : IPlannerService
     return Task.FromResult(response);
   }
 
-  public async Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters, string campaignId, IEnumerable<ExperimentOverview> previousExperiments, IEnumerable<Analysis> analysisHistory, AresStruct settings, CancellationToken cancellationToken = default)
+  public async Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters, RequestMetadata metadata, IEnumerable<ExperimentOverview> previousExperiments, IEnumerable<Analysis> analysisHistory, AresStruct settings, CancellationToken cancellationToken = default)
   {
-    return await Plan(plannableParameters, campaignId, previousExperiments, analysisHistory, cancellationToken);
+    return await Plan(plannableParameters, metadata, previousExperiments, analysisHistory, cancellationToken);
   }
 
   private record ManualPlanResult(string Name, AresValue Value)

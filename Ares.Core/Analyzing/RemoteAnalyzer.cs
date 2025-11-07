@@ -29,7 +29,7 @@ public class RemoteAnalyzer : AnalyzerBase
 
   public Uri Address { get; }
 
-  public override async Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken = default)
+  public override async Task<Analysis> Analyze(AresStruct inputs, RequestMetadata metadata, CancellationToken cancellationToken = default)
   {
     var client = GetClient();
     var analysisRequest = new AnalysisRequest
@@ -50,7 +50,7 @@ public class RemoteAnalyzer : AnalyzerBase
   /// <param name="settings">These will add-to/override existing settings values if provided. </param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, CancellationToken cancellationToken = default)
+  public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, RequestMetadata metadata, CancellationToken cancellationToken = default)
   {
     var client = GetClient();
     var mergedSettings = Settings.AppendStruct(settings);

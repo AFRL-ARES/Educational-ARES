@@ -17,9 +17,8 @@
 	</PropertyGroup>
 
   <ItemGroup>
-
-    <PackageReference Include="ARES.Datamodel" Version="0.14.1-beta.1" GeneratePathProperty="True" />
-    <PackageReference Include="Grpc.Tools" Version="2.72.0">
+    <PackageReference Include="ARES.Datamodel" Version="0.15.1-beta.1" GeneratePathProperty="True" />
+    <PackageReference Include="Grpc.Tools" Version="2.76.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -33,7 +32,7 @@
 
   <ItemGroup>
     <Protobuf Include="Proto\DataModel.proto" GrpcServices="None" />
-		<Protobuf Include="Proto\MK4SConfig.proto" GrpcServices="None" />
+    <Protobuf Include="Proto\MK4SConfig.proto" GrpcServices="None" />
     <Protobuf Include="Proto\Services.proto" ProtoRoot="Proto" AdditionalImportDirs="$(DataModelProtoPath)" />
   </ItemGroup>
 

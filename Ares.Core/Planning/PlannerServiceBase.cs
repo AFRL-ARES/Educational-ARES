@@ -60,13 +60,13 @@ public abstract class PlannerServiceBase : IPlannerService
   }
 
   public abstract Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters,
-    string campaignId,
+    RequestMetadata metadata,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory, 
     CancellationToken cancellationToken = default);
 
   public abstract Task<PlanResponse> Plan(IEnumerable<ParameterMetadata> plannableParameters,
-    string campaignId,
+    RequestMetadata metadata,
     IEnumerable<ExperimentOverview> previousExperiments,
     IEnumerable<Analysis> analysisHistory,
     AresStruct settings,

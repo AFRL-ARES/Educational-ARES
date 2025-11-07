@@ -10,7 +10,7 @@ public class TestReplyAnalyzer : AnalyzerBase
   {
   }
 
-  public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken)
+  public override Task<Analysis> Analyze(AresStruct inputs, RequestMetadata metadata, CancellationToken cancellationToken)
   {
     var firstData = inputs.Fields["TestAnalyzerInput"];
     var analysis = new Analysis() { Result = (float)firstData.NumberValue, AnalysisOutcome = Outcome.Success };
@@ -18,9 +18,9 @@ public class TestReplyAnalyzer : AnalyzerBase
     return Task.FromResult(analysis);
   }
 
-  public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, CancellationToken cancellationToken)
+  public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, RequestMetadata metadata, CancellationToken cancellationToken)
   {
-    return Analyze(inputs, cancellationToken);
+    return Analyze(inputs, metadata, cancellationToken);
   }
 
   public override Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken)
