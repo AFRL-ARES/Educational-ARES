@@ -239,12 +239,6 @@
       }
 
       <div class="d-flex flex-column padded-item">
-        <h6>Desired number of experiments</h6>
-        <input type="number" class="form-control" @bind="ViewModel!.ExperimentsToRun" />
-        <button class="btn btn-outline-info" @onclick="ViewModel!.SetExperimentsToRun">SET</button>
-      </div>
-
-      <div class="d-flex flex-column padded-item">
         <h6>Re-Planning Rate</h6>
         <input type="number" class="form-control" @bind="ViewModel!.DesiredReplanRate" />
         <button class="btn btn-outline-info" @onclick="ViewModel!.SetReplanRate">SET</button>
