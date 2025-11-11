@@ -234,8 +234,10 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
 
         var xOffset = xOffsetParam?.Value.NumberValue ?? 0;
         var yOffset = yOffsetParam?.Value.NumberValue ?? 0;
+        var dwellInt = dwellParam?.Value.NumberValue ?? 0;
+        var zInt = zParam?.Value.NumberValue ?? -1;
 
-        var smartMove = await Device.MoveToLastPrint(zParam.Value.StringValue, dwellParam?.Value.StringValue ?? "", (int)xOffset, (int)yOffset);
+        var smartMove = await Device.MoveToLastPrint((int)zInt, (int)dwellInt, (int)xOffset, (int)yOffset);
 
         result.Success = smartMove.Success;
         return result;
@@ -267,7 +269,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
           break;
         }
 
-        var move = await Device.MovePrinter(x.ToString(), y.ToString(), z.ToString(), dwell.ToString());
+        var move = await Device.MovePrinter((int)x, (int)y, (int)z, dwell);
         result.Success = move.Success;
         result.Error = move.ErrorString ?? string.Empty;
         break;

@@ -135,15 +135,11 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
     _logger.LogInformation("Received a request to move to last print.");
 
     var printer = GetPrinter(request.Id);
-    var dwell = "-1";
 
-    if(!string.IsNullOrEmpty(request.DwellTime))
-      dwell = request.DwellTime;
-
-    _logger.LogInformation($"Determined a dwell time of {dwell}");
+    _logger.LogInformation($"Determined a dwell time of {request.DwellTime}");
 
     if(printer is not null)
-      return await printer.MoveToLastPrint(request.ZCoordinate, dwell, 0, 0);
+      return await printer.MoveToLastPrint(request.ZCoordinate, request.DwellTime, 0, 0);
 
     var errorStr = $"ARES could not find a printer with the ID {request.Id}";
     _logger.LogInformation(errorStr);
@@ -154,13 +150,9 @@ public class PrusaMK4SPrinterService : MK4SPrinterRpc.MK4SPrinterRpcBase
   {
     _logger.LogInformation("Received a request to move printer head.");
     var printer = GetPrinter(request.Id);
-    var dwell = "-1";
-
-    if(!string.IsNullOrEmpty(request.DwellTime))
-      dwell = request.DwellTime;
 
     if(printer is not null)
-      return await printer.MovePrinter(request.XCoordinate, request.YCoordinate, request.ZCoordinate, dwell);
+      return await printer.MovePrinter(request.XCoordinate, request.YCoordinate, request.ZCoordinate, request.DwellTime);
 
     var error = $"ARES could not find a printer with the ID {request.Id}";
     _logger.LogInformation(error);

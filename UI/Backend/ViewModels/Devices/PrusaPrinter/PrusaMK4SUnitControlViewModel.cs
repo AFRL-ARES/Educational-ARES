@@ -25,15 +25,25 @@ namespace UI.Backend.ViewModels.Devices.PrusaPrinter
         await HandleMovementException();
         return;
       }
-
       var splitLocation = MovementCommand.Split(",");
+
       if(splitLocation.Length < 3 || splitLocation.Length > 4)
       {
         await HandleMovementException();
         return;
       }
 
-      else if(splitLocation.Length == 3)
+      var xParsed = int.TryParse(splitLocation[0].Trim(), out var xInt);
+      var yParsed = int.TryParse(splitLocation[1].Trim(), out var yInt);
+      var zParsed = int.TryParse(splitLocation[2].Trim(), out var zInt);
+
+      if(!xParsed || !yParsed || !zParsed)
+      {
+        await HandleMovementException();
+        return;
+      }
+        
+      if(splitLocation.Length == 3)
       {
         if(splitLocation.Any(val => val == string.Empty))
         {
@@ -44,22 +54,30 @@ namespace UI.Backend.ViewModels.Devices.PrusaPrinter
         await _client.MoveAsync(new MoveRequest()
         {
           Id = DeviceId,
-          XCoordinate = splitLocation[0].Trim(),
-          YCoordinate = splitLocation[1].Trim(),
-          ZCoordinate = splitLocation[2].Trim(),
-          DwellTime = "-1"
+          XCoordinate = xInt,
+          YCoordinate = yInt,
+          ZCoordinate = zInt,
+          DwellTime = -1
         });
       }
 
       else
       {
+        var dwellParsed = int.TryParse(splitLocation[3].Trim(), out var dwellInt);
+
+        if(!dwellParsed)
+        {
+          await HandleMovementException();
+          return;
+        }
+
         await _client.MoveAsync(new MoveRequest()
         {
           Id = DeviceId,
-          XCoordinate = splitLocation[0].Trim(),
-          YCoordinate = splitLocation[1].Trim(),
-          ZCoordinate = splitLocation[2].Trim(),
-          DwellTime = splitLocation[3].Trim()
+          XCoordinate = xInt,
+          YCoordinate = yInt,
+          ZCoordinate = zInt,
+          DwellTime = dwellInt
         });
       }
     }

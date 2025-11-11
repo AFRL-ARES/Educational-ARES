@@ -43,22 +43,20 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     return new MK4SRequestResponse() { Success = true };
   }
 
-  public async Task<MK4SRequestResponse> MovePrinter(string x, string y, string z, string dwell)
+  public async Task<MK4SRequestResponse> MovePrinter(int x, int y, int z, int dwell)
   {
-    var parsed = int.TryParse(dwell, out var dwellTime);
+    XPosition = x.ToString();
+    YPosition = y.ToString(); 
+    ZPosition = z.ToString();
 
-    XPosition = x;
-    YPosition = y; 
-    ZPosition = z;
-
-    if(!parsed || dwellTime == -1)
+    if(dwell == -1)
     {
       await Task.Delay(TimeSpan.FromSeconds(5));
       return new MK4SRequestResponse() { Success = true };
     }
     else
     {
-      await Task.Delay(TimeSpan.FromSeconds(dwellTime + 5));
+      await Task.Delay(TimeSpan.FromSeconds(dwell + 5));
       return new MK4SRequestResponse() { Success = true };
     }
   }
@@ -215,7 +213,7 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     return Task.CompletedTask;
   }
 
-  public async Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell, int xOffset, int yOffset)
+  public async Task<MK4SRequestResponse> MoveToLastPrint(int z, int dwell, int xOffset, int yOffset)
   {
     //Attempts to move the print head over the last known print location
     //Use the last GCodeHandler to try and determine our x and y positioning
@@ -230,7 +228,7 @@ public class SimPrusaMK4S : AresUSBDevice, IPrusaMK4S
     var calculated_y = LatestGCodeHandler.GetPrintBedHeight() - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2)) + yOffset;
     var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2) + xOffset;
 
-    return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
+    return await MovePrinter((int)calculated_x, (int)calculated_y, z, dwell);
   }
 
   public double BedTemperature { get; set; } = 50;

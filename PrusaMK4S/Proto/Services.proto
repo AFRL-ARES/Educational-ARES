@@ -70,16 +70,16 @@ message PrintRequest {
 
 message MoveRequest {
 	string id = 1;
-	string x_coordinate = 2;
-	string y_coordinate = 3;
-	string z_coordinate = 4;
-	string dwell_time = 5;
+	int32 x_coordinate = 2;
+	int32 y_coordinate = 3;
+	int32 z_coordinate = 4;
+	int32 dwell_time = 5;
 }
 
 message MoveToLastPrintRequest {
 	string id = 1;
-	string z_coordinate = 2;
-	string dwell_time = 3;
+	int32 z_coordinate = 2;
+	int32 dwell_time = 3;
 }
 
 message PrinterDescription {

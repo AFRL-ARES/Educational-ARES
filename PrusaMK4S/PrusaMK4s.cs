@@ -153,7 +153,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
     }
   }
 
-  public async Task<MK4SRequestResponse> MoveToLastPrint(string z, string dwell, int xOffset, int yOffset)
+  public async Task<MK4SRequestResponse> MoveToLastPrint(int z, int dwell, int xOffset, int yOffset)
   {
     try
     {
@@ -169,7 +169,12 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
       var calculated_y = LatestGCodeHandler.GetPrintBedHeight() - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2)) + yOffset;
       var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2) + xOffset;
 
-      return await MovePrinter(calculated_x.ToString(), calculated_y.ToString(), z, dwell);
+      var moveResponse = await MovePrinter((int)calculated_x, (int)calculated_y, z, dwell);
+      
+      //This delay allows for the print heads potential travel time
+      await Task.Delay(TimeSpan.FromSeconds(3));
+
+      return moveResponse;
     }
 
     catch(Exception ex)
@@ -184,10 +189,10 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
     }
   }
 
-  public async Task<MK4SRequestResponse> MovePrinter(string x, string y, string z, string dwell)
+  public async Task<MK4SRequestResponse> MovePrinter(int x, int y, int z, int dwell)
   {
-    if(string.IsNullOrEmpty(z))
-      z = "110";
+    if(z <= 0)
+      z = 110;
 
     var response = new MK4SRequestResponse();
     try
@@ -199,16 +204,16 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
       }
 
       string movementCommand;
-      var parsed = int.TryParse(dwell, out var dwellInt);
 
-      if(!parsed)
+      if(dwell == -1)
         PrintDelay = 10;
 
       else
-        PrintDelay = dwellInt;
+        PrintDelay = dwell;
 
-      if(dwellInt > 0)
-        movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000 \n G4 S{PrintDelay}";
+      if(dwell > 0)
+        movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000 \n G4 S{dwell}";
+
       else
         movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000";
 

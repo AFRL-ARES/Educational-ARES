@@ -115,6 +115,8 @@ public class AresCamera : AresUSBDevice, IAresCamera
       imageBytes = stream.ToArray();
     }
 
+    await File.WriteAllBytesAsync("latest_image.png", imageBytes);
+
     LatestImage = null;
     return imageBytes;
   }

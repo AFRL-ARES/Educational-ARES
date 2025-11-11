@@ -548,6 +548,9 @@ public class GCodeHandler : IGcodeHandler
 
     foreach(var line in gcode)
     {
+      if(line.Contains("; probe near purge place"))
+        updatedGcode.Add(ApplyPurgeXOffset(line.Split(), 200));
+
       if(line.StartsWith("; prepare for purge"))
         shouldEdit = true;
 
@@ -594,6 +597,9 @@ public class GCodeHandler : IGcodeHandler
 
     foreach(var line in gcode)
     {
+      if(line.Contains("; probe near purge place"))
+        updatedGcode.Add(ApplyPurgeYOffset(line.Split(), yShift));
+
       if(line.StartsWith("; prepare for purge"))
         shouldEdit = true;
 
