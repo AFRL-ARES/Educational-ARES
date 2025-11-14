@@ -92,6 +92,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
     {
       if(_httpClient is null || Address is null)
       {
+        response.Success = false;
         response.ErrorString = "Printer HTTP client was null, cannot send commands!";
         return response;
       }
@@ -116,6 +117,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
 
         if(!parsed)
         {
+          response.Success = false;
           response.ErrorString = "Printer couldn't determine iteration number for smart print, unable to complete print!";
           return response;
         }
@@ -131,6 +133,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
 
       if(!httpResponse.IsSuccessStatusCode)
       {
+        response.Success = false;
         response.ErrorString = httpResponse.ReasonPhrase;
         return response;
       }

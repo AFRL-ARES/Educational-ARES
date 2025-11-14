@@ -7,6 +7,7 @@ public class GCodeHandler : IGcodeHandler
 {
   private const int _printBedHeight = 210;
   private const int _printBedWidth = 190;
+  private const int _distanceBetweenPurgeLines = 5;
   private static string[] _movementCommands = [ "G0", "G1", "G2", "G3" ];
 
   public GCodeHandler(byte[] original_data)
@@ -31,6 +32,7 @@ public class GCodeHandler : IGcodeHandler
     byte[] gcode)
   {
     var data = await ConvertGCodeToStrings(gcode);
+    //data = UpdateBedLeveling(data, 0);
     DetermineModificationIndex(data);
 
     // The G-Code associated with the user defined main object
@@ -52,7 +54,7 @@ public class GCodeHandler : IGcodeHandler
     if(speedMod > 0)
       main_print_gcode = UpdateMovementSpeed(speedMod, main_print_gcode);
 
-    if(retractionLength > -1)
+    if(retractionLength > 0)
       main_print_gcode = UpdateRetractionLength(retractionLength, main_print_gcode);
 
     if(accelerationMod > 0)
@@ -543,18 +545,21 @@ public class GCodeHandler : IGcodeHandler
 
   private List<string> ShiftInitialPurgeLine(List<string> gcode)
   {
-    var updatedGcode = new List<string>();
+    var updatedGcode = new List<string>(); 
     var shouldEdit = false;
 
     foreach(var line in gcode)
     {
-      if(line.Contains("; probe near purge place"))
-        updatedGcode.Add(ApplyPurgeXOffset(line.Split(), 200));
+      //if(line.Contains("; probe near purge place"))
+      //  updatedGcode.Add(ApplyPurgeXOffset(line.Split(), 200));
 
       if(line.StartsWith("; prepare for purge"))
+      {
         shouldEdit = true;
+        updatedGcode.Add(line);
+      }
 
-      if(line.StartsWith("G") && shouldEdit)
+      else if(line.StartsWith("G") && shouldEdit)
         updatedGcode.Add(ApplyPurgeXOffset(line.Split(), 200));
 
       else
@@ -591,19 +596,22 @@ public class GCodeHandler : IGcodeHandler
 
   private List<string> ShiftIterationPurgeLine(List<string> gcode, int iteration)
   {
-    var yShift = iteration * 5;
+    var yShift = iteration * _distanceBetweenPurgeLines;
     var updatedGcode = new List<string>();
     var shouldEdit = false;
 
     foreach(var line in gcode)
     {
-      if(line.Contains("; probe near purge place"))
-        updatedGcode.Add(ApplyPurgeYOffset(line.Split(), yShift));
+      //if(line.Contains("; probe near purge place"))
+        //updatedGcode.Add(ApplyPurgeYOffset(line.Split(), yShift));
 
       if(line.StartsWith("; prepare for purge"))
+      {
         shouldEdit = true;
+        updatedGcode.Add(line);
+      }
 
-      if(line.StartsWith("G") && shouldEdit)
+      else if(line.StartsWith("G") && shouldEdit)
         updatedGcode.Add(ApplyPurgeYOffset(line.Split(), yShift));
 
       else
@@ -616,6 +624,17 @@ public class GCodeHandler : IGcodeHandler
   private string ApplyPurgeYOffset(string[] splitLine, int shift)
   {
     var y = splitLine.FirstOrDefault(e => e.StartsWith("Y"));
+    //var height = splitLine.FirstOrDefault(e => e.StartsWith("H"));
+    //var width = splitLine.FirstOrDefault(e => e.StartsWith("W"));
+
+    //if(splitLine[0] == "G29")
+    //{
+      //var height_index = splitLine.IndexOf(height);
+      //var width_index = splitLine.IndexOf(width);
+
+      //splitLine[height_index] = "H25";
+      //splitLine[width_index] = "W25";
+    //}
 
     if(y is null)
     {
@@ -626,6 +645,7 @@ public class GCodeHandler : IGcodeHandler
     else
     {
       var index = splitLine.IndexOf(y);
+
       var parsed = float.TryParse(y.Substring(1), out var yFloat);
 
       if(!parsed)
@@ -644,26 +664,20 @@ public class GCodeHandler : IGcodeHandler
 
     foreach(var line in gcode)
     {
-      if(line.StartsWith("M555"))
+      if(line.StartsWith("G29 P1"))
       {
-        //M555 X0 Y0 W0 H0
-        var splitLine = line.Split();
-
-        if(splitLine.Length < 5)
+        if(line.Contains("purge"))
         {
           updated_gcode.Add(line);
-          continue;
         }
 
-        splitLine[1] = "X0";
-        splitLine[2] = "Y0";
-        splitLine[3] = $"W25";
-        splitLine[4] = $"H25";
-
-        var newLevelAreaCmd = string.Join(" ", splitLine);
-        
-        updated_gcode.Add(newLevelAreaCmd);
-        continue;
+        else
+        {
+          var x_center = LatestXShift + (0.5 * ItemWidth);
+          var y_center = _printBedHeight + LatestYShift - (0.5 * ItemHeight);
+          var newLevelCommand = $"G29 P1 X{x_center} Y{y_center} W{ItemWidth} H{ItemHeight} ; Level the ares determined by ARES"; 
+          updated_gcode.Add(newLevelCommand);
+        }
       }
 
       else

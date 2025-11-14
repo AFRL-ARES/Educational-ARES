@@ -35,7 +35,8 @@ public class RemoteAnalyzer : AnalyzerBase
     var analysisRequest = new AnalysisRequest
     {
       Inputs = inputs,
-      Settings = Settings
+      Settings = Settings,
+      Metadata = metadata
     };
     var analysis = await client.AnalyzeAsync(analysisRequest, cancellationToken: cancellationToken);
 
@@ -57,7 +58,8 @@ public class RemoteAnalyzer : AnalyzerBase
     var analysisRequest = new AnalysisRequest
     {
       Inputs = inputs,
-      Settings = mergedSettings
+      Settings = mergedSettings,
+      Metadata = metadata
     };
     return client.AnalyzeAsync(analysisRequest, cancellationToken: cancellationToken).ResponseAsync;
   }
