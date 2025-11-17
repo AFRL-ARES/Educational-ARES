@@ -21,10 +21,10 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v5
 
-    - name: Set up .NET 8.x
+    - name: Set up .NET 10.x
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.x'
+        dotnet-version: '10.x'
 
     - name: Restore Dependencies
       run: dotnet restore ${{ env.SOLUTION_FILE }}

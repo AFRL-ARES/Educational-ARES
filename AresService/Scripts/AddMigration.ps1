@@ -18,6 +18,7 @@ if (!$?)
     Write-Host "Dotnet tools may not have been installed. They are needed for this script."
     Write-Error $Error[0]
     pause
+    exit 1
 }
 
 $root = "../../"

@@ -1,5 +1,5 @@
 ﻿using Ares.Services;
-using Microsoft.OpenApi.Extensions;
+using Microsoft.OpenApi;
 using ReactiveUI;
 
 namespace UI.Backend.ViewModels.DeviceStateLogging;
