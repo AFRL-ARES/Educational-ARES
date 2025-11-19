@@ -374,8 +374,10 @@ public class GCodeHandler : IGcodeHandler
     if(AdjustedFileData is null)
       await Init();
 
-    if(iteration == 1)
-      return AdjustedFileData!;
+    if(iteration == 1 && AdjustedFileData is not null)
+    {
+      return AdjustedFileData;
+    }
 
     else
     {
@@ -531,6 +533,7 @@ public class GCodeHandler : IGcodeHandler
 
     var startup_gcode = stringData.Take(ModificationStartIndex).ToList();
     var shifted_startup = ShiftInitialPurgeLine(startup_gcode);
+    shifted_startup = UpdateBedLeveling(shifted_startup, 0);
 
     var modifiedData = shifted_startup
       .Concat(stringData
@@ -560,7 +563,10 @@ public class GCodeHandler : IGcodeHandler
       }
 
       else if(line.StartsWith("G") && shouldEdit)
-        updatedGcode.Add(ApplyPurgeXOffset(line.Split(), 200));
+      {
+        var updatedLine = ApplyPurgeXOffset(line.Split(), 200);
+        updatedGcode.Add(updatedLine);
+      }
 
       else
         updatedGcode.Add(line);

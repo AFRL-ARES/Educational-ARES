@@ -199,6 +199,19 @@
         <RadzenSwitch id="smart_calculate_switch" @bind-Value="@ViewModel!.SmartPrintCalculation" Change="@ViewModel!.SetSmartExperimentsToRun"/>
       </div>
 
+      @if (ViewModel!.CurrentStopCondition is not null)
+      {
+        <div class="border border-1 rounded-2 p-2">
+          <div class="d-flex flex-column">
+            <div>
+              Condition: @GenerateStopConditionDisplayName()
+            </div>
+            <div>@ViewModel!.CurrentStopCondition.Description</div>
+            <div>Campaign will re-plan every @ViewModel!.DesiredReplanRate.ToString() experiment(s)</div>
+          </div>
+        </div>
+      }
+
       @if(!ViewModel!.SmartPrintCalculation)
       {
         <div class="d-flex flex-column">
@@ -223,18 +236,6 @@
         <div class="d-flex flex-column">
           <RadzenLabel Text="Number of Prints (Experiments):" Component="auto_exp_number"/>
           <input type="number" class="form-control" @bind="ViewModel!.ExperimentsToRun" disabled/>
-        </div>
-      }
-      @if (ViewModel!.CurrentStopCondition is not null)
-      {
-        <div class="border border-1 rounded-2 p-2">
-          <div class="d-flex flex-column">
-            <div>
-              Condition: @GenerateStopConditionDisplayName()
-            </div>
-            <div>@ViewModel!.CurrentStopCondition.Description</div>
-            <div>Campaign will re-plan every @ViewModel!.DesiredReplanRate.ToString() experiment(s)</div>
-          </div>
         </div>
       }
 

@@ -172,12 +172,20 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
       var calculated_y = LatestGCodeHandler.GetPrintBedHeight() - (Math.Abs(LatestGCodeHandler.LatestYShift) + (itemHeight / 2)) + yOffset;
       var calculated_x = LatestGCodeHandler.LatestXShift + (itemWidth / 2) + xOffset;
 
-      var moveResponse = await MovePrinter((int)calculated_x, (int)calculated_y, z, dwell);
-      
-      //This delay allows for the print heads potential travel time
-      await Task.Delay(TimeSpan.FromSeconds(3));
+      try
+      {
+        var moveResponse = await MovePrinter((int)calculated_x, (int)calculated_y, z, dwell);
 
-      return moveResponse;
+        //This delay allows for the print heads potential travel time
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        return moveResponse;
+      }
+
+      catch(Exception e)
+      {
+        return new MK4SRequestResponse { Success = false, ErrorString = $"Move Printer Method Failed! {e.Message}" };
+      }
     }
 
     catch(Exception ex)
