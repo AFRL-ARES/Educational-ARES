@@ -7,7 +7,7 @@ public class GCodeHandler : IGcodeHandler
 {
   private const int _printBedHeight = 210;
   private const int _printBedWidth = 190;
-  private const int _distanceBetweenPurgeLines = 5;
+  private const int _distanceBetweenPurgeLines = 15;
   private static string[] _movementCommands = [ "G0", "G1", "G2", "G3" ];
 
   public GCodeHandler(byte[] original_data)

@@ -88,14 +88,17 @@ public class AresCamera : AresUSBDevice, IAresCamera
     {
       var timeout = TimeSpan.FromSeconds(1.5);
       var timeoutTask = Task.Delay(timeout);
-      var peepee = Task.Run(() => _videoCaptureDevice.WaitForStop());
-      var poopoo = await Task.WhenAny(peepee, timeoutTask);
-      if(poopoo == timeoutTask)
+      var videoCaptureTask = Task.Run(() => _videoCaptureDevice.WaitForStop());
+      var task = await Task.WhenAny(videoCaptureTask, timeoutTask);
+      if(task == timeoutTask)
       {
         _videoCaptureDevice.Stop();
       }
     }
 
+    //Let Camera Adjust
+    await Task.Delay(TimeSpan.FromSeconds(2));
+    var cameraControl = _videoCaptureDevice.SourceObject;
     _videoCaptureDevice.Start();
 
     while(!token.IsCancellationRequested && LatestImage is null)
