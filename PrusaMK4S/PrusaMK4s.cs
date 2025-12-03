@@ -9,6 +9,7 @@ using PrusaMK4S.Handlers;
 using System.Net;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -349,19 +350,31 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
       return response;
 
     var requestAddress = $"{Address}api/printer";
-    var jsonResponse = await _httpClient.GetAsync(requestAddress);
-    _stateSubject.OnNext(jsonResponse);
-    var parsedResponse = JsonSerializer.Deserialize<StatusResponse>(await jsonResponse.Content.ReadAsStreamAsync());
 
-    if(parsedResponse is null)
+    try
+    {
+      var jsonResponse = await _httpClient.GetAsync(requestAddress);
+      _stateSubject.OnNext(jsonResponse);
+      var parsedResponse = JsonSerializer.Deserialize<StatusResponse>(await jsonResponse.Content.ReadAsStreamAsync());
+
+      if(parsedResponse is null)
+        return response;
+
+      IsPrinting = parsedResponse.State.Flags.Printing;
+      IsBusy = parsedResponse.State.Flags.Busy;
+      response.BedTemp = parsedResponse.Temperature.Bed.Actual;
+      response.NozzleTemp = parsedResponse.Temperature.Tool.Actual;
+      response.IsConnected = true;
       return response;
+    }
 
-    IsPrinting = parsedResponse.State.Flags.Printing;
-    IsBusy = parsedResponse.State.Flags.Busy;
-    response.BedTemp = parsedResponse.Temperature.Bed.Actual;
-    response.NozzleTemp = parsedResponse.Temperature.Tool.Actual;
-    response.IsConnected = true;
-    return response;
+    catch(Exception)
+    {
+      response.BedTemp = -1;
+      response.NozzleTemp = -1;
+      response.IsConnected = false;
+      return response;
+    }
   }
 
   public HttpResponseMessage? GetState()
