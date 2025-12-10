@@ -468,7 +468,14 @@ public class AutomationService : AresAutomation.AresAutomationBase
     await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
     var summaries = await dbContext.CampaignExecutionSummaries
       .AsNoTracking()
-      .AsSplitQuery()
+      .IgnoreAutoIncludes()
+      .Select(x => new
+      {
+        x.CampaignName,
+        x.ExecutionInfo,
+        x.UniqueId,
+        x.ExperimentSummaries
+      })
       .ToArrayAsync(context.CancellationToken);
     var response = new AvailableCampaignExecutionSummariesResponse();
     response.AvailableCampaignSummaries

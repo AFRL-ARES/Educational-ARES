@@ -1,6 +1,7 @@
 ﻿@page "/dataviewer"
 @using System.Web
 @using Ares.Datamodel
+@using Ares.Datamodel.Extensions
 @using Ares.Services
 @using UI.Backend.Helpers
 @inject ContextMenuService ContextMenuService
@@ -56,7 +57,7 @@
 
                 @foreach(var exp in ViewModel!.FullSelectedSummary.ExperimentSummaries)
                 {
-                  <RadzenTreeItem Text="@($"Experiment: {exp.UniqueId}")" Value="exp">
+                  <RadzenTreeItem Text="@($"Experiment: {exp.ExperimentId}")" Value="exp">
                     <ChildContent>
                       @foreach(var step in exp.StepSummaries)
                       {
@@ -221,7 +222,14 @@
                 <b> Experiment Results </b>
                 @foreach(var result in ViewModel!.SelectedExperimentSummary.ExperimentOverview.Result.Fields)
                 {
-                  <b> @result.Key : @result.Value </b>
+                  if(AresValueHelper.IsPrimitveType(result.Value))
+                  {
+                    <b> @result.Key : @result.Value </b>  
+                  }
+                  else
+                  {
+                    <b>@result.Key : Complex Data </b>
+                  }
                 }
               }
             }
@@ -315,5 +323,4 @@
 
     return $"Maximum: {limits.First().Maximum}";
   }
-
 }
