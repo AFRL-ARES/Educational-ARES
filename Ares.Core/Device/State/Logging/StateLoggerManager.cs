@@ -122,16 +122,19 @@ public class StateLoggerManager(IDeviceStateLoggerRepository _stateLoggerReposit
 
   public async Task DisableOverrideAsync()
   {
+    _logger.LogDebug("Attempting to disable the device logging override");
     await _overrideLock.WaitAsync();
 
     if(!_overrideActive)
     {
+      _logger.LogDebug("Releasing device logging override");
       _overrideLock.Release();
       return;
     }
 
     try
     {
+      _logger.LogDebug("Preparing the tasks to disable device logging override");
       var loggerRestoreTasks = _stateLoggerRepository.Select(async logger =>
       {
         var settings = await GetDatabaseLoggerSettings(logger.Key);
@@ -148,17 +151,20 @@ public class StateLoggerManager(IDeviceStateLoggerRepository _stateLoggerReposit
     finally
     {
       _overrideLock.Release();
+      _logger.LogDebug("Released the device logging override lock. (Disable method)");
     }
   }
 
   public async Task EnableOverrideAsync(DeviceLoggingSettings settings)
   {
+    _logger.LogInformation("Attempting to enable device logging override.");
     await _overrideLock.WaitAsync();
 
     _overrideActive = true;
 
     try
     {
+      _logger.LogDebug("Preparing the tasks to enable device logging override");
       var loggerOverrideTasks = _stateLoggerRepository
         .Select(async logger => await logger.Value.UpdateSettings(settings));
 
@@ -172,6 +178,7 @@ public class StateLoggerManager(IDeviceStateLoggerRepository _stateLoggerReposit
     finally
     {
       _overrideLock.Release();
+      _logger.LogDebug("Released the device logging override lock. (Enable method)");
     }
   }
 }

@@ -2,12 +2,12 @@
 using Ares.Services;
 using Radzen;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Backend.ViewModels.Factories;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
-public class StartupDesignerViewModel : ReactiveObject
+public partial class StartupDesignerViewModel : ReactiveObject
 {
   private readonly StepDesignerFactory _stepDesignerFactory;
   private readonly AresValidation.AresValidationClient _validationClient;
@@ -25,6 +25,7 @@ public class StartupDesignerViewModel : ReactiveObject
     _validationClient = validationClient;
     _notificationService = notificationService;
 
+    Name = "Unnamed Startup Template";
     StartupTemplate = new ExperimentTemplate
     {
       UniqueId = Guid.NewGuid().ToString(),
@@ -130,7 +131,7 @@ public class StartupDesignerViewModel : ReactiveObject
   }
 
   [Reactive]
-  public string Name { get; set; } = "Unnamed Startup Template";
+  public partial string Name { get; set; }
 
   public IList<StepDesignerViewModel> StartupStepDesigners { get; private set; } = [];
 

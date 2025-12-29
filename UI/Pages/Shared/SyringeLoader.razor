@@ -1,0 +1,41 @@
+﻿<div class="syringe-loader-container"
+     style="transform: rotate(@(Rotation)deg); width:@Width; height:@Height; --anim-duration: @(Duration)s;"
+     title="Process Running...">
+
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+    <defs>
+      <clipPath id="barrel-mask">
+        <rect x="7" y="4" width="10" height="@(8 + SyringeLength)" rx="0" ry="0" />
+      </clipPath>
+    </defs>
+
+    <rect class="liquid-fill"
+          x="7" y="4" width="10" height="@(4 + SyringeLength)"
+          fill="@FillColor"
+          clip-path="url(#barrel-mask)" />
+
+    <path d="M12 @(12 + SyringeLength)V@(8 + SyringeLength)" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    <path d="M7 4H17V@(8 + SyringeLength)H7V4Z" stroke="currentColor" stroke-width="2" />
+    <path d="M5 4H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    <path d="M12 4V0" stroke="currentColor" stroke-width="2" />
+    <path d="M9 0H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+  </svg>
+</div>
+
+@code {
+  // doesn't work yet :)
+  [Parameter]
+  public double Progress { get; set; } = 0.0;
+  [Parameter] 
+  public string Width { get; set; } = "40px";
+  [Parameter] 
+  public string Height { get; set; } = "40px";
+  [Parameter] 
+  public string FillColor { get; set; } = "#28a745";
+  [Parameter] 
+  public int Rotation { get; set; } = 0;
+  [Parameter] 
+  public double Duration { get; set; } = 4;
+  [Parameter]
+  public int SyringeLength { get; set; } = 10;
+}

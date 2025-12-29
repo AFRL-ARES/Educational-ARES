@@ -32,8 +32,10 @@ internal class CampaignExecutorTests
   private AnalysisRepo _analysisRepo;
   private StateLoggerManager _stateLoggerManager;
   private INotifier _notifier;
-  private ILogger<StateLoggerManager> _logger;
-  private ILogger<CampaignComposer> _composerLogger;
+  private ILogger<StateLoggerManager> _stateLoggerManagerLogger;
+  private ILogger<CampaignExecutor> _campaignExecutorLogger;
+  private ILogger<AnalysisHelper> _analysisHelperLogger;
+  private ILoggerFactory _loggerFactory;
 
 
   private IAnalyzer _replyAnalyzer;
@@ -45,15 +47,21 @@ internal class CampaignExecutorTests
     _replyAnalyzer = new TestReplyAnalyzer();
     _analyzerRepo.AddAnalyzer(_replyAnalyzer);
     _analysisRepo = [];
-    _analysisHelper = new AnalysisHelper(_analyzerRepo);
+    _analysisHelperLogger = new Mock<ILogger<AnalysisHelper>>().Object;
+    _analysisHelper = new AnalysisHelper(_analyzerRepo, _analysisHelperLogger);
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);
     _planningHelper = new Mock<IPlanningHelper>().Object;
     _resultHandlers = new Mock<List<IExecutionSummaryHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
     _notifier = new Mock<INotifier>().Object;
-    _logger = new Mock<ILogger<StateLoggerManager>>().Object;
-    _composerLogger = new Mock<ILogger<CampaignComposer>>().Object;
+    _stateLoggerManagerLogger = new Mock<ILogger<StateLoggerManager>>().Object;
+    _campaignExecutorLogger = new Mock<ILogger<CampaignExecutor>>().Object;
+    
+    var loggerFactoryMock = new Mock<ILoggerFactory>();
+    loggerFactoryMock.Setup(f => f.CreateLogger(typeof(CampaignExecutor).FullName))
+      .Returns(_campaignExecutorLogger);
+    _loggerFactory = loggerFactoryMock.Object;
 
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
@@ -67,8 +75,8 @@ internal class CampaignExecutorTests
     var stateLoggerRepository = new DeviceStateLoggerRepository();
     var factories = Array.Empty<IDeviceStateLoggerFactory>();
     var dbContextFactory = Mock.Of<IDbContextFactory<CoreDatabaseContext>>();
-    _stateLoggerManager = new StateLoggerManager(stateLoggerRepository, factories, _logger, dbContextFactory);
-    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, _planningHelper, _executionReporter, _resultHandlers, _analysisRepo, _analyzerRepo, _notifier, _composerLogger, _variableManager, _stateLoggerManager);
+    _stateLoggerManager = new StateLoggerManager(stateLoggerRepository, factories, _stateLoggerManagerLogger, dbContextFactory);
+    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, _planningHelper, _executionReporter, _resultHandlers, _analysisRepo, _analyzerRepo, _notifier, _loggerFactory, _variableManager, _stateLoggerManager);
   }
 
   [SetUp]

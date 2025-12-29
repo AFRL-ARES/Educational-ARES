@@ -20,7 +20,7 @@ public abstract class AresSerialSimConnection : AresSerialConnection
     SendInternally(command.SerializedData);
   }
 
-  protected internal override void CloseCore()
+  protected override void CloseCore()
   {
     IsOpen = false;
   }

@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -34,14 +35,14 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     RequireNonAlphanumeric = false,
     RequireUppercase = false
   };
-})
-  .AddEntityFrameworkStores<ApplicationDbContext>();
+}).AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.Configure<RemoteServiceSettings>(builder.Configuration.GetSection(nameof(RemoteServiceSettings)));
 builder.Services.Configure<CertificateSettings>(builder.Configuration.GetSection(nameof(CertificateSettings)));
 
+builder.Services.AddSingleton<IMessenger>(provider => new WeakReferenceMessenger());
 builder.Services.AddScoped<IClientManager, ClientManager>();
 builder.Services.LoadAresModules();
 builder.Services.BindClients();

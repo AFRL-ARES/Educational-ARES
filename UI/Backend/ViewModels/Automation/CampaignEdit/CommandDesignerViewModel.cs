@@ -2,12 +2,12 @@
 using Ares.Datamodel.Templates;
 using Ares.Services.Device;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Backend.ViewModels.Factories;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
-public class CommandDesignerViewModel : ReactiveObject
+public partial class CommandDesignerViewModel : ReactiveObject
 {
   private readonly CommandParameterDesignerFactory _commandParameterDesignerFactory;
   private readonly MetadataPickerFactory _metadataPickerFactory;
@@ -26,6 +26,7 @@ public class CommandDesignerViewModel : ReactiveObject
     _devicesClient = devicesClient;
 
     CommandTemplate = existingTemplate;
+    ArgumentDesigners = [];
   }
 
   public CommandDesignerViewModel(CommandParameterDesignerFactory commandParameterDesignerFactory, MetadataPickerFactory metadataPickerFactory, AresDevices.AresDevicesClient devicesClient)
@@ -38,6 +39,7 @@ public class CommandDesignerViewModel : ReactiveObject
     {
       UniqueId = Guid.NewGuid().ToString()
     };
+    ArgumentDesigners = [];
   }
 
   public CommandTemplate CommandTemplate
@@ -80,7 +82,7 @@ public class CommandDesignerViewModel : ReactiveObject
   public MetadataPickerViewModel? MetadataPickerViewModel { get; set; }
 
   [Reactive]
-  public IEnumerable<CommandParameterDesignerViewModel> ArgumentDesigners { get; private set; } = [];
+  public partial IEnumerable<CommandParameterDesignerViewModel> ArgumentDesigners { get; private set; }
 
   public CommandTemplate Save()
   {

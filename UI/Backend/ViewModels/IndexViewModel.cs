@@ -1,9 +1,9 @@
 ﻿using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels;
 
-public class IndexViewModel : ReactiveObject
+public partial class IndexViewModel : ReactiveObject
 {
   public IndexViewModel()
   {
@@ -150,9 +150,9 @@ public class IndexViewModel : ReactiveObject
     // });
   }
 
-  [Reactive] public List<DataItem> Revenue2019 { get; set; }
+  [Reactive] public partial List<DataItem> Revenue2019 { get; set; }
 
-  [Reactive] public List<DataItem> Revenue2020 { get; set; }
+  [Reactive] public partial List<DataItem> Revenue2020 { get; set; }
 }
 public class DataItem
 {

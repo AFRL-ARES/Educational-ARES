@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Ares.Device;
-public interface IAresDeviceConnection : IDisposable
+public interface IAresDeviceConnection : IAsyncDisposable
 {
   string? Name { get; }
   bool IsOpen { get; }

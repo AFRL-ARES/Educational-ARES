@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package ChemyxPumpPlugin.services;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
+import "ChemyxConfig.proto";
+
+service ChemyxPumpRpc {
+	rpc StartPump(StartPumpRequest) returns (google.protobuf.Empty);
+	rpc StopPump(StopPumpRequest) returns (google.protobuf.Empty);
+	rpc PausePump(PausePumpRequest) returns (google.protobuf.Empty);
+	rpc GetPumpStatus(PumpStatusRequest) returns (PumpStatusResponse);
+
+	rpc GetViewParameters(GetViewParametersRequest) returns (ViewParametersResponse);
+	rpc GetDispensedVolume(GetDispensedVolumeRequest) returns (DispensedVolumeResponse);
+	rpc GetElapsedTime(GetElapsedTimeRequest) returns (ElapsedTimeResponse);
+	rpc GetLimitParameter(GetLimitParameterRequest) returns (LimitParameterResponse);
+
+	rpc SetDiameter(SetDiameterRequest) returns (google.protobuf.Empty);
+	rpc SetVolume(SetVolumeRequest) returns (google.protobuf.Empty);
+	rpc SetPumpRate(SetPumpRateRequest) returns (google.protobuf.Empty);
+	rpc SetDelay(SetDelayRequest) returns (google.protobuf.Empty);
+	rpc SetTime(SetTimeRequest) returns (google.protobuf.Empty);
+	rpc SetUnits(SetUnitsRequest) returns (google.protobuf.Empty);
+
+	rpc AddChemyxPump(config.ChemyxPumpConfig) returns (google.protobuf.Empty);
+	rpc RemoveChemyxPump(PumpRequest) returns (google.protobuf.Empty);
+	rpc GetAllPumps(google.protobuf.Empty) returns (GetAllPumpsResponse);
+	rpc UpdatePump(UpdatePumpRequest) returns (google.protobuf.Empty);
+}
+
+message PumpRequest {
+	string device_id = 1;
+}
+
+message UpdatePumpRequest {
+	string id = 1;
+	config.ChemyxPumpConfig config = 2;
+}
+
+message StartPumpRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+}
+
+message StopPumpRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+}
+
+message PausePumpRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+}
+
+message PumpStatusRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+}
+
+message PumpStatusResponse {
+	int32 pump_status = 1;
+}
+
+message SetDiameterRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+	double diameter = 3; 
+}
+
+message GetViewParametersRequest {
+	string device_id = 1;
+}
+
+message PumpParams {
+	sint32 pump_number = 1;
+	Units unit = 2;
+	double diameter = 3;
+	double rate = 4;
+	google.protobuf.Duration time = 5;
+	double volume = 6;
+	google.protobuf.Duration delay = 7;
+}
+
+message ViewParametersResponse {
+	repeated PumpParams params = 1;
+}
+
+message GetDispensedVolumeRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+}
+
+message DispensedVolumeResponse {
+	double volume_dispense = 1;
+}
+
+message GetElapsedTimeRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+}
+
+message ElapsedTimeResponse {
+	google.protobuf.Duration elapsed_time = 2;
+}
+
+message SetVolumeRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+	double requested_volume = 3;
+}
+
+message GetLimitParameterRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+}
+
+message LimitParameterResponse {
+	double max_rate = 1;
+	double min_rate = 2;
+	double max_volume = 3;
+	double min_volume = 4;
+}
+
+message SetPumpRateRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+	double desired_rate = 3;
+}
+
+message SetDelayRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+	google.protobuf.Duration desired_delay = 3;
+}
+
+message SetTimeRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+	google.protobuf.Duration desired_time = 3;
+}
+
+enum Units {
+	UNKNOWN = 0;
+	MILLILITERS_PER_MINUTE = 1;
+	MILLILITERS_PER_HOUR = 2;
+	MICROLITERS_PER_MINUTES = 3;
+	MICROLITERS_PER_HOUR = 4;
+}
+
+message SetUnitsRequest {
+	string device_id = 1;
+	optional int32 pump_number = 2;
+	Units unit = 3;
+}
+
+message ChemyxPumpDeviceDescription {
+  string id = 1;
+  string name = 2;
+	bool dual_pump = 3;
+}
+
+message GetAllPumpsResponse {
+	repeated ChemyxPumpDeviceDescription devices = 1;
+}

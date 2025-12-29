@@ -9,14 +9,17 @@ using MK4S.Services;
 using PrusaMK4S.Enums;
 using Radzen;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using System.Collections.ObjectModel;
 using UI.Backend.Extensions;
 using UI.Services.Notification;
+using Ares.Datamodel.Planning;
+using System.ComponentModel;
+using System.Reactive.Linq;
 
 namespace UI.Backend.ViewModels.Automation;
 
-public class ExecutionViewModel : ReactiveObject
+public partial class ExecutionViewModel : ReactiveObject, INotifyPropertyChanged
 {
   private readonly AresAutomation.AresAutomationClient _automationClient;
   private readonly AresAnalyzerManagementService.AresAnalyzerManagementServiceClient _analyzerService;
@@ -36,6 +39,7 @@ public class ExecutionViewModel : ReactiveObject
     _notificationService = notificationService;
     _analyzerService = analyzerService;
     _printerClient = printerClient;
+    PlannerAdapterInfos = [];
   }
 
   public async Task<bool> EnsureStopConditionSet()
@@ -62,6 +66,8 @@ public class ExecutionViewModel : ReactiveObject
 
     if(SmartPrintCalculation)
       await SetSmartExperimentsToRun();
+
+    DisplayExecutionSummary = false;
   }
 
   public async Task UpdateCurrentTemplate()
@@ -164,7 +170,7 @@ public class ExecutionViewModel : ReactiveObject
   public Task PauseCampaign()
     => _automationClient.PauseExecutionAsync(new Empty()).ResponseAsync;
 
-  public Task ResumeCampaign()
+  public Task ResumeCampaign() 
     => _automationClient.ResumeExecutionAsync(new Empty()).ResponseAsync;
 
   public async Task ExecutionNotesUploaded(UploadChangeEventArgs args)
@@ -270,28 +276,32 @@ public class ExecutionViewModel : ReactiveObject
   }
 
   [Reactive]
-  public ExperimentStopConditionResponse? CurrentStopCondition { get; set; }
+  public partial ExperimentStopConditionResponse? CurrentStopCondition { get; set; }
   public double DesiredResult { get; set; }
   public double DesiredLeeway { get; set; }
   public int DesiredReplanRate { get; set; } = 1;
   [Reactive]
-  public bool CampaignActive { get; set; }
+  public partial bool CampaignActive { get; set; }
   [Reactive]
-  public bool CampaignPaused { get; set; }
+  public partial bool CampaignPaused { get; set; }
   [Reactive]
-  public CampaignTemplateSummary? SelectedTemplateSummary { get; set; }
+  public partial CampaignTemplateSummary? SelectedTemplateSummary { get; set; }
   [Reactive]
-  public CampaignTemplate? CampaignTemplate { get; set; }
+  public partial CampaignTemplate? CampaignTemplate { get; set; }
   [Reactive]
-  public ExecutionState? CampaignExecutionState { get; set; }
+  public partial ExecutionState? CampaignExecutionState { get; set; }
   [Reactive]
-  public ExperimentExecutionStatus? ExperimentStatus { get; private set; }
+  public partial AnalysisState? AnalysisState { get; set; }
   [Reactive]
-  public HashSet<PlannerServiceInfo?> PlannerAdapterInfos { get; set; } = [];
+  public partial PlannerState? PlannerState { get; set; }
   [Reactive]
   public bool SmartPrintCalculation { get; set; }
   [Reactive]
-  public AnalyzerInfo? AnalyzerInfo { get; set; }
+  public partial ExperimentExecutionStatus? ExperimentStatus { get; private set; }
+  [Reactive]
+  public partial HashSet<PlannerServiceInfo?> PlannerAdapterInfos { get; set; }
+  [Reactive]
+  public partial AnalyzerInfo? AnalyzerInfo { get; set; }
   public uint ExperimentsToRun { get; set; }
   public string ExecutionNotes { get; set; } = string.Empty;
   public CampaignExecutionSummary? TestCampaignExecutionSummary { get; private set; }

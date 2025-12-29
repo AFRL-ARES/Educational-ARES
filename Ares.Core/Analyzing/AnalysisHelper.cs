@@ -4,26 +4,30 @@ using Ares.Datamodel.Analyzing;
 using Ares.Datamodel.Templates;
 using Google.Protobuf.Collections;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Ares.Core.Analyzing;
 
 public class AnalysisHelper
 {
   readonly IAnalyzerRepo _analyzerRepo;
+    private readonly ILogger<AnalysisHelper> _logger;
 
-  public AnalysisHelper(IAnalyzerRepo analyzerRepo)
-  {
-    _analyzerRepo = analyzerRepo;
-  }
+    public AnalysisHelper(IAnalyzerRepo analyzerRepo, ILogger<AnalysisHelper> logger)
+    {
+      _analyzerRepo = analyzerRepo;
+      _logger = logger;
+    }
 
   public async Task<Analysis> Analyze(ExperimentTemplate template, ExperimentExecutionSummary experimentSummary, RequestMetadata metadata, CancellationToken cancellationToken)
   {
-    var analyzer = GetAnalyzer(template.AnalyzerId);
-    var analyzerInputs = ExperimentOutputToAnalyzerInputs(
-      experimentSummary.ExperimentOverview.Result,
-      template.AnalyzerMaps);
     try
     {
+      var analyzer = GetAnalyzer(template.AnalyzerId);
+      _logger.LogInformation("Analysis requested using analyzer {AnalyzerName}", analyzer.Name);
+      var analyzerInputs = ExperimentOutputToAnalyzerInputs(
+        experimentSummary.ExperimentOverview.Result,
+        template.AnalyzerMaps);
       // TODO: Maybe add support for settings overrides if needed
       var analysis = await analyzer.Analyze(analyzerInputs, metadata, cancellationToken);
       experimentSummary.ExperimentOverview.AnalysisOverview = new AnalysisOverview
@@ -34,13 +38,14 @@ public class AnalysisHelper
         ExperimentOverviewId = experimentSummary.ExperimentOverview.UniqueId
       };
 
+      _logger.LogInformation("Analysis completed {Result}", analysis.Result);
       return analysis;
     }
     catch(RpcException e)
     {
       if(e.InnerException is OperationCanceledException oce)
       {
-        return new Analysis { Result = float.NaN, AnalysisOutcome = Outcome.Canceled, ErrorString = $" Anlysis has been canceled" };
+        return new Analysis { Result = float.NaN, AnalysisOutcome = Outcome.Canceled, ErrorString = $" Analysis has been canceled" };
       }
       return new Analysis {Result = float.NaN, AnalysisOutcome = Outcome.Failure, ErrorString = $"Call to analyzer has failed: {e}" };
     }

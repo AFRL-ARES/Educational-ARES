@@ -5,12 +5,12 @@ using AresCamera.Config;
 using AresCamera.Services;
 using Grpc.Core;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Services.Notification;
 
 namespace UI.Backend.ViewModels.Settings.Device.AresCamera;
 
-public class AresCameraSettingsViewModel : ReactiveObject
+public partial class AresCameraSettingsViewModel : ReactiveObject
 {
   private readonly AresCameraRpc.AresCameraRpcClient _client;
   private readonly DeviceConfig _deviceConfig;

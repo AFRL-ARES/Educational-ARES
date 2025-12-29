@@ -1,4 +1,5 @@
 ﻿@using Ares.Datamodel
+@using Ares.Datamodel.Extensions
 
 @if(Schema?.Type is AresDataType.String)
   {
@@ -134,34 +135,47 @@
 
   protected override Task OnInitializedAsync()
   {
-    if(Value is not null)
-    {
-      switch(Schema?.Type)
-      {
-        case AresDataType.String:
-          _stringValue = Value.StringValue ?? "";
-          break;
-        case AresDataType.Number:
-          _numberValue = Value.NumberValue;
-          break;
-        case AresDataType.Boolean:
-          _boolValue = Value.BoolValue;
-          break;
-        case AresDataType.StringArray:
-          _stringArray = Value.StringArrayValue?.Strings?.ToList() ?? [];
-          break;
-        case AresDataType.NumberArray:
-          _numberArray = Value.NumberArrayValue?.Numbers?.ToList() ?? [];
-          break;
-        case AresDataType.BoolArray:
-          _boolArray = Value.BoolArrayValue?.Bools?.ToList() ?? [];
-          break;
-      }
+    if(Value is not null && Value.KindCase != AresValue.KindOneofCase.None)
+      SetCurrentValue();
 
-      //UpdateAresValue();
+    else if (Schema is not null)
+    {
+      Value = AresValueHelper.CreateDefault(Schema.Type);
+      SetCurrentValue();
     }
 
+    if (Value is not null)
+      ValueEditCallback?.Invoke(Value);
+
+    else
+      throw new InvalidOperationException("How did you do this?");
+
     return base.OnInitializedAsync();
+  }
+
+  private void SetCurrentValue()
+  {
+    switch (Schema?.Type)
+    {
+      case AresDataType.String:
+        _stringValue = Value!.StringValue ?? "";
+        break;
+      case AresDataType.Number:
+        _numberValue = Value!.NumberValue;
+        break;
+      case AresDataType.Boolean:
+        _boolValue = Value!.BoolValue;
+        break;
+      case AresDataType.StringArray:
+        _stringArray = Value!.StringArrayValue?.Strings?.ToList() ?? [];
+        break;
+      case AresDataType.NumberArray:
+        _numberArray = Value!.NumberArrayValue?.Numbers?.ToList() ?? [];
+        break;
+      case AresDataType.BoolArray:
+        _boolArray = Value!.BoolArrayValue?.Bools?.ToList() ?? [];
+        break;
+    }
   }
 
   private string GetFormFieldName() => string.IsNullOrEmpty(Unit) ? $"{Name}" : $"{Name} - {Unit}";

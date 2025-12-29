@@ -4,11 +4,11 @@ using Ares.Messages.DeviceStates;
 using Ares.Services;
 using Google.Protobuf.WellKnownTypes;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels.DeviceStateLogging;
 
-public class DeviceStateFilterViewModel : ReactiveObject
+public partial class DeviceStateFilterViewModel : ReactiveObject
 {
   readonly AresAutomation.AresAutomationClient _automationClient;
 
@@ -35,12 +35,12 @@ public class DeviceStateFilterViewModel : ReactiveObject
   }
 
   [Reactive]
-  public IEnumerable<DevicesDescription>? AvailableDevices { get; private set; }
+  public partial IEnumerable<DevicesDescription>? AvailableDevices { get; private set; }
 
   public IEnumerable<DevicesDescription>? SelectedDevices { get; set; }
 
   [Reactive]
-  public IEnumerable<CampaignExecutionSummaryMetadata>? Campaigns { get; private set; }
+  public partial IEnumerable<CampaignExecutionSummaryMetadata>? Campaigns { get; private set; }
 
   public async Task UpdateExperiments(string? campaignResultId)
   {
@@ -51,7 +51,7 @@ public class DeviceStateFilterViewModel : ReactiveObject
   }
 
   [Reactive]
-  public IEnumerable<ExperimentExecutionSummary>? Experiments { get; private set; }
+  public partial IEnumerable<ExperimentExecutionSummary>? Experiments { get; private set; }
 
   public string? SelectedExperimentId { get; set; }
 

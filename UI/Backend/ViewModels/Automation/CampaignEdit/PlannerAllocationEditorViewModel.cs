@@ -2,12 +2,12 @@
 using Ares.Datamodel.Templates;
 using Ares.Services;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Services.Notification;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
-public class PlannerAllocationEditorViewModel : ReactiveObject
+public partial class PlannerAllocationEditorViewModel : ReactiveObject
 {
   private readonly AresPlannerManagementService.AresPlannerManagementServiceClient _plannerClient;
   private readonly INotificationReceivingService _notificationService;
@@ -31,6 +31,8 @@ public class PlannerAllocationEditorViewModel : ReactiveObject
       SelectedService = plannerInfo;
       SelectedPlannerOption = plannerInfo.Capabilities.AvailablePlanners.FirstOrDefault(p => p.PlannerName == metadata.PlannerName);
     }
+
+    PlannerOptions = Enumerable.Empty<Planner>();
   }
 
   public PlannerAllocation? Save()
@@ -96,10 +98,10 @@ public class PlannerAllocationEditorViewModel : ReactiveObject
   }
 
   [Reactive]
-  public ParameterMetadata ParameterMetadata { get; set; }
+  public partial ParameterMetadata ParameterMetadata { get; set; }
   public IEnumerable<PlannerServiceInfo> PlannerServices { get; }
   [Reactive]
-  public IEnumerable<Planner> PlannerOptions { get; set; } = Enumerable.Empty<Planner>();
+  public partial IEnumerable<Planner> PlannerOptions { get; set; }
   [Reactive]
-  public Planner? SelectedPlannerOption { get; set; }
+  public partial Planner? SelectedPlannerOption { get; set; }
 }

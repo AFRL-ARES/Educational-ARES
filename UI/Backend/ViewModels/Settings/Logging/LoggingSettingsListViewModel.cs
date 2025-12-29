@@ -3,13 +3,13 @@ using System.Reactive.Linq;
 using Ares.Services;
 using Ares.Services.Device;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Backend.ViewModels.DeviceStateLogging;
 using UI.Services.Notification;
 
 namespace UI.Backend.ViewModels.Settings.Logging;
 
-public class LoggingSettingsListViewModel : ReactiveObject
+public partial class LoggingSettingsListViewModel : ReactiveObject
 {
   private readonly ICombinedDeviceGetter _deviceGetter;
   private readonly AresDevices.AresDevicesClient _devicesClient;
@@ -37,7 +37,7 @@ public class LoggingSettingsListViewModel : ReactiveObject
   }
 
   [Reactive]
-  public LoggingSettingsViewModel[]? LoggingSettingsViewModels { get; private set; }
+  public partial LoggingSettingsViewModel[]? LoggingSettingsViewModels { get; private set; }
 
   public ReactiveCommand<Unit, Unit> RefreshLoggers { get; }
 

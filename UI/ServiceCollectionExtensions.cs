@@ -6,18 +6,17 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using MK4S.Services;
 using Radzen;
-using Serilog;
 using UI.Areas.Identity;
 using UI.Backend.Devices;
+using UI.Backend.Factories;
 using UI.Backend.Helpers;
 using UI.Backend.Notifications;
+using UI.Backend.Repos;
 using UI.Backend.ViewModels;
 using UI.Backend.ViewModels.Automation;
 using UI.Backend.ViewModels.Automation.CampaignEdit;
 using UI.Backend.ViewModels.Automation.CampaignEdit.Factories;
 using UI.Backend.ViewModels.Automation.Planning;
-using UI.Backend.ViewModels.Devices.AresCamera;
-using UI.Backend.ViewModels.Devices.PrusaPrinter;
 using UI.Backend.ViewModels.DeviceStateLogging;
 using UI.Backend.ViewModels.Factories;
 using UI.Backend.ViewModels.Misc;
@@ -49,6 +48,7 @@ internal static class ServiceCollectionExtensions
     services.BindViewModels();
     services.BindViewModelFactories();
     services.AddScoped<ICombinedDeviceGetter, CombinedDeviceGetter>();
+    services.AddSingleton<IDeviceControlViewModelRepo, DeviceControlViewModelRepo>();
     services.AddSingleton<INotificationRepository, NotificationRepository>();
 
     services.AddSingleton<DeviceAdapterRepository>();
@@ -73,8 +73,8 @@ internal static class ServiceCollectionExtensions
 
     //Device Clients
     services.AddSingleton(_ => clientManager.GetClient<AresDevices.AresDevicesClient>());
-    services.AddScoped(_ => clientManager.GetClient<MK4SPrinterRpc.MK4SPrinterRpcClient>());
-    services.AddScoped(_ => clientManager.GetClient<AresCameraRpc.AresCameraRpcClient>());
+    services.AddSingleton(_ => clientManager.GetClient<MK4SPrinterRpc.MK4SPrinterRpcClient>());
+    services.AddSingleton(_ => clientManager.GetClient<AresCameraRpc.AresCameraRpcClient>());
 
     //Device State Logging Clients
     services.AddScoped(_ => clientManager.GetClient<DeviceStateExportService.DeviceStateExportServiceClient>());
@@ -104,15 +104,12 @@ internal static class ServiceCollectionExtensions
     services.AddScoped<PrusaMK4SSettingsListViewModel>();
     services.AddScoped<AresCameraSettingsListViewModel>();
 
-    //Device Control ViewModels
-    services.AddScoped<PrusaMK4SMultiViewModel>();
-    services.AddScoped<AresCameraMultiViewModel>();
-
     //Other View Models
     services.AddTransient<DeviceStatesViewModel>();
     services.AddTransient<DeviceStateExporterViewModel>();
     services.AddScoped<ManualPlannerViewModel>();
     services.AddScoped<ManualExecutionWidgetViewModel>();
+    services.AddScoped<LoggingSettingsListViewModel>();
   }
   private static void BindViewModelFactories(this IServiceCollection services)
   {
@@ -128,5 +125,7 @@ internal static class ServiceCollectionExtensions
     services.AddScoped<PlanningDesignerFactory>();
     services.AddScoped<AnalyzerInputDesignerVmFactory>();
     services.AddScoped<DeviceStateFilterViewModelFactory>();
+    services.AddSingleton<AresCameraControlViewModelFactory>();
+    services.AddSingleton<PrusaDeviceControlViewModelFactory>();
   }
 }

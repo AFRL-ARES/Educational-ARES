@@ -5,8 +5,8 @@ using AresCamera;
 using AresCamera.Config;
 using AresCamera.Services;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using UI.Services.Notification;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels.Settings.Device.AresCamera;
 

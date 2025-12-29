@@ -2,17 +2,19 @@
 using DynamicData;
 using Google.Protobuf.WellKnownTypes;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels.Automation;
 
-public class ExecutionHistoryViewModel : ReactiveObject
+public partial class ExecutionHistoryViewModel : ReactiveObject
 {
   private readonly AresAutomation.AresAutomationClient _automationClient;
 
   public ExecutionHistoryViewModel(AresAutomation.AresAutomationClient automationClient)
   {
     _automationClient = automationClient;
+    CampaignSummaries = [];
+    LoadingExecutionHistory = false;
   }
 
   public async Task UpdateExecutionSummaries()
@@ -25,8 +27,8 @@ public class ExecutionHistoryViewModel : ReactiveObject
   }
 
   [Reactive]
-  public IList<CampaignExecutionSummaryMetadata> CampaignSummaries { get; set; } = [];
+  public partial IList<CampaignExecutionSummaryMetadata> CampaignSummaries { get; set; }
 
   [Reactive]
-  public bool LoadingExecutionHistory { get; set; } = false;
+  public partial bool LoadingExecutionHistory { get; set; }
 }

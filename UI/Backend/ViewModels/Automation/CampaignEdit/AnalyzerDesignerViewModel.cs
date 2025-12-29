@@ -5,11 +5,11 @@ using Ares.Services;
 using Google.Protobuf.WellKnownTypes;
 using NuGet.Packaging;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
-public class AnalyzerDesignerViewModel : ReactiveObject
+public partial class AnalyzerDesignerViewModel : ReactiveObject
 {
   private readonly AresAnalysisService.AresAnalysisServiceClient _analysisServiceClient;
   private readonly ExperimentTemplate _experimentTemplate;
@@ -26,10 +26,11 @@ public class AnalyzerDesignerViewModel : ReactiveObject
     _experimentTemplate = experimentTemplate;
 
     AnalyzerId = string.IsNullOrEmpty(_experimentTemplate.AnalyzerId) ? "NONE-ANALYZER" : _experimentTemplate.AnalyzerId;
+    OutputInputMappings = [];
   }
 
   [Reactive]
-  public ExperimentOutputAnalyzerInputMapping[] OutputInputMappings { get; private set; } = [];
+  public partial ExperimentOutputAnalyzerInputMapping[] OutputInputMappings { get; private set; }
 
   public async Task UpdateMappings()
   {

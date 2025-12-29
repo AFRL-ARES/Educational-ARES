@@ -1,0 +1,14 @@
+﻿
+
+.grid-stack-item-content {
+	display: flex;
+	justify-content: center; /* Center horizontally */
+	align-items: center; /* Center vertically */
+}
+
+/* 2. Clamp your actual device component */
+.grid-stack-item-content > div {
+	width: 100%;
+	/* Optional: Maintain aspect ratio internally if needed */
+	aspect-ratio: 16 / 9;
+}

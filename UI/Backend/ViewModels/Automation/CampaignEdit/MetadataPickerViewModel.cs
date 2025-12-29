@@ -3,11 +3,11 @@ using Ares.Datamodel.Templates;
 using Ares.Services.Device;
 using Google.Protobuf.WellKnownTypes;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
-public class MetadataPickerViewModel : ReactiveObject
+public partial class MetadataPickerViewModel : ReactiveObject
 {
   private readonly AresDevices.AresDevicesClient _devicesClient;
   private Task _deviceRefreshTask = Task.CompletedTask;
@@ -15,24 +15,28 @@ public class MetadataPickerViewModel : ReactiveObject
   public MetadataPickerViewModel(AresDevices.AresDevicesClient devicesClient)
   {
     _devicesClient = devicesClient;
+    AvailableDevices = [];
+    AvailableMetadata = [];
   }
 
   public MetadataPickerViewModel(CommandMetadata existingMetadata, AresDevices.AresDevicesClient devicesClient) : this(devicesClient)
   {
     SelectedCommandMetadata = existingMetadata;
+    AvailableDevices = [];
+    AvailableMetadata = [];
   }
 
   [Reactive]
-  public IEnumerable<DeviceInfo> AvailableDevices { get; private set; } = Array.Empty<DeviceInfo>();
+  public partial IEnumerable<DeviceInfo> AvailableDevices { get; private set; }
 
   [Reactive]
-  public IEnumerable<CommandMetadata> AvailableMetadata { get; private set; } = Array.Empty<CommandMetadata>();
+  public partial IEnumerable<CommandMetadata> AvailableMetadata { get; private set; }
 
   [Reactive]
-  public CommandMetadata? SelectedCommandMetadata { get; set; }
+  public partial CommandMetadata? SelectedCommandMetadata { get; set; }
 
   [Reactive]
-  public DeviceInfo? SelectedDevice { get; set; }
+  public partial DeviceInfo? SelectedDevice { get; set; }
 
   public CommandMetadata? Save()
     => SelectedCommandMetadata;

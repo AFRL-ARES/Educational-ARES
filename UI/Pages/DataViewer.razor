@@ -118,7 +118,7 @@
                           <RadzenTreeItem Text=@($"Analyzer Type: {exp.ExperimentOverview.AnalysisOverview.AnalyzerInfo.Type}") />
                           <RadzenTreeItem Text="Analyzer Settings">
                             <ChildContent>
-                              @foreach(var setting in exp.ExperimentOverview.AnalysisOverview.AnalyzerInfo.Capabilities.SettingsSchema.Fields)
+                              @foreach(var setting in exp.ExperimentOverview.AnalysisOverview.AnalyzerInfo.Capabilities.SettingsSchema?.Fields ?? [])
                               {
                                 //TODO: Finish
                                 <RadzenTreeItem Text=@($"{setting.Key}")>
@@ -224,7 +224,7 @@
                 {
                   if(AresValueHelper.IsPrimitveType(result.Value))
                   {
-                    <b> @result.Key : @result.Value </b>  
+                    <b> @result.Key : @result.Value </b>
                   }
                   else
                   {

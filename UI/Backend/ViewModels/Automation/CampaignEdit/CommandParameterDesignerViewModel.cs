@@ -8,7 +8,7 @@ namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
 public class CommandParameterDesignerViewModel : ReactiveObject
 {
-  private readonly IEnumerable<ParameterMetadata>? _plannedParameters;
+  private readonly ParameterMetadata[]? _plannedParameters;
   private readonly UnitCategoryHelper _unitCategoryHelper;
   private bool _isPlanned;
   private Parameter _parameter = null!;
@@ -39,7 +39,7 @@ public class CommandParameterDesignerViewModel : ReactiveObject
   private CommandParameterDesignerViewModel(UnitCategoryHelper unitCategoryHelper, IEnumerable<ParameterMetadata>? plannedParameters)
   {
     _unitCategoryHelper = unitCategoryHelper;
-    _plannedParameters = plannedParameters;
+    _plannedParameters = plannedParameters?.ToArray();
   }
 
   public Parameter Parameter
@@ -84,7 +84,7 @@ public class CommandParameterDesignerViewModel : ReactiveObject
     }
   }
 
-  public IEnumerable<ParameterMetadata> PlannedParameters { get; private set; } = Array.Empty<ParameterMetadata>();
+  public ParameterMetadata[] PlannedParameters { get; private set; } = [];
 
   public string? SelectedPlannedParameterMetadataId { get; set; }
 
@@ -107,15 +107,12 @@ public class CommandParameterDesignerViewModel : ReactiveObject
 
   public int PastExperimentNumber { get; set; }
 
-  private IEnumerable<ParameterMetadata> FilterParameterMetadata(UnitCategoryHelper helper, IEnumerable<ParameterMetadata>? allMetadata)
+  private ParameterMetadata[] FilterParameterMetadata(UnitCategoryHelper helper, IEnumerable<ParameterMetadata>? allMetadata)
   {
     if(allMetadata is null)
       return [];
 
-    if(string.IsNullOrEmpty(Unit))
-      return allMetadata;
-
-    return allMetadata;
+    return allMetadata.ToArray();
   }
 
   private void Init(Parameter existingParameter)

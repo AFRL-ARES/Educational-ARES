@@ -5,17 +5,18 @@ using Ares.Services;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Components.Forms;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels.Automation.Planning;
 
-public class ManualPlannerViewModel : ReactiveObject
+public partial class ManualPlannerViewModel : ReactiveObject
 {
   private readonly AresPlannerManagementService.AresPlannerManagementServiceClient _client;
 
   public ManualPlannerViewModel(AresPlannerManagementService.AresPlannerManagementServiceClient client)
   {
     _client = client;
+    ManualPlannerValues = [];
     _ = UpdatePlannerValues();
   }
 
@@ -101,7 +102,7 @@ public class ManualPlannerViewModel : ReactiveObject
   }
 
   [Reactive]
-  public IEnumerable<ManualPlannerSet> ManualPlannerValues { get; private set; } = Array.Empty<ManualPlannerSet>();
+  public partial IEnumerable<ManualPlannerSet> ManualPlannerValues { get; private set; }
 
   public List<ManualPlannerDisplayObject> DisplayObjects { get; set; } = [];
 

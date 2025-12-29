@@ -17,7 +17,7 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
   private readonly INotifier _notifier;
   private readonly AresVariableManager _variableManager;
   private readonly StateLoggerManager _stateLoggerManager;
-  private readonly ILogger _logger;
+  private readonly ILoggerFactory _loggerFactory;
   readonly AnalysisHelper _analysisHelper;
   readonly AnalysisRepo _analysisRepo;
   readonly IAnalyzerRepo _analyzerRepo;
@@ -30,7 +30,7 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
     AnalysisRepo analysisRepo,
     IAnalyzerRepo analyzerRepo,
     INotifier notifier,
-    ILogger<CampaignComposer> logger,
+    ILoggerFactory loggerFactory,
     AresVariableManager variableManager,
     StateLoggerManager stateLoggerManager)
   {
@@ -44,9 +44,9 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
     _executionReporter = executionReporter;
     _resultHandlers = resultHandlers;
     _notifier = notifier;
-    _logger = logger;
+    _loggerFactory = loggerFactory;
   }
 
   public ICampaignExecutor Compose(CampaignTemplate template)
-    => new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, _analysisHelper, template, _resultHandlers, _analysisRepo, _notifier, _analyzerRepo, _logger, _variableManager, _stateLoggerManager);
+    => new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, _analysisHelper, template, _resultHandlers, _analysisRepo, _notifier, _analyzerRepo, _loggerFactory.CreateLogger<CampaignExecutor>(), _variableManager, _stateLoggerManager);
 }

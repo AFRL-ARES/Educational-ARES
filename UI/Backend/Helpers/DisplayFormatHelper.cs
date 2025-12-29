@@ -4,5 +4,5 @@ namespace UI.Backend.Helpers;
 
 public static class DisplayFormatHelper
 {
-  public static string ToReadableTimestamp(this Timestamp protoTimestamp) => protoTimestamp.ToDateTime().ToString("MM/dd/yyyy hh:mm:ss tt");
+  public static string ToReadableTimestamp(this Timestamp protoTimestamp) => protoTimestamp.ToDateTime().ToLocalTime().ToString("MM/dd/yyyy hh:mm:ss tt");
 }

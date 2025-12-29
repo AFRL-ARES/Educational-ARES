@@ -3,12 +3,12 @@ using Ares.Datamodel.Extensions;
 using Ares.Datamodel.Templates;
 using Humanizer;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Backend.Helpers;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
-public class ParameterEditorViewModel : ReactiveObject
+public partial class ParameterEditorViewModel : ReactiveObject
 {
   private readonly UnitCategoryHelper _unitHelper;
   private string? _category;
@@ -37,11 +37,15 @@ public class ParameterEditorViewModel : ReactiveObject
     };
 
     AvailableOutputs = availableOutputs.ToArray();
+    CategoryOptions = [];
+    UnitOptions = [];
   }
 
   public ParameterEditorViewModel(ParameterMetadata existingMetadata, IEnumerable<string> availableOutputs, UnitCategoryHelper unitHelper)
   {
     _unitHelper = unitHelper;
+    CategoryOptions = [];
+    UnitOptions = [];
     ParameterMetadata = existingMetadata;
     AvailableOutputs = availableOutputs.ToArray();
     HasInitialValue = existingMetadata.InitialValue != null;
@@ -65,10 +69,10 @@ public class ParameterEditorViewModel : ReactiveObject
     
     set
     {
-      _dataType = value;
-
       if(HasInitialValue)
         InitialValue = AresValueHelper.CreateDefault(value);
+
+      this.RaiseAndSetIfChanged(ref _dataType, value);
     }
   }
 
@@ -93,10 +97,10 @@ public class ParameterEditorViewModel : ReactiveObject
   }
 
   [Reactive]
-  public List<string> CategoryOptions { get; private set; } = [];
+  public partial List<string> CategoryOptions { get; private set; }
 
   [Reactive]
-  public List<string> UnitOptions { get; private set; } = [];
+  public partial List<string> UnitOptions { get; private set; }
 
   public string? Unit
   {

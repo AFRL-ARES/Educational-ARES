@@ -1,4 +1,3 @@
-using System.IO;
 using Ares.Core;
 using Ares.Core.Device;
 using Ares.Core.Grpc;
@@ -17,7 +16,6 @@ using AresCamera;
 using AresCamera.Config;
 using MK4S.Config;
 using PrusaMK4S;
-using Serilog;
 
 namespace AresService;
 

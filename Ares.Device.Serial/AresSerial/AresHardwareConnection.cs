@@ -30,7 +30,7 @@ public class AresHardwareConnection : AresSerialConnection
     IsOpen = SystemPort.IsOpen;
   }
 
-  protected internal override void CloseCore()
+  protected override void CloseCore()
   {
     if (SystemPort is null)
       return;
@@ -56,7 +56,7 @@ public class AresHardwareConnection : AresSerialConnection
     AddDataReceived(buffer);
   }
 
-  public override void Listen()
+  protected override void Listen()
   {
     if (SystemPort is null)
       throw new InvalidOperationException("Cannot listen on the hardware connection without first creating a port.");
@@ -64,7 +64,7 @@ public class AresHardwareConnection : AresSerialConnection
     SystemPort.DataReceived += ProcessReceivedData;
   }
 
-  public override void StopListening()
+  protected override void StopListening()
   {
     if (SystemPort is null)
       throw new InvalidOperationException("Cannot stop listening on the hardware connection without first creating a port.");

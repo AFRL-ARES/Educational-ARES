@@ -1,5 +1,6 @@
 ﻿using Ares.Datamodel;
 using Ares.Datamodel.Planning;
+using DynamicData;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core.Planning;
@@ -45,18 +46,34 @@ public class PlannerServiceCache(IDbContextFactory<CoreDatabaseContext> _dbConte
 
   public async Task CachePlannerInfo(RemotePlannerService planner)
   {
-    var ctx = _dbContextFactory.CreateDbContext();
     var currentInfo = await PlannerToPlannerInfo(planner);
-    var existingInfoInDb = await ctx.PlannerInfos.FirstOrDefaultAsync(info => info.UniqueId == planner.UniqueId);
+    var ctx = _dbContextFactory.CreateDbContext();
+    var cachedInfo = await ctx.PlannerInfos.FirstOrDefaultAsync(info => info.UniqueId == planner.UniqueId);
 
-    if(existingInfoInDb is not null)
+    if(cachedInfo is not null)
     {
-      existingInfoInDb.Name = planner.Name;
-      existingInfoInDb.Type = planner.Type;
-      existingInfoInDb.Description = planner.Description;
-      existingInfoInDb.Address = planner.Address.ToString();
-      existingInfoInDb.Version = planner.Version;
-      existingInfoInDb.Capabilities = currentInfo.Capabilities;
+      cachedInfo.Name = planner.Name;
+      cachedInfo.Type = planner.Type;
+      cachedInfo.Description = planner.Description;
+      cachedInfo.Address = planner.Address.ToString();
+      cachedInfo.Version = planner.Version;
+      cachedInfo.Capabilities ??= new PlannerServiceCapabilities();
+      var cachedCapabilities = cachedInfo.Capabilities;
+      var currentCapabilities = currentInfo.Capabilities;
+
+      var plannersAreNew = currentCapabilities.AvailablePlanners.All(p => string.IsNullOrEmpty(p.UniqueId));
+      if(plannersAreNew) 
+      {
+        cachedCapabilities.AvailablePlanners.Clear();
+        cachedCapabilities.AvailablePlanners.AddRange(currentCapabilities.AvailablePlanners);
+      }
+
+      cachedCapabilities.AcceptedTypes.Clear();
+      cachedCapabilities.AcceptedTypes.AddRange(currentCapabilities.AcceptedTypes);
+      cachedCapabilities.ServiceName = currentCapabilities.ServiceName;
+      cachedCapabilities.SettingsSchema = currentCapabilities.SettingsSchema;
+      cachedCapabilities.TimeoutSeconds = currentCapabilities.TimeoutSeconds;
+
       await ctx.SaveChangesAsync();
     }
     else

@@ -13,3 +13,58 @@
 .padded-item {
   padding-top: 0.5rem;
 }
+
+.scrollable-summary {
+  max-height: 75vh;
+  overflow: auto;
+}
+
+/* 1. The Container that holds Main Content and Drawer side-by-side */
+.drawer-layout-container {
+  display: flex; /* This enables the side-by-side layout */
+  flex-direction: row;
+  width: 100%;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevents scrollbar on the container itself */
+}
+
+/* 2. Main Content Area (The part that shrinks) */
+.main-content-area {
+  flex-grow: 1; /* Take all available space */
+  transition: width 0.3s ease; /* Smooth "shove" animation */
+  overflow-y: auto; /* Scroll vertically INSIDE this area */
+  min-width: 0; /* Prevents flex items from breaking */
+  padding: 1rem;
+}
+
+/* 3. The Side Drawer Wrapper (Animated Width) */
+.side-drawer {
+  width: 0; /* Default state: Closed (Invisible) */
+  flex-shrink: 0; /* Prevent it from being squished */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth animation */
+  overflow-x: hidden; /* Hide content when width is 0 */
+  background-color: var(--rz-base-background-color); /* Match Radzen theme */
+  border-left: 1px solid var(--rz-border-color); /* Match Radzen border */
+  padding: 0rem;
+  border-radius: .25rem;
+  height: 100vh;
+}
+
+  /* The 'Open' state - toggled via Blazor logic */
+  .side-drawer.drawer-open {
+    width: 400px; /* Target width when open */
+  }
+
+/* 4. The Content Wrapper (Fixed Width) */
+/* Critical: Prevents text reflow/wrapping during the slide animation */
+.drawer-content {
+  width: 400px; /* Must match the open width */
+  height: 100%;
+  overflow-y: auto; /* Allow scrolling inside the drawer */
+}
+
+.drawer-inner-card {
+  height: inherit;
+  border: none;
+  border-radius: 0;
+}

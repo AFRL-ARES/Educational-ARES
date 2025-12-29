@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ares.Device.Serial\AresSerial\Ares.Device.Serial.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Proto\Services.proto" />
+		<None Remove="Proto\ChemyxConfig.proto" />
+	</ItemGroup>
+
+	<ItemGroup>
+    <Folder Include="Proto\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.33.2" />
+    <PackageReference Include="Grpc.Tools" Version="2.76.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Proto\Services.proto" ProtoRoot="Proto" />
+		<Protobuf Include="Proto\ChemyxConfig.proto" GrpcServices="None" />
+	</ItemGroup>
+
+</Project>

@@ -5,7 +5,7 @@ using MK4S.Config;
 using MK4S.Services;
 using PrusaMK4S;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Services.Notification;
 
 namespace UI.Backend.ViewModels.Settings.Device.PrusaMK4S;

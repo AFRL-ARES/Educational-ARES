@@ -1,10 +1,11 @@
 ﻿using Ares.Services;
 using AresCamera.Services;
+using UI.Pages.Shared.Devices.CrealityCamera;
 using UI.Services.Notification;
 
 namespace UI.Backend.ViewModels.Devices.AresCamera;
 
-public class AresCameraUnitControlViewModel : UsbDeviceUnitViewModel
+public class AresCameraUnitControlViewModel : DeviceUnitControlViewModel
 {
   private readonly AresCameraRpc.AresCameraRpcClient _client;
   private INotificationReceivingService _notificationService;
@@ -13,6 +14,9 @@ public class AresCameraUnitControlViewModel : UsbDeviceUnitViewModel
   {
     _client = client;
     _notificationService = notificationService;
+
+    ViewType = typeof(AresCameraControlWidgetView);
+    DefaultWidth = 35;
   }
 
   public async Task CaptureImage()

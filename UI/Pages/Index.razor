@@ -1,15 +1,14 @@
 ﻿@page "/"
+@using UI.Backend.Devices
+@using UI.Backend.Repos
 @using UI.Backend.ViewModels
 @using UI.Pages.Shared.Devices.CrealityCamera
 @using UI.Pages.Shared.Devices.PrusaPrinter
 @using UI.Pages.Shared.Misc
-@using UI.Pages.Shared.Sortable
-
 
 @inherits ReactiveUI.Blazor.ReactiveInjectableComponentBase<IndexViewModel>
-
 @inject IJSRuntime JS
-
+@inject IDeviceControlViewModelRepo ViewModelRepo
 
 <PageTitle>Dashboard</PageTitle>
 <div class="d-flex flex-column gap-2">
@@ -17,41 +16,72 @@
     <ManualExecutionWidget />
   </div>
 
-  <SortableList Id="deviceMultiViews" Items="MultiViews" Context="item" OnUpdate="@SortList">
-    <SortableItemTemplate>
-      <div style="margin-bottom: 10px; margin-top: 10px; user-select: none">
-        <DynamicComponent Type="@item"/>
-      </div>
-    </SortableItemTemplate>
-  </SortableList>
+  <div class="grid-stack" id="my-dashboard">
+      @foreach(var viewModel in ViewModelRepo.Items)
+      {
+        //Fallback Values
+        var width = viewModel.DefaultWidth;
+     
+        <div class="grid-stack-item" @key="viewModel.DeviceId" gs-w="@width" gs-size-to-content="true">
+          <div class="grid-stack-item-content">
+            <DashboardWidget>
+              <DynamicComponent Type="@viewModel.ViewType" Parameters="@CreateViewArguments(viewModel!)"/>
+            </DashboardWidget>
+          </div>
+        </div>
+      }
+  </div>
 
 </div>
 
 @code {
-  public List<Type> MultiViews = new List<Type>() 
+  private IJSObjectReference? _module;
+  private DotNetObjectReference<Index>? _objRef;
+
+  private Dictionary<string, object> CreateViewArguments(DeviceUnitControlViewModel viewModel) => new Dictionary<string, object>() { { "ViewModel", viewModel } };
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
   {
-    typeof(PrusaMK4SMultiView),
-    typeof(AresCameraMultiView)
-  };
-
-  private void SortList((int oldIndex, int newIndex) indices)
-  {
-    // deconstruct the tuple
-    var (oldIndex, newIndex) = indices;
-
-    var items = this.MultiViews;
-    var itemToMove = items[oldIndex];
-    items.RemoveAt(oldIndex);
-
-    if(newIndex < items.Count)
+    if(firstRender)
     {
-      items.Insert(newIndex, itemToMove);
+      _objRef = DotNetObjectReference.Create(this);
+      _module = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/Index.razor.js");
+      await _module.InvokeVoidAsync("initDashboard", "my-dashboard", _objRef);
     }
+
     else
     {
-      items.Add(itemToMove);
+      if (_module is not null)
+      {
+        await _module.InvokeVoidAsync("refreshGrid", "my-dashboard");
+        await _module.InvokeVoidAsync("resizeToContent", "my-dashboard");
+      }
     }
+  }
 
+  private void ViewModelsUpdated()
+  {
     StateHasChanged();
+  }
+
+  protected override void OnInitialized()
+  {
+    ViewModelRepo.Connect().Subscribe(_ => InvokeAsync(ViewModelsUpdated));
+  }
+
+  [JSInvokable]
+  public void OnDashboardUpdate(object updates)
+  {
+    //TODO: Save dashboard changes
+    Console.WriteLine("Dashboard Updated vis JS!");
+  }
+
+  async ValueTask DisposeAsync()
+  {
+    if (_module is not null)
+    {
+      await _module.DisposeAsync();
+    }
+    _objRef?.Dispose();
   }
 }

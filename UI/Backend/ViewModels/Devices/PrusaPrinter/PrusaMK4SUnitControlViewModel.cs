@@ -1,10 +1,11 @@
 ﻿using MK4S.Services;
 using Radzen;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
+using UI.Pages.Shared.Devices.PrusaPrinter;
 
 namespace UI.Backend.ViewModels.Devices.PrusaPrinter
 {
-  public class PrusaMK4SUnitControlViewModel : UsbDeviceUnitViewModel
+  public class PrusaMK4SUnitControlViewModel : DeviceUnitControlViewModel
   {
     private readonly MK4SPrinterRpc.MK4SPrinterRpcClient _client;
     private readonly CancellationTokenSource _stateUpdateTokenSource = new();
@@ -16,6 +17,9 @@ namespace UI.Backend.ViewModels.Devices.PrusaPrinter
       _client = client;
       _notificationService = notificationService;
       StartStateUpdater();
+
+      ViewType = typeof(PrusaMK4SControlWidgetView);
+      DefaultWidth = 37;
     }
 
     public async Task MovePrinterHead()

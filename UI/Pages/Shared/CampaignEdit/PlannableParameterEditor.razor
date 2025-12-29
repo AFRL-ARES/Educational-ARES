@@ -1,5 +1,8 @@
 ﻿@using Ares.Datamodel
+@using System.ComponentModel
 @using UI.Backend.ViewModels.Automation.CampaignEdit
+@using System.Reactive.Linq;
+@using ReactiveUI;
 @inherits ReactiveUI.Blazor.ReactiveComponentBase<ParameterEditorViewModel>
 
 
@@ -25,7 +28,7 @@
     <div class="row">
       <div class="col">
         <RadzenFormField Text="Category" Variant="Variant.Outlined" Style="width: 100%">
-          <RadzenDropDown Data="ViewModel!.CategoryOptions" @bind-Value="ViewModel!.Category" 
+          <RadzenDropDown Data="ViewModel!.CategoryOptions" @bind-Value="ViewModel!.Category"
           AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" />
         </RadzenFormField>
       </div>

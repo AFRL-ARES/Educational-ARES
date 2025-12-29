@@ -2,12 +2,12 @@
 using Ares.Services;
 using Radzen;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Backend.ViewModels.Factories;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
-public class CloseoutDesignerViewModel : ReactiveObject
+public partial class CloseoutDesignerViewModel : ReactiveObject
 {
   private readonly StepDesignerFactory _stepDesignerFactory;
   private readonly AresValidation.AresValidationClient _validationClient;
@@ -24,6 +24,7 @@ public class CloseoutDesignerViewModel : ReactiveObject
     _stepDesignerFactory = stepDesignerFactory;
     _validationClient = validationClient;
     _notificationService = notificationService;
+    Name = "Unnamed Startup Template";
     CloseoutTemplate = new ExperimentTemplate
     {
       UniqueId = Guid.NewGuid().ToString(),
@@ -129,7 +130,7 @@ public class CloseoutDesignerViewModel : ReactiveObject
   }
 
   [Reactive]
-  public string Name { get; set; } = "Unnamed Startup Template";
+  public partial string Name { get; set; }
   public IList<StepDesignerViewModel> CloseoutStepDesigners { get; private set; } = [];
   public IEnumerable<CommandTemplate>? ExperimentOutputProviderCommand { get; set; }
 }

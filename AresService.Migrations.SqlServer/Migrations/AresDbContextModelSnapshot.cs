@@ -17,7 +17,7 @@ namespace AresService.Migrations.SqlServer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -231,33 +231,6 @@ namespace AresService.Migrations.SqlServer.Migrations
                     b.HasKey("UniqueId");
 
                     b.ToTable("CampaignTags");
-                });
-
-            modelBuilder.Entity("Ares.Datamodel.CampaignExecutionStatus", b =>
-                {
-                    b.Property<Guid>("UniqueId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CampaignId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreationTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<DateTime>("LastModified")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<int>("State")
-                        .HasColumnType("int");
-
-                    b.HasKey("UniqueId");
-
-                    b.ToTable("CampaignExecutionStatuses", (string)null);
                 });
 
             modelBuilder.Entity("Ares.Datamodel.CampaignExecutionSummary", b =>
@@ -699,35 +672,6 @@ namespace AresService.Migrations.SqlServer.Migrations
                     b.ToTable("ExecutionInfos", (string)null);
                 });
 
-            modelBuilder.Entity("Ares.Datamodel.ExperimentExecutionStatus", b =>
-                {
-                    b.Property<Guid>("UniqueId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("CampaignExecutionStatusUniqueId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreationTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("ExperimentId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastModified")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.HasKey("UniqueId");
-
-                    b.HasIndex("CampaignExecutionStatusUniqueId");
-
-                    b.ToTable("ExperimentExecutionStatuses", (string)null);
-                });
-
             modelBuilder.Entity("Ares.Datamodel.ExperimentExecutionSummary", b =>
                 {
                     b.Property<Guid>("UniqueId")
@@ -1066,9 +1010,6 @@ namespace AresService.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getdate()");
 
-                    b.Property<Guid?>("ExperimentExecutionStatusUniqueId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("LastModified")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
@@ -1081,8 +1022,6 @@ namespace AresService.Migrations.SqlServer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UniqueId");
-
-                    b.HasIndex("ExperimentExecutionStatusUniqueId");
 
                     b.ToTable("StepExecutionStatuses", (string)null);
                 });
@@ -1577,14 +1516,6 @@ namespace AresService.Migrations.SqlServer.Migrations
                         .OnDelete(DeleteBehavior.ClientCascade);
                 });
 
-            modelBuilder.Entity("Ares.Datamodel.ExperimentExecutionStatus", b =>
-                {
-                    b.HasOne("Ares.Datamodel.CampaignExecutionStatus", null)
-                        .WithMany("ExperimentExecutionStatuses")
-                        .HasForeignKey("CampaignExecutionStatusUniqueId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("Ares.Datamodel.ExperimentExecutionSummary", b =>
                 {
                     b.HasOne("Ares.Datamodel.CampaignExecutionSummary", null)
@@ -1652,14 +1583,6 @@ namespace AresService.Migrations.SqlServer.Migrations
                         .HasForeignKey("Ares.Datamodel.Planning.PlannerServiceCapabilities", "PlannerInfoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Ares.Datamodel.StepExecutionStatus", b =>
-                {
-                    b.HasOne("Ares.Datamodel.ExperimentExecutionStatus", null)
-                        .WithMany("StepExecutionStatuses")
-                        .HasForeignKey("ExperimentExecutionStatusUniqueId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Ares.Datamodel.StepExecutionSummary", b =>
@@ -1778,11 +1701,6 @@ namespace AresService.Migrations.SqlServer.Migrations
                     b.Navigation("Capabilities");
                 });
 
-            modelBuilder.Entity("Ares.Datamodel.CampaignExecutionStatus", b =>
-                {
-                    b.Navigation("ExperimentExecutionStatuses");
-                });
-
             modelBuilder.Entity("Ares.Datamodel.CampaignExecutionSummary", b =>
                 {
                     b.Navigation("ExecutionInfo");
@@ -1805,11 +1723,6 @@ namespace AresService.Migrations.SqlServer.Migrations
             modelBuilder.Entity("Ares.Datamodel.Device.DeviceInfo", b =>
                 {
                     b.Navigation("Commands");
-                });
-
-            modelBuilder.Entity("Ares.Datamodel.ExperimentExecutionStatus", b =>
-                {
-                    b.Navigation("StepExecutionStatuses");
                 });
 
             modelBuilder.Entity("Ares.Datamodel.ExperimentExecutionSummary", b =>

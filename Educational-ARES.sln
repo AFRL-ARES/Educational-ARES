@@ -1,7 +1,6 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32014.148
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device", "Ares.Device\AresDevicePluginBase\Ares.Device.csproj", "{EEA53524-EF87-43CE-A509-52CE8990DA43}"
 EndProject
@@ -27,12 +26,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoRemotePlanner", "DemoRe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI", "UI\UI.csproj", "{5B286F5E-1DA4-C61D-7861-80C46E44F0B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresService", "AresService\AresService.csproj", "{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresMessaging", "AresMessaging\AresMessaging.csproj", "{EFF05137-56A2-91B8-061A-6FE596817252}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoRemoteDevice", "DemoRemoteDevice\DemoRemoteDevice.csproj", "{669C1527-655F-4CA1-AD6A-AF00874E2AB2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresService.Migrations.Sqlite", "AresService.Migrations.Sqlite\AresService.Migrations.Sqlite.csproj", "{D3B6F1AD-351C-4C5E-AE1B-4142830DC797}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresService.Migrations.SqlServer", "AresService.Migrations.SqlServer\AresService.Migrations.SqlServer.csproj", "{549609AC-3192-4CE2-A6F7-7D94F64CAA1B}"
@@ -40,6 +33,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresService.Migrations.Postgres", "AresService.Migrations.Postgres\AresService.Migrations.Postgres.csproj", "{7AA8E7EF-C102-4C66-B28B-3C250CA73340}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresService.Data", "AresService.Data\AresService.Data.csproj", "{496E5E03-988B-48AF-A658-649269890EC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresMessaging", "AresMessaging\AresMessaging.csproj", "{EFF05137-56A2-91B8-061A-6FE596817252}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresService", "AresService\AresService.csproj", "{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrusaMK4S", "PrusaMK4S\PrusaMK4S.csproj", "{4068B694-A55F-0FF6-B1BB-DB311B8BCD0B}"
 EndProject
@@ -99,18 +96,6 @@ Global
 		{5B286F5E-1DA4-C61D-7861-80C46E44F0B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B286F5E-1DA4-C61D-7861-80C46E44F0B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B286F5E-1DA4-C61D-7861-80C46E44F0B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EFF05137-56A2-91B8-061A-6FE596817252}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EFF05137-56A2-91B8-061A-6FE596817252}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EFF05137-56A2-91B8-061A-6FE596817252}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EFF05137-56A2-91B8-061A-6FE596817252}.Release|Any CPU.Build.0 = Release|Any CPU
-		{669C1527-655F-4CA1-AD6A-AF00874E2AB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{669C1527-655F-4CA1-AD6A-AF00874E2AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{669C1527-655F-4CA1-AD6A-AF00874E2AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{669C1527-655F-4CA1-AD6A-AF00874E2AB2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D3B6F1AD-351C-4C5E-AE1B-4142830DC797}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D3B6F1AD-351C-4C5E-AE1B-4142830DC797}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3B6F1AD-351C-4C5E-AE1B-4142830DC797}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -127,6 +112,14 @@ Global
 		{496E5E03-988B-48AF-A658-649269890EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{496E5E03-988B-48AF-A658-649269890EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{496E5E03-988B-48AF-A658-649269890EC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFF05137-56A2-91B8-061A-6FE596817252}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFF05137-56A2-91B8-061A-6FE596817252}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFF05137-56A2-91B8-061A-6FE596817252}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFF05137-56A2-91B8-061A-6FE596817252}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E6959A2-1E0E-3C5E-8122-BBE5884628FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4068B694-A55F-0FF6-B1BB-DB311B8BCD0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4068B694-A55F-0FF6-B1BB-DB311B8BCD0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4068B694-A55F-0FF6-B1BB-DB311B8BCD0B}.Release|Any CPU.ActiveCfg = Release|Any CPU

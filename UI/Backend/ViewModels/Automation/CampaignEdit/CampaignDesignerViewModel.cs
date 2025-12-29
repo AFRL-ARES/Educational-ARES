@@ -1,14 +1,14 @@
 ﻿using Ares.Datamodel.Templates;
 using Ares.Services;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Backend.ViewModels.Automation.CampaignEdit.Factories;
 using UI.Backend.ViewModels.Factories;
 using UI.Services.CampaignEdit;
 
 namespace UI.Backend.ViewModels.Automation.CampaignEdit;
 
-public class CampaignDesignerViewModel : ReactiveObject
+public partial class CampaignDesignerViewModel : ReactiveObject
 {
   private readonly AresAutomation.AresAutomationClient _automationClient;
   private readonly CampaignEditContext _editContext;
@@ -51,11 +51,11 @@ public class CampaignDesignerViewModel : ReactiveObject
     };
   }
 
-  [Reactive] public bool IsCreatingCampaign { get; set; }
+  [Reactive] public partial bool IsCreatingCampaign { get; set; }
 
-  [Reactive] public bool IsNotCreatingCampaign { get; set; }
+  [Reactive] public partial bool IsNotCreatingCampaign { get; set; }
 
-  [Reactive] public string Placeholder { get; set; }
+  [Reactive] public partial string Placeholder { get; set; }
 
   public PlannableParameterDesignerViewModel? PlannableParameterDesigner { get; private set; }
 
@@ -83,9 +83,9 @@ public class CampaignDesignerViewModel : ReactiveObject
     }
   }
 
-  [Reactive] public bool CreationIsErrorFree { get; set; }
+  [Reactive] public partial bool CreationIsErrorFree { get; set; }
 
-  [Reactive] public string? CreationErrorText { get; set; }
+  [Reactive] public partial string? CreationErrorText { get; set; }
 
   private async Task Init(CampaignTemplate campaignTemplate)
   {

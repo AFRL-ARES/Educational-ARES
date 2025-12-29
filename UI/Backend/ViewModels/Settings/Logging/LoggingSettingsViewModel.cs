@@ -2,11 +2,11 @@ using System.Reactive;
 using Ares.Datamodel.Device;
 using Ares.Services.Device;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels.Settings.Logging;
 
-public class LoggingSettingsViewModel : ReactiveObject
+public partial class LoggingSettingsViewModel : ReactiveObject
 {
   private readonly string _deviceId;
   private readonly AresDevices.AresDevicesClient _devicesClient;
@@ -31,19 +31,19 @@ public class LoggingSettingsViewModel : ReactiveObject
   public string DeviceName { get; }
 
   [Reactive]
-  public bool Fetched { get; private set; }
+  public partial bool Fetched { get; private set; }
 
   [Reactive]
-  public DeviceLoggingSettings.Types.LoggingType LoggingType { get; set; }
+  public partial DeviceLoggingSettings.Types.LoggingType LoggingType { get; set; }
 
   [Reactive]
-  private DeviceLoggingSettings? CurrentSettings { get; set; }
+  private partial DeviceLoggingSettings? CurrentSettings { get; set; }
 
   [Reactive]
-  private bool DeltasChanged { get; set; }
+  private partial bool DeltasChanged { get; set; }
 
   [Reactive]
-  public long IntervalMs { get; set; }
+  public partial long IntervalMs { get; set; }
 
   public Dictionary<string, double> Deltas { get; } = [];
 

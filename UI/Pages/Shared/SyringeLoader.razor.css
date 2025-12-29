@@ -1,0 +1,23 @@
+﻿.liquid-fill {
+	transform-origin: 12px 28px;
+	/* Use the variable if provided, otherwise default to 3s */
+	animation: pump var(--anim-duration, 3s) ease-in-out infinite;
+}
+
+@keyframes pump {
+	0% {
+		transform: scaleY(0); /* Empty */
+	}
+
+	50% {
+		transform: scaleY(1); /* Full */
+	}
+
+	60% {
+		transform: scaleY(1); /* Pause at full */
+	}
+
+	100% {
+		transform: scaleY(0); /* Empty */
+	}
+}

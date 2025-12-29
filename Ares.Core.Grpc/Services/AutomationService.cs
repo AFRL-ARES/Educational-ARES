@@ -275,7 +275,13 @@ public class AutomationService : AresAutomation.AresAutomationBase
     var observable = _executionReportStore.CampaignStatusObservable;
     return observable!
       .OfType<CampaignExecutionStatus>()
-      .Select(status => new CampaignExecutionState { CampaignId = status.CampaignId, State = status.State })
+      .Select(status => new CampaignExecutionState 
+      { 
+        CampaignId = status.CampaignId, 
+        State = status.State, 
+        AnalysisState = status.AnalysisState, 
+        PlannerState = status.PlannerState 
+      })
       .Do(state => responseStream.WriteAsync(state))
       .ToTask(context.CancellationToken);
   }

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ChemyxPumpPlugin.config;
+
+message ChemyxPumpConfig {
+	string name = 1;
+	bool dual_pump = 2;
+	string port_name = 3;
+	bool simulated = 4;
+	string id = 5;
+}

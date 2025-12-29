@@ -9,7 +9,6 @@ using PrusaMK4S.Handlers;
 using System.Net;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 

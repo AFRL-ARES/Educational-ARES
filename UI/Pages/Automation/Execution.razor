@@ -4,6 +4,7 @@
 @using Ares.Services
 @using Google.Protobuf.WellKnownTypes
 @using Radzen.Blazor
+@using System.Threading.Tasks
 @using UI.Backend.Extensions
 @using UI.Pages.Shared.CampaignEdit
 @using UI.Pages.Shared.Execution.Planning
@@ -16,9 +17,9 @@
 
 <PageTitle>Execution</PageTitle>
 
-<div class="container gap-2 w-100 m-0" style="max-width: none">
+<div class="container gap-2 w-100 m-0" style="max-width: none; min-height: 100%">
   <div class="row">
-    <div class="col-8 gap-2">
+    <div class="col gap-2">
       <div>
         <RadzenDropDown AllowClear="true" TValue="CampaignTemplateSummary" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Class="w-100"
         Placeholder="Select..." Data="campaigns" TextProperty="CampaignName" @bind-Value=ViewModel!.SelectedTemplateSummary Change="args => ViewModel!.SelectCampaignTemplate(args)"/>
@@ -39,7 +40,21 @@
 
                 else
                 {
-                  <h4>@planner!.Name</h4>
+                  <div class="d-flex flex-row">
+                    <h4 class="me-5">@planner!.Name</h4>                    
+                    @if(ViewModel!.PlannerState == PlannerState.PlanningComplete)
+                    {
+                      <RadzenIcon Icon="done" IconColor="@Colors.Success"/>
+                    }
+                    else if(ViewModel!.PlannerState == PlannerState.PlanningInProgress)
+                    {
+                      <LoadingSpinner SpinnerSize="SpinnerSize.Small"/>  
+                    }
+                    else if(ViewModel!.PlannerState == PlannerState.PlanningError)
+                    {
+                      <RadzenIcon class="filled-icon" Icon="dangerous" IconColor="@Colors.Danger" />
+                    }
+                  </div>
                 }
               }
             </div>
@@ -49,7 +64,22 @@
           {
             <div class="border border-1 rounded-2 p-2 analyzer-display">
               <div>Analyzer</div>
-              <h4>@ViewModel!.AnalyzerInfo.Name </h4>
+              <div class="d-flex flex-row">
+                <h4 class="me-5">@ViewModel!.AnalyzerInfo.Name </h4>
+
+                @if(ViewModel!.AnalysisState == AnalysisState.AnalysisComplete)
+                {
+                  <RadzenIcon Icon="done" IconColor="@Colors.Success"/>
+                }
+                else if(ViewModel!.AnalysisState == AnalysisState.AnalysisInProgress)
+                {
+                  <LoadingSpinner SpinnerSize="SpinnerSize.Small"/>  
+                }
+                else if(ViewModel!.AnalysisState == AnalysisState.AnalysisError)
+                {
+                  <RadzenIcon class="filled-icon" Icon="dangerous" IconColor="@Colors.Danger" />
+                }
+              </div>
             </div>
           }
         </div>
@@ -67,7 +97,7 @@
         <!-- Campaign Execution Summary -->
         @if (ViewModel!.DisplayExecutionSummary && (CampaignStartupStatuses.Any() || ExperimentExecutionStatuses.Any()))
         {
-          <div class="border border-1 rounded-2 p-2 padded-item">
+          <div class="border border-1 rounded-2 p-2 padded-item scrollable-summary">
             @if(CampaignStartupStatuses.Any())
             {
               var startupStatus = CampaignStartupStatuses.Last();
@@ -177,7 +207,7 @@
 
       </div>
     </div>
-    <div class="col-sm gap-2">
+    <div class="col-sm-4 gap-2">
       <div class="d-flex">
         <button class="btn btn-outline-info execution-button" disabled="@(ViewModel!.CampaignActive || ViewModel!.CampaignTemplate is null)" @onclick="StartCampaign">
           <RadzenIcon Icon="play_arrow" />
@@ -289,6 +319,25 @@
         </div>
       </div>
     </div>
+
+    <div class="side-drawer @(ViewModel!.CampaignExecutionState == ExecutionState.AwaitingUser ? "drawer-open" : "")">
+      <!-- Inner wrapper with fixed width prevents text wrapping during animation -->
+      <div class="drawer-content col-lg">
+        <RadzenCard Class="drawer-inner-card" Style="height: inherit">
+          <RadzenStack Gap="1rem">
+            <RadzenText TextStyle="TextStyle.H5">User Confirmation Required</RadzenText>
+
+            <RadzenAlert Severity="Severity.Info" ShowIcon="true" Variant="Variant.Flat">
+              ARES requires user approval to continue experimenting. Continue by hitting "Confirm" or play. You can also stop your experiment by hitting the stop button.
+            </RadzenAlert>
+
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="1rem" Class="mt-4">
+              <RadzenButton Text="Confirm" ButtonStyle="ButtonStyle.Success" Click="@ViewModel.ResumeCampaign" />
+            </RadzenStack>
+          </RadzenStack>
+        </RadzenCard>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -343,6 +392,7 @@
     _experimentStatusWatcher = SetupExperimentWatch(_experimentStatusWatcherCancellationTokenSource.Token);
 
     _campaignStateWatcherCancellationTokenSource = new CancellationTokenSource();
+    //ViewModel!.SetupCampaignStateWatch(_campaignStateWatcherCancellationTokenSource.Token);
     _campaignStateWatcher = SetupCampaignStateWatch(_campaignStateWatcherCancellationTokenSource.Token);
 
     _startupStatusWatcherCancellationTokenSource = new CancellationTokenSource();
@@ -425,9 +475,14 @@
         ViewModel!.CampaignActive = state.IsActive();
         ViewModel!.CampaignPaused = state.IsPaused();
         ViewModel!.CampaignExecutionState = state.State;
+        ViewModel!.AnalysisState = state.AnalysisState;
+        ViewModel!.PlannerState = state.PlannerState;
 
         if(ViewModel!.CampaignExecutionState == ExecutionState.AwaitingUser)
+        {
           await ViewModel!.ReqeustUserConfirmation();
+        }
+          
 
         await InvokeAsync(() => StateHasChanged());
       }

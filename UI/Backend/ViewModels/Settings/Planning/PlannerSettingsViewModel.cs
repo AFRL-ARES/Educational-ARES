@@ -40,6 +40,7 @@ public class PlannerSettingsViewModel : ReactiveObject
     var request = new UpdatePlannerRequest();
     request.Name = planner.Name;
     request.Url = planner.Address;
+    request.PlannerId = PlannerAdapter.UniqueId;
 
     await _planningClient.UpdatePlannerAsync(request);
     await OnRemoveCallback();

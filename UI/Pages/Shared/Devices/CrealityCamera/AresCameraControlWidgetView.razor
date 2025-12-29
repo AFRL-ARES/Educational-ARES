@@ -3,7 +3,7 @@
 @inject TooltipService tooltipService
 @inject IJSRuntime JS
 
-<RadzenCard Style="align-items: center; gap: 0.5rem; row-gap: 1rem; width: fit-content;">
+<RadzenCard Style="align-items: center; gap: 0.5rem; row-gap: 1rem; width: 500px;">
   <RadzenRow JustifyContent="JustifyContent.Left">
     <RadzenStack Orientation="Orientation.Vertical">
       <RadzenRow>
@@ -13,7 +13,7 @@
       <RadzenRow>
         @if(ViewModel!.ImageData is not null)
         {
-          <RadzenImage Path="@($"data:image/jpeg;base64,{Convert.ToBase64String(ViewModel!.ImageData)}")" AlternateText="Example Camera Image" Style="width: 500px" />
+          <RadzenImage Path="@($"data:image/jpeg;base64,{Convert.ToBase64String(ViewModel!.ImageData)}")" AlternateText="Example Camera Image" Style="width: 450px" />
         }
 
         else

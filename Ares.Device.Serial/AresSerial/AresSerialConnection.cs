@@ -1,14 +1,17 @@
-﻿using System;
+﻿using Ares.Device.Serial.Commands;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
 
@@ -16,33 +19,35 @@ public abstract class AresSerialConnection : IAresSerialConnection
 {
   private readonly List<SerialBlock> _buffer = [];
   private readonly ManualResetEventSlim _bufferEvent = new();
-  private readonly object _bufferLock = new();
+  private readonly Lock _bufferLock = new();
   private readonly CancellationTokenSource _listenerCancellationTokenSource = new();
   private readonly IList<ISerialCommandWithResponse> _multiResponseQueue = [];
   private readonly ISubject<(ISerialCommandWithResponse, SerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, SerialResponse)>();
   private readonly TimeSpan _sendBuffer;
+  private readonly TimeSpan _receiveMargin;
+  private Stopwatch _lastReceived = Stopwatch.StartNew();
+  private readonly Task _bufferProcessor;
   private readonly TimeSpan _defaultTimeout;
   private readonly TimeSpan _staleBufferEntryDuration;
   private readonly SemaphoreSlim _sendLock = new(1);
   private readonly IList<ISerialCommandWithResponse> _singleResponseQueue = [];
+
+  private int _pressure = 0;
 
   /// <summary>
   /// Creates a new serial connection.
   /// </summary>
   /// <param name="connectionInfo">Information about the serial connection needed to connect</param>
   /// <param name="portName">Name of the port</param>
-  /// <param name="sendBuffer">
-  /// Can be set if there needs to be a buffer between each command send. Can be helpful
-  /// if there are multiple devices on one connection and they get overwhelmed with commands from each other.
-  /// </param>
   protected internal AresSerialConnection(SerialPortConnectionInfo connectionInfo, string portName, SerialConnectionOptions? options = null)
   {
     _sendBuffer = options?.SendBuffer ?? TimeSpan.Zero;
     _defaultTimeout = options?.SendTimeout ?? TimeSpan.FromDays(10);
     _staleBufferEntryDuration = options?.StaleBufferEntryDuration ?? TimeSpan.FromSeconds(10);
+    _receiveMargin = options?.DataReceiveInterval ?? TimeSpan.FromMilliseconds(50);
     ConnectionInfo = connectionInfo;
     Name = portName;
-    StartBufferProcessor();
+    _bufferProcessor = StartBufferProcessor();
   }
 
   protected SerialPortConnectionInfo ConnectionInfo { get; }
@@ -56,28 +61,28 @@ public abstract class AresSerialConnection : IAresSerialConnection
     Listen();
   }
 
-  public async Task<T> Send<T>(SerialCommandWithResponse<T> command, TimeSpan timeout, Func<T, bool>? filter) where T : SerialResponse
+  public async Task<T> Send<T>(SerialCommandWithResponse<T> command, TimeSpan timeout, CancellationToken token, Func<T, bool>? filter) where T : SerialResponse
   {
     if(command is SerialCommandWithStreamedResponse<T>)
       throw new InvalidOperationException(
         "Attempted to send a command for a streamed response. Call Send instead");
 
-    lock(_singleResponseQueue)
-    {
-      _singleResponseQueue.Add(command);
-    }
-
+    Interlocked.Increment(ref _pressure);
     var getResponseTask =
       GetTransactionStream<T>()
         .Where(transaction => filter?.Invoke(transaction.Response) ?? transaction.Request == command)
         .Take(1)
         .Select(transaction => transaction.Response)
         .Timeout(timeout)
-        .Catch(Observable.Return<T?>(null))
-        .ToTask();
+        //.Catch<T?, TimeoutException>(_ => Observable.Return<T?>(null))
+        .ToTask(token);
+    await _sendLock.WaitAsync(token);
+    lock(_singleResponseQueue)
+    {
+      _singleResponseQueue.Add(command);
+    }
+    T? response = null;
 
-    await _sendLock.WaitAsync();
-    T? response;
     try
     {
       SendOutboundMessage(command);
@@ -85,32 +90,72 @@ public abstract class AresSerialConnection : IAresSerialConnection
       if(_sendBuffer > TimeSpan.Zero)
         await Task.Delay(_sendBuffer);
     }
+    catch(TimeoutException)
+    {
+      await Task.Delay(_receiveMargin);
+
+      // Wait until the device finishes sending data
+      // We check how much time has passed since the last AddDataReceived call
+      while(_lastReceived.Elapsed < _receiveMargin)
+      {
+        await Task.Delay(_receiveMargin);
+      }
+    }
     finally
     {
-      _sendLock.Release();
       lock(_singleResponseQueue)
       {
         _singleResponseQueue.Remove(command);
       }
+
+      _sendLock.Release();
     }
+    Interlocked.Decrement(ref _pressure);
+    return response ?? throw new TimeoutException($"Receiving message of type {typeof(T).Name} timed out");
 
-    if(response is null)
-      throw new TimeoutException($"Receiving message of type {typeof(T).Name} timed out");
-
-    return response;
   }
 
+
+  public static string ToPrintableUtf8(byte[] bytes)
+  {
+    string text = Encoding.UTF8.GetString(bytes);
+    var sb = new StringBuilder();
+
+    foreach(char c in text)
+    {
+      // Use Unicode categories to detect control chars
+      if(char.IsControl(c))
+      {
+        sb.Append($"\\u{((int)c):X4}");
+      }
+      else
+      {
+        sb.Append(c);
+      }
+    }
+
+    return sb.ToString();
+  }
   public Task<T> Send<T>(SerialCommandWithResponse<T> command, TimeSpan timeout) where T : SerialResponse
-    => Send(command, timeout, null);
+    => Send(command, timeout, CancellationToken.None, null);
+
+  public Task<T> Send<T>(SerialCommandWithResponse<T> command, TimeSpan timeout, CancellationToken token) where T : SerialResponse
+  => Send(command, timeout, token, null);
 
   public Task<T> Send<T>(SerialCommandWithResponse<T> command, Func<T, bool> filter) where T : SerialResponse
-    => Send(command, _defaultTimeout, filter);
+    => Send(command, _defaultTimeout, CancellationToken.None, filter);
 
   public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
     => Send(command, _defaultTimeout);
+  public Task<T> Send<T>(SerialCommandWithResponse<T> command, CancellationToken token) where T : SerialResponse
+    => Send(command, _defaultTimeout, token, null);
 
-  public async Task<IObservable<T>> Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
+  public Task<T> Send<T>(SerialCommandWithResponse<T> command, Func<T, bool> filter, CancellationToken token) where T : SerialResponse
+    => Send(command, _defaultTimeout, token, filter);
+
+  public async Task<IObservable<T>> SendAndStream<T>(SerialCommandWithStreamedResponse<T> command, CancellationToken? token) where T : SerialResponse
   {
+    var ct = token ?? CancellationToken.None;
     lock(_multiResponseQueue)
     {
       var existingParser = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().FirstOrDefault();
@@ -127,35 +172,31 @@ public abstract class AresSerialConnection : IAresSerialConnection
 
     var observable = Observable.Create<T>(observer =>
     {
-      Console.WriteLine("Creating observer");
       var subscription = replay.Subscribe(observer);
 
       return Disposable.Create(() =>
       {
         subscription.Dispose();
 
-        if(replay.HasObservers == false)
-        {
-          Console.WriteLine("Disposing observer");
-          upstream.Dispose();
-          replay.Dispose();
+        if(replay.HasObservers)
+          return;
 
-          lock(_multiResponseQueue)
-          {
-            _multiResponseQueue.Remove(command);
-          }
+        upstream.Dispose();
+        replay.Dispose();
+
+        lock(_multiResponseQueue)
+        {
+          _multiResponseQueue.Remove(command);
         }
       });
-    })
-      .Replay()
-      .RefCount();
+    });
 
-    await _sendLock.WaitAsync();
+    await _sendLock.WaitAsync(ct);
     try
     {
       SendOutboundMessage(command);
       if(_sendBuffer > TimeSpan.Zero)
-        await Task.Delay(_sendBuffer);
+        await Task.Delay(_sendBuffer, ct);
     }
     finally
     {
@@ -204,40 +245,23 @@ public abstract class AresSerialConnection : IAresSerialConnection
   public string Name { get; }
   public bool IsOpen { get; protected set; }
 
-  public virtual void Dispose()
+  private Task StartBufferProcessor()
   {
-    _listenerCancellationTokenSource.Cancel();
-    Close();
-    _bufferEvent.Dispose();
-    _listenerCancellationTokenSource.Dispose();
-    _sendLock.Dispose();
-  }
-
-  private void StartBufferProcessor()
-  {
-    Task.Factory.StartNew(_ =>
-    {
-      try
+    return Task.Run(() =>
       {
         while(!_listenerCancellationTokenSource.Token.IsCancellationRequested)
           ProcessBufferCore();
-      }
-      // TODO maybe there's a cleaner way to do this 
-      catch(ObjectDisposedException)
-      {
-      }
-    },
-      _listenerCancellationTokenSource.Token,
-      TaskCreationOptions.LongRunning);
+      },
+      _listenerCancellationTokenSource.Token);
   }
 
-  protected internal abstract void CloseCore();
+  protected abstract void CloseCore();
 
-  public virtual void Listen()
+  protected virtual void Listen()
   {
   }
 
-  public virtual void StopListening()
+  protected virtual void StopListening()
   {
   }
 
@@ -253,47 +277,42 @@ public abstract class AresSerialConnection : IAresSerialConnection
     {
       return;
     }
-
     var totalBytesRemoved = 0;
     lock(_bufferLock)
+    {
       lock(_singleResponseQueue)
         lock(_multiResponseQueue)
         {
+          RemoveStaleBufferEntries();
           if(_buffer.Any())
           {
-            var currentData = _buffer.ToArray();
             var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => _singleResponseQueue.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
-            var considerableParsers = _singleResponseQueue.Concat(unparsedMultiParsers);
-            var parsedResponses = considerableParsers.Select(cmd =>
+            var considerableParsers = _singleResponseQueue.Concat(unparsedMultiParsers).ToArray();
+
+            foreach(var commandWithResponse in considerableParsers)
             {
-              var parsed = cmd.ResponseParser.TryParseResponse(currentData, out var response, out var dataToRemove);
-              if(parsed && response is not null)
-                response.RequestId = cmd.Id;
+              var currentData = _buffer.ToArray();
+              var parsed = commandWithResponse.ResponseParser.TryParseResponse(currentData, out var response, out var dataToRemove);
+              if(dataToRemove is not null)
+              {
+                _buffer.RemoveBytes(dataToRemove.Value);
+                totalBytesRemoved += dataToRemove.Value.Count;
+              }
 
-              return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
-            }).Where(proxy => proxy.Parsed && proxy.DataToRemove is not null).ToArray();
+              if(!parsed || response is null)
+              {
+                continue;
+              }
 
-            // TODO check for overlapping arrays maybe?
-            var orderedArraySegs = parsedResponses.Select(tuple => tuple.DataToRemove)
-              .OrderBy(bytes => bytes!.Value.Offset)
-              .Distinct();
-
-            foreach(var arrSegment in orderedArraySegs)
-            {
-              _buffer.RemoveBytes(arrSegment!.Value);
-              totalBytesRemoved += arrSegment.Value.Count;
+              _responsePublisher.OnNext((commandWithResponse, response));
             }
-
-            foreach(var (Parsed, Response, DataToRemove, CommandToRemove) in parsedResponses)
-              if(Parsed)
-                _responsePublisher.OnNext((CommandToRemove, Response!));
           }
-
-          RemoveStaleBufferEntries();
         }
-
-    if(totalBytesRemoved == 0)
-      _bufferEvent.Reset();
+      if(totalBytesRemoved == 0)
+      {
+        _bufferEvent.Reset();
+      }
+    }
   }
 
   private void RemoveStaleBufferEntries()
@@ -306,12 +325,32 @@ public abstract class AresSerialConnection : IAresSerialConnection
     lock(_bufferLock)
     {
       _buffer.Add(new SerialBlock(dataReceived, DateTime.UtcNow));
+      _lastReceived.Restart();
+      _bufferEvent.Set();
     }
-
-    _bufferEvent.Set();
   }
 
   protected abstract void Open(string portName);
 
   internal bool BufferEmpty => _buffer.Count == 0;
+
+  public virtual async ValueTask DisposeAsync()
+  {
+    await _listenerCancellationTokenSource.CancelAsync();
+    await _bufferProcessor;
+    Close();
+    await CastAndDispose(_bufferEvent);
+    await CastAndDispose(_listenerCancellationTokenSource);
+    await CastAndDispose(_sendLock);
+
+    return;
+
+    static async ValueTask CastAndDispose(IDisposable resource)
+    {
+      if(resource is IAsyncDisposable resourceAsyncDisposable)
+        await resourceAsyncDisposable.DisposeAsync();
+      else
+        resource.Dispose();
+    }
+  }
 }

@@ -2,13 +2,13 @@
 using Ares.Services;
 using Google.Protobuf.WellKnownTypes;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Services.Notification;
 
 
 namespace UI.Backend.ViewModels.Settings.Planning;
 
-public class PlannerSettingsListViewModel : ReactiveObject
+public partial class PlannerSettingsListViewModel : ReactiveObject
 {
   private readonly AresPlannerManagementService.AresPlannerManagementServiceClient _planningService;
   private readonly INotificationReceivingService _notificationService;
@@ -53,5 +53,5 @@ public class PlannerSettingsListViewModel : ReactiveObject
   public void PushNotification(AresNotification notification) => _notificationService.PushNotification(notification);
 
   [Reactive]
-  public IEnumerable<PlannerSettingsViewModel>? SettingsViewModels { get; private set; }
+  public partial IEnumerable<PlannerSettingsViewModel>? SettingsViewModels { get; private set; }
 }

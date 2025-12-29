@@ -36,8 +36,8 @@
     <ProjectReference Include="..\AresService.Migrations.Postgres\AresService.Migrations.Postgres.csproj" />
     <ProjectReference Include="..\AresService.Migrations.Sqlite\AresService.Migrations.Sqlite.csproj" />
     <ProjectReference Include="..\AresService.Migrations.SqlServer\AresService.Migrations.SqlServer.csproj" />
-    <ProjectReference Include="..\CrealityCamera\AresCamera.csproj" />
-    <ProjectReference Include="..\PrusaMK4S\PrusaMK4S.csproj" />
+		<ProjectReference Include="..\CrealityCamera\AresCamera.csproj" />
+		<ProjectReference Include="..\PrusaMK4S\PrusaMK4S.csproj" />
   </ItemGroup>
 
   <ItemGroup>

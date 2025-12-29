@@ -3,18 +3,25 @@ using Ares.Services;
 using Google.Protobuf.WellKnownTypes;
 using Radzen;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 using UI.Backend.Helpers;
 
 namespace UI.Backend.ViewModels;
 
-public class DataViewerViewModel : ReactiveObject
+public partial class DataViewerViewModel : ReactiveObject
 {
   private readonly AresAutomation.AresAutomationClient _automationClient;
 
   public DataViewerViewModel(AresAutomation.AresAutomationClient automationClient)
   {
     _automationClient = automationClient;
+    SelectedSummaryStartTime = string.Empty;
+    SelectedSummaryFinishTime = string.Empty;
+    SelectedSummaryNumberOfExperiments = string.Empty;
+    SelectedSummaryTags = string.Empty;
+    SelectedSummaryNotes = string.Empty;
+    AvailableSummaries = Enumerable.Empty<CampaignExecutionSummaryMetadata>();
+    LoadingAvailableSumarries = false;
   }
 
   public async Task GetSelectedSummary()
@@ -70,37 +77,37 @@ public class DataViewerViewModel : ReactiveObject
   }
 
   [Reactive]
-  public CampaignExecutionSummary? FullSelectedSummary { get; set; }
+  public partial CampaignExecutionSummary? FullSelectedSummary { get; set; }
 
   [Reactive]
-  public string SelectedSummaryStartTime { get; set; } = string.Empty;
+  public partial string SelectedSummaryStartTime { get; set; }
 
   [Reactive]
-  public string SelectedSummaryFinishTime { get; set; } = string.Empty;
+  public partial string SelectedSummaryFinishTime { get; set; }
 
   [Reactive]
-  public string SelectedSummaryNumberOfExperiments { get; set; } = string.Empty;
+  public partial string SelectedSummaryNumberOfExperiments { get; set; }
 
   [Reactive]
-  public string SelectedSummaryTags { get; set; } = string.Empty;
+  public partial string SelectedSummaryTags { get; set; }
 
   [Reactive]
-  public string SelectedSummaryNotes { get; set; } = string.Empty;
+  public partial string SelectedSummaryNotes { get; set; }
 
   [Reactive]
-  public ExperimentExecutionSummary? SelectedExperimentSummary { get; set; }
+  public partial ExperimentExecutionSummary? SelectedExperimentSummary { get; set; }
 
   [Reactive]
-  public StepExecutionSummary? SelectedStepSummary { get; set; }
+  public partial StepExecutionSummary? SelectedStepSummary { get; set; }
 
   [Reactive]
-  public CommandExecutionSummary? SelectedCommandSummary { get; set; }
+  public partial CommandExecutionSummary? SelectedCommandSummary { get; set; }
 
   [Reactive]
-  public IEnumerable<CampaignExecutionSummaryMetadata> AvailableSummaries { get; set; } = Enumerable.Empty<CampaignExecutionSummaryMetadata>();
+  public partial IEnumerable<CampaignExecutionSummaryMetadata> AvailableSummaries { get; set; }
 
   [Reactive]
-  public bool LoadingAvailableSumarries { get; set; } = false;
+  public partial bool LoadingAvailableSumarries { get; set; }
 
   public CampaignExecutionSummaryMetadata? SelectedSummaryMetadata { get; set; }
 }

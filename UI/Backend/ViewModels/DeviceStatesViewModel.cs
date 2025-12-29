@@ -2,11 +2,11 @@
 using Ares.Services.Device;
 using Google.Protobuf.WellKnownTypes;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace UI.Backend.ViewModels;
 
-public class DeviceStatesViewModel : ReactiveObject
+public partial class DeviceStatesViewModel : ReactiveObject
 {
   readonly AresDevices.AresDevicesClient _devicesClient;
 
@@ -25,5 +25,5 @@ public class DeviceStatesViewModel : ReactiveObject
   }
 
   [Reactive]
-  public IEnumerable<DeviceInfo>? AvailableDevices { get; private set; }
+  public partial IEnumerable<DeviceInfo>? AvailableDevices { get; private set; }
 }

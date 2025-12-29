@@ -10,30 +10,36 @@ namespace Ares.Device.Serial
       if (buffer is not List<SerialBlock> bufferList)
         return;
 
-      var (startBlock, endBlock) = bufferList.ToArray().GetSerialBlockRange(bytes.Offset, bytes.ToArray().Length);
+      if (bytes.Count == 0)
+        return;
+
+      var (startBlock, endBlock) = bufferList.GetSerialBlockRange(bytes.Offset, bytes.Count);
       if (startBlock is null || endBlock is null)
         return;
 
       var startIdx = startBlock.BlockIdx;
       var endIdx = endBlock.BlockIdx;
 
-      for (int i = startIdx; i <= endIdx; i++)
+      if (startBlock.DataIdx > 0)
       {
-        if (i == startIdx && startBlock.DataIdx > 0)
-        {
-          var (first, second) = SplitBlock(bufferList[i], startBlock.DataIdx);
-          bufferList[i] = first;
-          bufferList.Insert(i + 1, second);
-          endIdx++;
-          startIdx++;
-          i++;
-        }
-        else if (i == endIdx && endBlock.DataIdx < bufferList[endIdx].Data.Length - 1)
-        {
-          var (first, second) = SplitBlock(bufferList[i], endBlock.DataIdx + 1);
-          bufferList[i] = first;
-          bufferList.Insert(i + 1, second);
-        }
+        var (first, second) = SplitBlock(bufferList[startIdx], startBlock.DataIdx);
+        bufferList[startIdx] = first;
+        bufferList.Insert(startIdx + 1, second);
+
+        if (startIdx == endIdx)
+          endBlock = new BlockResult(endIdx + 1, endBlock.DataIdx - startBlock.DataIdx);
+        else
+          endBlock = new BlockResult(endIdx + 1, endBlock.DataIdx);
+
+        startIdx++;
+        endIdx++;
+      }
+
+      if (endBlock.DataIdx < bufferList[endIdx].Data.Length - 1)
+      {
+        var (first, second) = SplitBlock(bufferList[endIdx], endBlock.DataIdx + 1);
+        bufferList[endIdx] = first;
+        bufferList.Insert(endIdx + 1, second);
       }
 
       bufferList.RemoveRange(startIdx, endIdx - startIdx + 1);
@@ -53,12 +59,12 @@ namespace Ares.Device.Serial
       return (block1, block2);
     }
 
-    public static (BlockResult?, BlockResult?) GetSerialBlockRange(this SerialBlock[] buffer, int offset, int length)
+    public static (BlockResult?, BlockResult?) GetSerialBlockRange(this IList<SerialBlock> buffer, int offset, int length)
     {
       var currentLength = 0;
       BlockResult? start = null;
       BlockResult? end = null;
-      for (int i = 0; i < buffer.Length; i++)
+      for (int i = 0; i < buffer.Count; i++)
       {
         currentLength += buffer[i].Data.Length;
 
@@ -76,7 +82,7 @@ namespace Ares.Device.Serial
         return (start, new BlockResult(start.BlockIdx, start.DataIdx + length - 1));
 
       var lengthRemaining = length - currentLength;
-      for (int i = start.BlockIdx + 1; i < buffer.Length; i++)
+      for (int i = start.BlockIdx + 1; i < buffer.Count; i++)
       {
         currentLength += buffer[i].Data.Length;
         if (currentLength >= length)
