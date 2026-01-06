@@ -21,16 +21,17 @@ public partial class CommandDesignerViewModel : ReactiveObject
     MetadataPickerFactory metadataPickerFactory,
     AresDevices.AresDevicesClient devicesClient)
   {
+    ArgumentDesigners = [];
     _commandParameterDesignerFactory = commandParameterDesignerFactory;
     _metadataPickerFactory = metadataPickerFactory;
     _devicesClient = devicesClient;
 
     CommandTemplate = existingTemplate;
-    ArgumentDesigners = [];
   }
 
   public CommandDesignerViewModel(CommandParameterDesignerFactory commandParameterDesignerFactory, MetadataPickerFactory metadataPickerFactory, AresDevices.AresDevicesClient devicesClient)
   {
+    ArgumentDesigners = [];
     _commandParameterDesignerFactory = commandParameterDesignerFactory;
     _metadataPickerFactory = metadataPickerFactory;
     _devicesClient = devicesClient;
@@ -39,7 +40,6 @@ public partial class CommandDesignerViewModel : ReactiveObject
     {
       UniqueId = Guid.NewGuid().ToString()
     };
-    ArgumentDesigners = [];
   }
 
   public CommandTemplate CommandTemplate
