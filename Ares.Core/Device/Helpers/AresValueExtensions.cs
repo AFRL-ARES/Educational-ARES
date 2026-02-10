@@ -14,7 +14,6 @@ internal static class AresValueExtensions
       AresValue.KindOneofCase.StringArrayValue => "[" + string.Join(", ", value.StringArrayValue.Strings) + "]",
       AresValue.KindOneofCase.NumberArrayValue => "[" + string.Join(", ", value.NumberArrayValue.Numbers) + "]",
       AresValue.KindOneofCase.BytesValue => Convert.ToBase64String(value.BytesValue.ToByteArray()),
-      AresValue.KindOneofCase.BoolArrayValue => "[" + string.Join(", ", value.BoolArrayValue.Bools) + "]",
       _ => string.Empty,
     };
   }

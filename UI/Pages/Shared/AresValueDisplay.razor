@@ -36,14 +36,6 @@
             </RadzenDataList>
             break;
 
-        case AresValue.KindOneofCase.BoolArrayValue:
-            <RadzenDataList WrapItems="true" AllowPaging="true" PageSize="5" Data="@Value.BoolArrayValue.Bools">
-                <Template Context="b">
-                    <RadzenText>@(b ? "True" : "False")</RadzenText>
-                </Template>
-            </RadzenDataList>
-            break;
-
         case AresValue.KindOneofCase.BytesValue:
             <RadzenText TextStyle="TextStyle.Subtitle2" Class="rz-color-secondary">[Bytes data omitted]</RadzenText>
             break;

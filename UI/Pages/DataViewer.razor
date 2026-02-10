@@ -222,7 +222,7 @@
                 <b> Experiment Results </b>
                 @foreach(var result in ViewModel!.SelectedExperimentSummary.ExperimentOverview.Result.Fields)
                 {
-                  if(AresValueHelper.IsPrimitveType(result.Value))
+                  if(AresValueHelper.IsPrimitiveType(result.Value))
                   {
                     <b> @result.Key : @result.Value </b>
                   }

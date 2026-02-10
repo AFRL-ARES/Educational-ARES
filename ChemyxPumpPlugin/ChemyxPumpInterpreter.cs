@@ -1,5 +1,6 @@
 ﻿using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Ares.Datamodel.Templates;
 using Ares.Device;
 using ChemyxPumpPlugin.Commands;
@@ -179,8 +180,8 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         Description = "Start pump (mode 0 basic).",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) },
-          new ParameterMetadata { Index = 1, Name = nameof(Mode), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) }
+          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() },
+          new ParameterMetadata { Index = 1, Name = nameof(Mode), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() }
         }
       },
       new CommandMetadata
@@ -188,22 +189,22 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         DeviceId = Device.UniqueId,
         Name = nameof(ChemyxPumpCommand.StopPump),
         Description = "Stop pump.",
-        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) } }
+        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() } }
       },
       new CommandMetadata
       {
         DeviceId = Device.UniqueId,
         Name = nameof(ChemyxPumpCommand.PausePump),
         Description = "Pause pump.",
-        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) } }
+        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() } }
       },
       new CommandMetadata
       {
         DeviceId = Device.UniqueId,
         Name = nameof(ChemyxPumpCommand.PumpStatus),
         Description = "Get pump status.",
-        OutputMetadata = new OutputMetadata { Description = "Status code", DataSchema = AresSchemaHelper.CreateSchema("Status", AresDataType.Number), Index = 0 },
-        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) } }
+        OutputMetadata = new OutputMetadata { Description = "Status code", DataSchema = AresSchemaBuilder.Create("Status", AresDataType.Number).Build(), Index = 0 },
+        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() } }
       },
       new CommandMetadata
       {
@@ -212,8 +213,8 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         Description = "Set syringe diameter (mm).",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) },
-          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true) }
+          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() },
+          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build() }
         }
       },
       new CommandMetadata
@@ -221,16 +222,16 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         DeviceId = Device.UniqueId,
         Name = nameof(ChemyxPumpCommand.DispensedVolume),
         Description = "Get dispensed volume.",
-        OutputMetadata = new OutputMetadata { Description = "Volume", DataSchema = AresSchemaHelper.CreateSchema("Volume", AresDataType.Number), Index = 0 },
-        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) } }
+        OutputMetadata = new OutputMetadata { Description = "Volume", DataSchema = AresSchemaBuilder.Create("Volume", AresDataType.Number).Build(), Index = 0 },
+        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() } }
       },
       new CommandMetadata
       {
         DeviceId = Device.UniqueId,
         Name = nameof(ChemyxPumpCommand.ElapsedTime),
         Description = "Get elapsed time (minutes).",
-        OutputMetadata = new OutputMetadata { Description = "ElapsedMinutes", DataSchema = AresSchemaHelper.CreateSchema("Minutes", AresDataType.Number), Index = 0 },
-        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) } }
+        OutputMetadata = new OutputMetadata { Description = "ElapsedMinutes", DataSchema = AresSchemaBuilder.Create("Minutes", AresDataType.Number).Build(), Index = 0 },
+        ParameterMetadatas = { new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() } }
       },
       new CommandMetadata
       {
@@ -239,8 +240,8 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         Description = "Set target volume.",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) },
-          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true) }
+          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() },
+          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build() }
         }
       },
       new CommandMetadata
@@ -250,15 +251,16 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         Description = "Read limit parameters.",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) }
+          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() }
         },
         OutputMetadata = new OutputMetadata
         {
           Description = "Limit parameters",
-          DataSchema = AresSchemaHelper.CreateSchema("MaxRate", AresDataType.Number)
-            .AddEntry("MinRate", AresDataType.Number)
-            .AddEntry("MaxVolume", AresDataType.Number)
-            .AddEntry("MinVolume", AresDataType.Number),
+          DataSchema = AresSchemaBuilder.Create("MaxRate", AresDataType.Number)
+            .AddEntry("MinRate", AresSchemaBuilder.Entry(AresDataType.Number).Build())
+            .AddEntry("MaxVolume", AresSchemaBuilder.Entry(AresDataType.Number).Build())
+            .AddEntry("MinVolume", AresSchemaBuilder.Entry(AresDataType.Number).Build())
+            .Build(),
           Index = 0
         }
       },
@@ -269,8 +271,8 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         Description = "Set rate.",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) },
-          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true) }
+          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() },
+          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build() }
         }
       },
       new CommandMetadata
@@ -280,8 +282,8 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         Description = "Set start delay (minutes).",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) },
-          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true) }
+          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() },
+          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build() }
         }
       },
       new CommandMetadata
@@ -291,8 +293,8 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         Description = "Set run time (minutes).",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) },
-          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true) }
+          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() },
+          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build() }
         }
       },
       new CommandMetadata
@@ -302,8 +304,8 @@ public class ChemyxPumpInterpreter : DeviceCommandInterpreter<ChemyxPump, Chemyx
         Description = "Set rate units (0=mL/min,1=mL/hr,2=uL/min,3=uL/hr).",
         ParameterMetadatas =
         {
-          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false) },
-          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true) }
+          new ParameterMetadata { Index = 0, Name = nameof(PumpIndex), Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build() },
+          new ParameterMetadata { Index = 1, Name = nameof(Value), Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build() }
         }
       }
     ];

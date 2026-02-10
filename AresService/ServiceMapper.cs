@@ -1,4 +1,5 @@
-﻿using AresService.Services.Devices;
+﻿using Ares.Core.Grpc.Services;
+using AresService.Services.Devices;
 using AresService.Services.OperationalState;
 using EducationalAresService.Services.Devices;
 using Microsoft.AspNetCore.Builder;
@@ -15,5 +16,6 @@ public static class ServiceMapper
     //Devices
     routeBuilder.MapGrpcService<PrusaMK4SPrinterService>();
     routeBuilder.MapGrpcService<AresCameraService>();
+    routeBuilder.MapGrpcService<AresScriptingService>();
   }
 }

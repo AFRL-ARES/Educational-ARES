@@ -1,5 +1,6 @@
 ﻿using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Ares.Datamodel.Templates;
 using Humanizer;
 using ReactiveUI;
@@ -29,7 +30,7 @@ public partial class ParameterEditorViewModel : ReactiveObject
     {
       UniqueId = Guid.NewGuid().ToString(),
       Name = "Param",
-      Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.UnspecifiedType, false),
+      Schema = AresSchemaBuilder.Entry(AresDataType.UnspecifiedType).Build(),
       Constraints =
       {
         new Limits()
@@ -43,6 +44,8 @@ public partial class ParameterEditorViewModel : ReactiveObject
 
   public ParameterEditorViewModel(ParameterMetadata existingMetadata, IEnumerable<string> availableOutputs, UnitCategoryHelper unitHelper)
   {
+    CategoryOptions = [];
+    UnitOptions = [];
     _unitHelper = unitHelper;
     CategoryOptions = [];
     UnitOptions = [];
@@ -157,7 +160,7 @@ public partial class ParameterEditorViewModel : ReactiveObject
     if(ParameterMetadata.Constraints.Count == 0)
       ParameterMetadata.Constraints.Add(new Limits());
 
-    ParameterMetadata.Schema = AresSchemaHelper.CreateSchemaEntry(DataType, false);
+    ParameterMetadata.Schema = AresSchemaBuilder.Entry(DataType).Build();
     ParameterMetadata.Name = Name;
     ParameterMetadata.InitialValue ??= InitialValue;
 

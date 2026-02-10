@@ -172,9 +172,6 @@
       case AresDataType.NumberArray:
         _numberArray = Value!.NumberArrayValue?.Numbers?.ToList() ?? [];
         break;
-      case AresDataType.BoolArray:
-        _boolArray = Value!.BoolArrayValue?.Bools?.ToList() ?? [];
-        break;
     }
   }
 
@@ -261,11 +258,6 @@
         var numArray = new NumberArray();
         numArray.Numbers.AddRange(_numberArray);
         aresValue.NumberArrayValue = numArray;
-        break;
-      case AresDataType.BoolArray:
-        var bArray = new BoolArray();
-        bArray.Bools.AddRange(_boolArray);
-        aresValue.BoolArrayValue = bArray;
         break;
     }
     // Invoke the callback with the newly constructed AresValue object.

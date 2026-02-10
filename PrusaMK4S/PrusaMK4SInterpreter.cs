@@ -1,6 +1,7 @@
 ﻿
 using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Ares.Datamodel.Templates;
 using Ares.Device;
 using PrusaMK4S.Enums;
@@ -33,62 +34,62 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 0,
             Name = PrusaMK4SCommandParameter.GCode.ToString(),
             NotPlannable = true,
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.ByteArray, false)
+            Schema = AresSchemaBuilder.Entry(AresDataType.ByteArray).Build()
           },
           new ParameterMetadata
           {
             Index = 1,
             Name = PrusaMK4SCommandParameter.NozzleTemperature.ToString(),
             Unit = "Degree's Celsius",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build()
           },
           new ParameterMetadata
           {
             Index = 2,
             Name = PrusaMK4SCommandParameter.BedTemperature.ToString(),
             Unit = "Degree's Celsius",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build()
           },
           new ParameterMetadata
           {
             Index = 3,
             Name = PrusaMK4SCommandParameter.ExtrusionRateMod.ToString(),
             Unit = "Modifier",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build()
           },
           new ParameterMetadata
           {
             Index = 4,
             Name = PrusaMK4SCommandParameter.SpeedMod.ToString(),
             Unit = "Modifier",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build()
           },
           new ParameterMetadata
           {
             Index = 5,
             Name = PrusaMK4SCommandParameter.RetractionLength.ToString(),
             Unit = "Millimeters",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build()
           },
           new ParameterMetadata
           {
             Index = 6,
             Name = PrusaMK4SCommandParameter.AccelerationMod.ToString(),
             Unit = "Modifier",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build()
           },
           new ParameterMetadata
           {
             Index = 7,
             Name = PrusaMK4SCommandParameter.FanSpeedMod.ToString(),
             Unit = "Modifier",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true)
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build()
           }
         },
         OutputMetadata = new OutputMetadata()
         {
           Description = "Returns whether or not the print was successfully executed.",
-          DataSchema = AresSchemaHelper.CreateSchema("Success", AresDataType.Boolean),
+          DataSchema = AresSchemaBuilder.Create("Success", AresDataType.Boolean).Build(),
           Index = 0 }
       },
 
@@ -112,7 +113,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 1,
             Name = PrusaMK4SCommandParameter.Z.ToString(),
             Unit = "Coordinate",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false),
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build(),
             NotPlannable = true
           },
           new ParameterMetadata
@@ -120,7 +121,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 2,
             Name = PrusaMK4SCommandParameter.DwellTime.ToString(),
             Unit = "Seconds",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build(),
             NotPlannable = true
           },
           new ParameterMetadata
@@ -128,7 +129,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 3,
             Name = PrusaMK4SCommandParameter.XOffset.ToString(),
             Unit = "Millimeters",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build(),
             NotPlannable = true
           },
           new ParameterMetadata
@@ -136,7 +137,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 4,
             Name = PrusaMK4SCommandParameter.YOffset.ToString(),
             Unit = "Millimeters",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build(),
             NotPlannable = true
           }
         }
@@ -154,7 +155,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 0,
             Name = PrusaMK4SCommandParameter.X.ToString(),
             Unit = "Millimeters",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false),
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build(),
             NotPlannable = true
           },
           new ParameterMetadata
@@ -162,7 +163,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 1,
             Name = PrusaMK4SCommandParameter.Y.ToString(),
             Unit = "Millimeters",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false),
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build(),
             NotPlannable = true
           },
           new ParameterMetadata
@@ -170,7 +171,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 2,
             Name = PrusaMK4SCommandParameter.Z.ToString(),
             Unit = "Millimeters",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false),
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build(),
             NotPlannable = true
           },
           new ParameterMetadata
@@ -178,7 +179,7 @@ public class PrusaMK4SInterpreter : DeviceCommandInterpreter<IPrusaMK4S, PrusaMK
             Index = 3,
             Name = PrusaMK4SCommandParameter.DwellTime.ToString(),
             Unit = "Seconds",
-            Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, true),
+            Schema = AresSchemaBuilder.Entry(AresDataType.Number).AsOptional().Build(),
             NotPlannable = true
           },
         }

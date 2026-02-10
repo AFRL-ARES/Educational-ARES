@@ -1,5 +1,6 @@
 ﻿using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Ares.Datamodel.Templates;
 
 namespace Ares.Device.Tests.Device;
@@ -53,7 +54,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
       OutputMetadata = new OutputMetadata
       {
         UniqueId = Guid.NewGuid().ToString(),
-        DataSchema = AresSchemaHelper.CreateSchema("TestDeviceInterpreter", AresDataType.Number),
+        DataSchema = AresSchemaBuilder.Create("TestDeviceInterpreter", AresDataType.Number).Build(),
         Description = "A test response for the test command",
         Index = idx
       }

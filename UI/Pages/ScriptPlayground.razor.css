@@ -1,0 +1,118 @@
+﻿.script-playground {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+.script-playground__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.script-playground__title {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.script-playground__subtitle {
+  font-size: 0.95rem;
+}
+
+.script-playground__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.script-playground__status {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid;
+}
+
+.script-playground__status.running {
+}
+
+.script-playground__status.stopped {
+}
+
+.script-playground__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
+  gap: 1rem;
+  min-height: 60vh;
+}
+
+.script-playground__pane {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  min-height: 20rem;
+}
+
+.script-playground__pane-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.9rem;
+  font-weight: 600;
+  border-bottom: 1px solid;
+}
+
+.script-playground__pane-body {
+  flex: 1;
+  min-height: 0;
+  padding: 0.75rem;
+  overflow: auto;
+}
+
+.script-playground__editor .script-playground__pane-body {
+  padding: 0;
+}
+
+.script-playground__output-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  font-family: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+}
+
+.script-playground__empty-output {
+  font-style: italic;
+  padding-top: 0.5rem;
+}
+
+.script-playground__output-line {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.35rem;
+}
+
+.script-playground__output-timestamp {
+  font-variant-numeric: tabular-nums;
+}
+
+.script-playground__output-message {
+  word-break: break-word;
+}
+
+@media (max-width: 1100px) {
+  .script-playground__body {
+    grid-template-columns: 1fr;
+  }
+}

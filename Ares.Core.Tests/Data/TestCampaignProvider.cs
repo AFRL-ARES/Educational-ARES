@@ -2,6 +2,7 @@
 using Ares.Core.Tests.Data.Device;
 using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Ares.Datamodel.Templates;
 using Ares.Test;
 
@@ -126,7 +127,7 @@ internal class TestCampaignProvider
   public static OutputMetadata GetOutputMetadata(string typeName, int idx = 0)
     => new()
     {
-      DataSchema = AresSchemaHelper.CreateSchema("testCampaignProvider", AresDataType.Number),
+      DataSchema = AresSchemaBuilder.Create("testCampaignProvider", AresDataType.Number).Build(),
       Index = idx,
       UniqueId = Guid.NewGuid().ToString()
     };

@@ -2,6 +2,7 @@ using Ares.Datamodel;
 using Ares.Datamodel.Device;
 using Ares.Datamodel.Device.Remote;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
@@ -50,8 +51,8 @@ public class DemoDeviceService : AresRemoteDeviceService.AresRemoteDeviceService
     {
       Name = Commands.ECHO_NUMBER.ToString(),
       Description = "Gives back the input number as the output",
-      InputSchema = AresSchemaHelper.CreateSchema(DemoDataTypes.InputNumber.Key, DemoDataTypes.InputNumber.Value.Type),
-      OutputSchema = AresSchemaHelper.CreateSchema(DemoDataTypes.OutputNumber.Key, DemoDataTypes.OutputNumber.Value.Type)
+      InputSchema = AresSchemaBuilder.Create(DemoDataTypes.InputNumber.Key, DemoDataTypes.InputNumber.Value.Type).Build(),
+      OutputSchema = AresSchemaBuilder.Create(DemoDataTypes.OutputNumber.Key, DemoDataTypes.OutputNumber.Value.Type).Build()
     };
     response.Commands.Add(echoCommand);
 
@@ -123,7 +124,7 @@ public class DemoDeviceService : AresRemoteDeviceService.AresRemoteDeviceService
   public override Task<StateSchemaResponse> GetStateSchema(Empty request, ServerCallContext context)
   {
     _logger.LogInformation("State schema requested");
-    var schema = AresSchemaHelper.CreateSchema("Temperature", AresDataType.Number);
+    var schema = AresSchemaBuilder.Create("Temperature", AresDataType.Number).Build();
     var response = new StateSchemaResponse
     {
       Schema = schema

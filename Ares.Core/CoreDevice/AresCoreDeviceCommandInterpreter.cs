@@ -1,5 +1,6 @@
 ﻿using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Ares.Datamodel.Templates;
 using Ares.Device;
 using UnitsNet.Units;
@@ -27,7 +28,7 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
               Name = AresCoreDeviceCommandParameter.Duration.ToString(),
               Index = 0,
               Unit = $"{DurationUnit.Millisecond}s",
-              Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false)
+              Schema = AresSchemaBuilder.Entry(AresDataType.Number).Build()
             }
           }
       },

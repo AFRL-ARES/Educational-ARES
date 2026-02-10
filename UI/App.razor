@@ -1,5 +1,8 @@
-﻿<CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(App).Assembly">
+﻿@using static Microsoft.AspNetCore.Components.Web.RenderMode
+
+<RadzenTheme Theme="dark" />
+<CascadingAuthenticationState>
+    <Router @rendermode="InteractiveServer" AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />

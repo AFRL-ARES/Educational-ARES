@@ -1,6 +1,7 @@
 using Ares.Datamodel;
 using Ares.Datamodel.Connection;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Ares.Datamodel.Planning;
 using Ares.Datamodel.Planning.Remote;
 using Google.Protobuf.WellKnownTypes;
@@ -106,7 +107,7 @@ public class DemoPlannerService : AresRemotePlannerService.AresRemotePlannerServ
     {
       Fields =
       {
-        ["Dual Randomization"] = AresSchemaHelper.CreateSchemaEntry(AresDataType.Boolean, true)
+        ["Dual Randomization"] = AresSchemaBuilder.Entry(AresDataType.Boolean).AsOptional().Build()
       }
     };
 

@@ -1,5 +1,6 @@
 ﻿using Ares.Datamodel;
 using Ares.Datamodel.Extensions;
+using Ares.Datamodel.Factories;
 using Ares.Datamodel.Templates;
 using Ares.Device;
 using AresCamera.Enums;
@@ -26,7 +27,7 @@ public class AresCameraInterpreter : DeviceCommandInterpreter<IAresCamera, AresC
         OutputMetadata = new OutputMetadata() 
         {
           Description = "Returns a byte array representing the image data.", 
-          DataSchema = AresSchemaHelper.CreateSchema("ImageData", AresDataType.ByteArray),
+          DataSchema = AresSchemaBuilder.Create("ImageData", AresDataType.ByteArray).Build(),
           Index=0
         }
       },

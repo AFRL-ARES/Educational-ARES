@@ -1,0 +1,127 @@
+﻿@page "/scripting"
+@inherits ReactiveUI.Blazor.ReactiveInjectableComponentBase<UI.Backend.ViewModels.ScriptPlaygroundViewModel>
+@using System.Reactive.Linq
+
+<div class="script-playground">
+    <!-- Header with Title and Controls -->
+    <div class="script-playground__header">
+        <div>
+            <h3 class="script-playground__title">Script Playground</h3>
+            <p class="script-playground__subtitle">Write and execute ARES scripts</p>
+        </div>
+        
+        <div class="script-playground__controls">
+            @if (ViewModel?.ScriptRunning == true)
+            {
+                <span class="script-playground__status running">Running</span>
+                <button class="btn btn-danger" @onclick="HandleStop">
+                    <i class="bi bi-stop-fill"></i> Stop
+                </button>
+            }
+            else
+            {
+                <span class="script-playground__status stopped">Stopped</span>
+                <button class="btn btn-success" @onclick="HandleStart">
+                    <i class="bi bi-play-fill"></i> Start
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Body with Editor and Output Side by Side -->
+    <div class="script-playground__body">
+        <!-- Script Editor Pane -->
+        <div class="script-playground__pane script-playground__editor">
+            <div class="script-playground__pane-header">
+                <i class="bi bi-code-slash"></i>
+                <span>Script Editor</span>
+            </div>
+            <div class="script-playground__pane-body">
+                <ScriptEditor @ref="_editor" />
+            </div>
+        </div>
+
+        <!-- Output Pane -->
+        <div class="script-playground__pane script-playground__output">
+            <div class="script-playground__pane-header">
+                <i class="bi bi-terminal"></i>
+                <span>Output</span>
+            </div>
+            <div class="script-playground__pane-body">
+                <div class="script-playground__output-body">
+                    @if (_outputLines.Count == 0)
+                    {
+                        <div class="script-playground__empty-output">
+                            No output yet. Run a script to see results here.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var line in _outputLines)
+                        {
+                            <div class="script-playground__output-line">
+                                <span class="script-playground__output-timestamp">@line.Timestamp</span>
+                                <span class="script-playground__output-message">@line.Message</span>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ScriptEditor? _editor;
+    private List<OutputLine> _outputLines = new();
+    private IDisposable? _outputSubscription;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        
+        // Subscribe to script output
+        if (ViewModel != null)
+        {
+            _outputSubscription = ViewModel.ScriptOutput
+                .Subscribe(output =>
+                {
+                    _outputLines.Add(new OutputLine
+                    {
+                        Timestamp = DateTime.Now.ToString("HH:mm:ss.fff"),
+                        Message = output
+                    });
+                    InvokeAsync(StateHasChanged);
+                });
+        }
+    }
+
+    private async Task HandleStart()
+    {
+        if (_editor == null || ViewModel == null) return;
+        
+        // Clear previous output
+        _outputLines.Clear();
+        
+        // Get script from editor and start execution
+        var script = await _editor.GetScript();
+        await ViewModel.StartScript(script);
+    }
+
+    private async Task HandleStop()
+    {
+        if (ViewModel == null) return;
+        await ViewModel.StopScript();
+    }
+
+    public void Dispose()
+    {
+        _outputSubscription?.Dispose();
+    }
+
+    private class OutputLine
+    {
+        public string Timestamp { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+    }
+}

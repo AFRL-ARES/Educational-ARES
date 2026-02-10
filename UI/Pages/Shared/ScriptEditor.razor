@@ -1,0 +1,32 @@
+﻿@inject IJSRuntime JSRuntime
+
+<StandaloneCodeEditor CssClass="h-100" @ref="_editor" Id="ares-editor" ConstructionOptions="EditorConstructionOptions" />
+
+@code {
+  private StandaloneCodeEditor _editor;
+
+  public Task<string> GetScript() => _editor.GetValue();
+  
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if(firstRender)
+    {
+      // Import the setup script as a JS Module
+      // Ensure the path matches your actual file structure in wwwroot
+      var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./lib/monaco/ares-setup.js");
+      
+      // Register the language with Monaco
+      await module.InvokeVoidAsync("registerAresLanguage");
+    }
+  }
+
+  private StandaloneEditorConstructionOptions EditorConstructionOptions(StandaloneCodeEditor editor)
+  {
+    return new StandaloneEditorConstructionOptions
+    {
+      Language = "ares",
+      AutomaticLayout = true,
+      Value = "# Welcome to ARES\ndef main():\n    return True\n"
+    };
+  }
+}

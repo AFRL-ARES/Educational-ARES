@@ -9,7 +9,7 @@ function getGridOptions(columnCount) {
     float: true,
     acceptWidgets: true,
     disableResize: true,
-    oneColumnSize: 900,    // Handled by GridStack natively for mobile
+    oneColumnSize: 900,
     draggable: {
       handle: '.grid-stack-item-content',
       scroll: true
@@ -17,7 +17,6 @@ function getGridOptions(columnCount) {
   };
 }
 
-// 3. Helper to re-attach events (used in Init and Resize)
 function attachEvents(grid) {
   if (!_componentInstance) return;
 
