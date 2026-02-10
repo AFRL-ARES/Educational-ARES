@@ -4,11 +4,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>ARESScript.Tests</RootNamespace>
+    <RootNamespace>AresScript.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ARESScript\ARESScript.csproj" />
+    <ProjectReference Include="..\AresScript\AresScript.csproj" />
   </ItemGroup>
 
   <ItemGroup>

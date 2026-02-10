@@ -238,7 +238,7 @@ internal class SerialPortTests
       var response1 = await port.Send(new SomeCommandWithResponse(stringToTest1), TimeSpan.FromMilliseconds(100), token);
     }
     catch(TimeoutException)
-    {}
+    { }
     var response2 = await port.Send(new SomeCommandWithResponse(stringToTest2), TimeSpan.FromSeconds(10), token);
     Assert.That(response2.Response, Is.EqualTo(stringToTest2));
   }
@@ -250,31 +250,24 @@ internal class SerialPortTests
     const string stringToTest = "<-Oh Hello->";
     const string stringToTest2 = "<-This Is A Test->";
     var port = new TestConnectionWithDelay(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
-    var test1Observable = port.GetTransactionStream<SomeResponse>();
-    var test2Observable = port.GetTransactionStream<SomeResponse>();
-    var test1ObservableResponseWaiter = Task.Run(async () =>
-    {
-      var test1ObservableSecondResponse = await test1Observable.Take(1).ToTask(token);
-      return test1ObservableSecondResponse;
-    }, token);
+    var firstObservable = port.GetTransactionStream<SomeResponse>();
+    var secondObservable = port.GetTransactionStream<SomeResponse>();
+
+    var firstWaiter = firstObservable.Take(1).ToTask(token);
+    var secondWaiter = secondObservable.Take(1).ToTask(token);
 
     _ = port.SendAndStream(new SomeCommandWithStreamedResponse(stringToTest2), token);
 
-    var test2ObservableFirstResponse = await test2Observable.Take(1).ToTask(token);
-    var test1ObservableSecondResponse = await test1ObservableResponseWaiter;
-    var test1ObservableResponseWaiter2 = Task.Run(async () =>
-    {
-      var test1ObservableSecondResponse2 = await test1Observable.Take(1).ToTask(token);
-      return test1ObservableSecondResponse2;
-    }, token);
-
-    var test3Task = await port.Send(new SomeCommandWithResponse(stringToTest), token);
-    var test1ObservableSecondResponse2 = await test1ObservableResponseWaiter2;
+    var secondObservableFirstResponse = await secondWaiter;
+    var firstObservableSecondResponse = await firstWaiter;
+    var firstObservableResponseWaiter2 = firstObservable.Take(1).ToTask(token);
+    _ = await port.Send(new SomeCommandWithResponse(stringToTest), token);
+    var firstObservableSecondResponse2 = await firstObservableResponseWaiter2;
     using(Assert.EnterMultipleScope())
     {
-      Assert.That(test1ObservableSecondResponse2.Response.Response, Is.EqualTo(stringToTest));
-      Assert.That(test2ObservableFirstResponse.Response.Response, Is.EqualTo(stringToTest2));
-      Assert.That(test1ObservableSecondResponse.Response.Response, Is.EqualTo(stringToTest2));
+      Assert.That(firstObservableSecondResponse2.Response.Response, Is.EqualTo(stringToTest));
+      Assert.That(secondObservableFirstResponse.Response.Response, Is.EqualTo(stringToTest2));
+      Assert.That(firstObservableSecondResponse.Response.Response, Is.EqualTo(stringToTest2));
     }
 
     Assert.That(port.BufferEmpty, Is.True);
@@ -431,7 +424,7 @@ public class TestConnectionWithDelay : AresSerialSimConnection
 
 public class TestCorruptableConnection : AresSerialSimConnection
 {
-  public TestCorruptableConnection(SerialPortConnectionInfo connectionInfo) : base(connectionInfo, "SIM1", new SerialConnectionOptions() { DataReceiveInterval = TimeSpan.FromMilliseconds(150)})
+  public TestCorruptableConnection(SerialPortConnectionInfo connectionInfo) : base(connectionInfo, "SIM1", new SerialConnectionOptions() { DataReceiveInterval = TimeSpan.FromMilliseconds(150) })
   {
   }
 
@@ -445,7 +438,8 @@ public class TestCorruptableConnection : AresSerialSimConnection
     //   return;
     // }
     Console.WriteLine($"Got something: {Encoding.ASCII.GetString(bytes)}");
-    Task.Run(async () => {
+    Task.Run(async () =>
+    {
       foreach(var b in bytes)
       {
         AddDataReceived([b]);

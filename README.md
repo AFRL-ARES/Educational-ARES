@@ -1,5 +1,5 @@
 # ARES OS 2.0: Autonomous Research Software
-The next generation of autonomous research software, serving as the central hub for integrating devices, planners, and analyzers for self-directed scientific campaigns.
+The next generation of autonomous research software, serving as the central hub for integrating devices, planners, and analyzers for self-directed scientific campaigns. This is our general research software, if you're interested in specifically our 3-D printer software, please visit the [Educational ARES Repo](https://github.com/AFRL-ARES/Educational-ARES).
 
 ## 🎛️ Overview
 **ARES OS 2.0** acts as the core central hub that connects and coordinates components such as devices, planners, and analyzers into cohesive research campaigns. Built on a modular, distributed architecture, ARES provides the framework for defining complex, multi-step experiments and managing all connected systems from a unified dashboard.
