@@ -20,6 +20,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
   private readonly ISubject<HttpResponseMessage?> _stateSubject = new BehaviorSubject<HttpResponseMessage?>(default);
   private CancellationTokenSource _internalStateUpdaterTokenSource = new();
   private Task? _stateUpdater;
+  private readonly string _inputShaperCommand = "M862.6 P\"Input shaper\"";
 
   private string _stateRequestAddress = string.Empty;
 
@@ -223,10 +224,10 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
         PrintDelay = dwell;
 
       if(dwell > 0)
-        movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000 \n G4 S{dwell}";
+        movementCommand = $"{_inputShaperCommand} \n G90 \n G1 X{x} Y{y} Z{z} F9000 \n G4 S{dwell}";
 
       else
-        movementCommand = $"G90 \n G1 X{x} Y{y} Z{z} F9000";
+        movementCommand = $"{_inputShaperCommand} \n G90 \n G1 X{x} Y{y} Z{z} F9000";
 
       var movementRequest = CreateMovementRequest(Encoding.UTF8.GetBytes(movementCommand));
       var result = await _httpClient.SendAsync(movementRequest);
@@ -264,7 +265,7 @@ public class PrusaMK4s : AresUSBDevice, IPrusaMK4S
         return response;
       }
 
-      var request = CreateHomeRequest(Encoding.UTF8.GetBytes("G28"));
+      var request = CreateHomeRequest(Encoding.UTF8.GetBytes($"{_inputShaperCommand} \n G28"));
       var result = await _httpClient.SendAsync(request);
 
       while(IsPrinting || IsBusy)
