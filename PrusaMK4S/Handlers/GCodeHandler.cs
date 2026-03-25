@@ -22,6 +22,18 @@ public class GCodeHandler : IGcodeHandler
     AdjustedFileData = await GenerateFirstPrintData();
   }
 
+  /// <summary>
+  /// Applies the various planning parameters provided by the planner to the given G-Code as necessary.
+  /// </summary>
+  /// <param name="bedTemperature">The bed temperature provided by the planner</param>
+  /// <param name="nozzleTemperature">The nozzle temperature provided by the planner</param>
+  /// <param name="extrusionMod">The extrusion modifier provided by the planner</param>
+  /// <param name="speedMod">The speed modifier provided by the planner</param>
+  /// <param name="retractionLength">The retraction length provided by the planner</param>
+  /// <param name="accelerationMod">The acceleration modifier provided by the planner</param>
+  /// <param name="fanSpeedMod">The fan speed modifier provided by the planner</param>
+  /// <param name="gcode">The G-Code to be modified</param>
+  /// <returns></returns>
   public async Task<byte[]> ApplyPlanningParameters(int bedTemperature, 
     int nozzleTemperature, 
     double extrusionMod,
@@ -43,7 +55,10 @@ public class GCodeHandler : IGcodeHandler
     main_print_gcode = data.Skip(ModificationStartIndex + 1).ToList();
     
     if(nozzleTemperature > 0)
+    {
       start_gcode = UpdateNozzleTemperature(nozzleTemperature, start_gcode);
+      main_print_gcode = SanitizeNozzleTempChanges(main_print_gcode);
+    }
 
     if(bedTemperature > 0)
       start_gcode = UpdateBedTemperature(bedTemperature, start_gcode);
@@ -67,6 +82,13 @@ public class GCodeHandler : IGcodeHandler
     return updated_gcode;
   }
 
+  /// <summary>
+  /// Updates the given G-Code to utilize the extrusion rate modifier provided by the planner
+  /// </summary>
+  /// <param name="modifier">The extrusion rate modifier</param>
+  /// <param name="gcode">The G-Code to be modified</param>
+  /// <returns>Updated G-Code in the form of a list of strings</returns>
+  /// <exception cref="InvalidOperationException">Thrown when we fail to parse an extrusion modification lines value into a float</exception>
   private List<string> UpdateExtrusionRate(double modifier, List<string> gcode)
   {
     var updatedData = new List<string>();
@@ -135,6 +157,13 @@ public class GCodeHandler : IGcodeHandler
     return updatedData;
   }
 
+  /// <summary>
+  /// Updates the G-Codes movement speed based on the modifier provided by the planner. 
+  /// </summary>
+  /// <param name="modifier">The movement speed modifier provided by the planner</param>
+  /// <param name="gcode">The G-Code to be modified</param>
+  /// <returns>The modified G-Code in the form of a list of strings</returns>
+  /// <exception cref="InvalidOperationException">Thrown if we find a speed command that contains a value we can't parse into a float</exception>
   private List<string> UpdateMovementSpeed(double modifier, List<string> gcode)
   {
     var updatedData = new List<string>();
@@ -184,6 +213,12 @@ public class GCodeHandler : IGcodeHandler
     return updatedData;
   }
 
+  /// <summary>
+  /// Updates the G-Code's acceleration to use the modifier provided by the planner
+  /// </summary>
+  /// <param name="accelerationMod">The acceleration modifier</param>
+  /// <param name="gcode">The G-Code to be updated</param>
+  /// <returns>The modified G-code in the form of a list of strings</returns>
   private List<string> UpdateAcceleration(double accelerationMod, List<string> gcode)
   {
     var stringData = new List<string>();
@@ -227,6 +262,12 @@ public class GCodeHandler : IGcodeHandler
     return stringData;
   }
 
+  /// <summary>
+  /// Updates the G-Code to use the retraction length modifier provided by the planner.
+  /// </summary>
+  /// <param name="retractionLength">The retraction length modifier</param>
+  /// <param name="gcode">The G-Code to be modified</param>
+  /// <returns>The modified G-code in the form of a list of strings</returns>
   private List<string> UpdateRetractionLength(double retractionLength, List<string> gcode)
   {
     string? retractionCommand = null;
@@ -270,6 +311,12 @@ public class GCodeHandler : IGcodeHandler
     return gcode;
   }
 
+  /// <summary>
+  /// Updates the starting G-Code section to use the nozzle temperature provided by the planner.
+  /// </summary>
+  /// <param name="desiredTemp"></param>
+  /// <param name="gcode"></param>
+  /// <returns>The updated G-Code as a list of strings</returns>
   private List<string> UpdateNozzleTemperature(int desiredTemp, List<string> gcode)
   {
     var updatedData = new List<string>();
@@ -289,7 +336,33 @@ public class GCodeHandler : IGcodeHandler
 
     return updatedData;
   }
+  
+  /// <summary>
+  /// Removes any lingering nozzle temperature changes from the G-Code, ensuring we actually use the temperature the planner provided.
+  /// </summary>
+  /// <param name="gcode"></param>
+  /// <returns>A list of updated strings representing the sanitized G-Code.</returns>
+  private List<string> SanitizeNozzleTempChanges(List<string> gcode)
+  {
+    var updatedData = new List<string>();
 
+    foreach(var entry in gcode)
+    {
+      if(MatchesNozzleTempCommand(entry))
+        continue;
+
+      else
+        updatedData.Add(entry);
+    }
+
+    return updatedData;
+  }
+
+  /// <summary>
+  /// Determines if a line of G-Code matches the criteria for being a nozzle temperature adjustment outside of the standard warmup and cooldown sequences.
+  /// </summary>
+  /// <param name="entry"></param>
+  /// <returns>A bool representing whether the G-Code line is a match</returns>
   private bool MatchesNozzleTempCommand(string entry)
   {
     if(entry.StartsWith("M104") || entry.StartsWith("M109"))
@@ -308,6 +381,12 @@ public class GCodeHandler : IGcodeHandler
     return false;
   }
 
+  /// <summary>
+  /// Updates the G-Code to use the bed temperature provided by the planner.
+  /// </summary>
+  /// <param name="desiredTemp"></param>
+  /// <param name="gcode"></param>
+  /// <returns>The updated G-Code as a list of strings</returns>
   private List<string> UpdateBedTemperature(int desiredTemp, List<string> gcode)
   {
     var updatedData = gcode.Select(entry =>
@@ -324,6 +403,12 @@ public class GCodeHandler : IGcodeHandler
     return updatedData;
   }
 
+  /// <summary>
+  /// Updates the G-Code to use the fan speed as provided by the planner.
+  /// </summary>
+  /// <param name="fanSpeedMod"></param>
+  /// <param name="gcode"></param>
+  /// <returns>The updated G-Code as a list of strings</returns>
   private List<string> UpdateFanSpeed(double fanSpeedMod, List<string> gcode)
   {
     var updatedData = new List<string>();
@@ -363,12 +448,21 @@ public class GCodeHandler : IGcodeHandler
     return updatedData;
   }
 
+  /// <summary>
+  /// Calculates the number of prints that can be done on the bed using the dimensions of the MK4S print bed and the object being printed.
+  /// </summary>
+  /// <returns>The number of prints that can fit on the bed</returns>
   public Task<uint> SmartDetermineNumberOfPrints()
   {
     var max_vertical = (int)Math.Floor(_printBedHeight / Math.Max(ItemHeight + 10, 20));
     return Task.FromResult((uint)max_vertical);
   }
 
+  /// <summary>
+  /// Creates a new print iteration moved around the bed as needed.
+  /// </summary>
+  /// <param name="iteration"></param>
+  /// <returns>Updated G-Code in the form of a byte array.</returns>
   public async Task<byte[]> CreatePrintIteration(int iteration)
   {
     if(AdjustedFileData is null)
@@ -408,7 +502,13 @@ public class GCodeHandler : IGcodeHandler
       return data;
     }
   }
-
+  
+  /// <summary>
+  /// A method used to calculate the distance an object needs to be shifted in the x-axis for a given print.
+  /// </summary>
+  /// <param name="itemIndex">The current print index</param>
+  /// <param name="numObjects">The total number of objects to be printed</param>
+  /// <returns>The expected x-shift value for this print</returns>
   private double CalculateXShift(int itemIndex, double numObjects)
   {
     var position = itemIndex % numObjects;
@@ -420,6 +520,11 @@ public class GCodeHandler : IGcodeHandler
       return (ItemWidth * 1.5) * position;
   }
 
+  /// <summary>
+  /// A method used to calculate the distance an object needs to be shifted in the y-axis for a given print.
+  /// </summary>
+  /// <param name="itemIndex">The iteration number of the current print</param>
+  /// <returns>The expected y-shift for the current print item</returns>
   private double CalculateYShift(int itemIndex)
   {
     //Generally we can use the items height, but set a minimum distance.
@@ -430,6 +535,14 @@ public class GCodeHandler : IGcodeHandler
       return (-ItemHeight - 10) * itemIndex;
   }
 
+  /// <summary>
+  /// Applies a given x and y offset to a line of G-code
+  /// </summary>
+  /// <param name="line">The line of G-Code to be altered</param>
+  /// <param name="xOffset">The X-Offset to be applied to the movement command</param>
+  /// <param name="yOffset">The Y-Offset to be applied to the movement command</param>
+  /// <param name="iteration">The iteration number of the current print</param>
+  /// <returns>An updated line of G-Code in the form of a string</returns>
   private string? ApplyOffsetToLine(string line, double xOffset, double yOffset, int iteration)
   {
     if(string.IsNullOrWhiteSpace(line) || line.StartsWith(";"))
@@ -473,6 +586,10 @@ public class GCodeHandler : IGcodeHandler
     return line;
   }
 
+  /// <summary>
+  /// A method used to calculate the size of the current print object based on it's G-Code
+  /// </summary>
+  /// <returns>A task</returns>
   private async Task CalculateObjectSize()
   {
     var memoryStream = new MemoryStream(OriginalFileData);
@@ -523,6 +640,11 @@ public class GCodeHandler : IGcodeHandler
     await memoryStream.DisposeAsync();
   }
 
+  /// <summary>
+  /// A method that generates the first print data of a campaign using smart print. 
+  /// This will create a G-Code file that moves the given object to the top right of the print bed.
+  /// </summary>
+  /// <returns>Returns a byte array representing the print data</returns>
   private async Task<byte[]> GenerateFirstPrintData()
   {
     if(OriginalFileData is null)
@@ -546,6 +668,11 @@ public class GCodeHandler : IGcodeHandler
     return bytes;
   }
 
+  /// <summary>
+  /// A method responsible for shifting the initial purge line location based.
+  /// </summary>
+  /// <param name="gcode"></param>
+  /// <returns>The G-Code with the purge line shifted across the plate as a list of strings.</returns>
   private List<string> ShiftInitialPurgeLine(List<string> gcode)
   {
     var updatedGcode = new List<string>(); 
@@ -574,7 +701,13 @@ public class GCodeHandler : IGcodeHandler
 
     return updatedGcode;
   }
-
+  
+  /// <summary>
+  /// Applies the X-Offset for a given print to the purge line, ensuring collisions don't happen during purging
+  /// </summary>
+  /// <param name="splitLine">The line of G-Code split by spaces</param>
+  /// <param name="shift">The X-Offset the line should be shifted by</param>
+  /// <returns>The shifted line as a string</returns>
   private string ApplyPurgeXOffset(string[] splitLine, int shift)
   {
     var x = splitLine.FirstOrDefault(e => e.StartsWith("X"));
@@ -600,6 +733,12 @@ public class GCodeHandler : IGcodeHandler
     return string.Join(" ", splitLine);
   }
 
+  /// <summary>
+  /// A method specifically for shifting the purge line of all prints beyond the initial print
+  /// </summary>
+  /// <param name="gcode">The associated G-Code being printed</param>
+  /// <param name="iteration">The current print iteration number</param>
+  /// <returns>The updated G-Code as a list of strings</returns>
   private List<string> ShiftIterationPurgeLine(List<string> gcode, int iteration)
   {
     var yShift = iteration * _distanceBetweenPurgeLines;
@@ -627,20 +766,15 @@ public class GCodeHandler : IGcodeHandler
     return updatedGcode;
   }
 
+  /// <summary>
+  /// Applies the given Y-Offset to the purge line
+  /// </summary>
+  /// <param name="splitLine">The purge G-Code command seperated by spaces into an array</param>
+  /// <param name="shift">The Y-Offset to be applied</param>
+  /// <returns>The new purge command as a string</returns>
   private string ApplyPurgeYOffset(string[] splitLine, int shift)
   {
     var y = splitLine.FirstOrDefault(e => e.StartsWith("Y"));
-    //var height = splitLine.FirstOrDefault(e => e.StartsWith("H"));
-    //var width = splitLine.FirstOrDefault(e => e.StartsWith("W"));
-
-    //if(splitLine[0] == "G29")
-    //{
-      //var height_index = splitLine.IndexOf(height);
-      //var width_index = splitLine.IndexOf(width);
-
-      //splitLine[height_index] = "H25";
-      //splitLine[width_index] = "W25";
-    //}
 
     if(y is null)
     {
@@ -664,6 +798,12 @@ public class GCodeHandler : IGcodeHandler
     return string.Join(" ", splitLine);
   }
 
+  /// <summary>
+  /// Updates the bed leveling procedure each print based on the location of the print object
+  /// </summary>
+  /// <param name="gcode">The given objects G-Code as a list of strings</param>
+  /// <param name="printIteration">The current print iteration number</param>
+  /// <returns></returns>
   private List<string> UpdateBedLeveling(List<string> gcode, int printIteration)
   {
     List<string> updated_gcode = new List<string>();
@@ -693,6 +833,11 @@ public class GCodeHandler : IGcodeHandler
     return updated_gcode;
   }
 
+  /// <summary>
+  /// Converts a byte array of G-Code into a list of strings
+  /// </summary>
+  /// <param name="gcode"></param>
+  /// <returns></returns>
   private async Task<List<string>> ConvertGCodeToStrings(byte[] gcode)
   {
     var memoryStream = new MemoryStream(gcode);
@@ -706,6 +851,12 @@ public class GCodeHandler : IGcodeHandler
     return data;
   }
 
+  /// <summary>
+  /// Takes in starting G-Code and it's updated body, combines them and produces a single byte array of G-Code.
+  /// </summary>
+  /// <param name="start_gcode">The starting section of the given G-Code</param>
+  /// <param name="updated_gcode"></param>
+  /// <returns>A byte array of G-Code</returns>
   private byte[] ConvertGCodeToBytes(List<string> start_gcode, List<string> updated_gcode)
   {
     updated_gcode.ForEach(start_gcode.Add);
@@ -713,6 +864,10 @@ public class GCodeHandler : IGcodeHandler
     return Encoding.UTF8.GetBytes(modifiedStringData);
   }
 
+  /// <summary>
+  /// Determines where modifications for print settings like fan speed, acceleration, etc should begin
+  /// </summary>
+  /// <param name="gcode">The G-Code to be modified</param>
   private void DetermineModificationIndex(List<string> gcode)
   {
     var index = 0;
